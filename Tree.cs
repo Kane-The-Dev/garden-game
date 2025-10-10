@@ -32,7 +32,7 @@ public class Tree : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if(multiplier > 1f)
+        if (multiplier > 1f)
         multiplier -= Time.deltaTime * 0.05f;
 
         if (growthIndex < maxGrowth && !chopped)

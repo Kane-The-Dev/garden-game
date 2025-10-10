@@ -87,12 +87,24 @@ public class PlantManager : MonoBehaviour
 
         if (Physics.Raycast(ray, out hit, maxDistance, groundMask))
         {
+            /*
             Collider[] overlaps = Physics.OverlapSphere(hit.point, 2.5f, plantMask);
-
             if (overlaps.Length > 0)
             {
                 Debug.Log("Overlap other trees");
                 return;
+            }
+            */
+
+            Tree[] trees = FindObjectsOfType<Tree>();
+            foreach (Tree tree in trees)
+            {
+                Debug.Log(Vector3.Distance(tree.transform.position, hit.point));
+                if (!tree.isProduct && Vector3.Distance(tree.transform.position, hit.point) < 4f)
+                {
+                    Debug.Log("Overlap other trees");
+                    return;
+                }
             }
 
             if (inventory.coin < inventory.foodList[plantID].plantPrice)
@@ -108,7 +120,7 @@ public class PlantManager : MonoBehaviour
                 Quaternion.Euler(0f, Random.Range(0f, 180f), 0f)
             );
 
-            newTree.GetComponent<Tree>().maxGrowth = Random.Range(0.9f, 1.1f);
+            newTree.GetComponent<Tree>().maxGrowth *= Random.Range(0.9f, 1.1f);
             newTree.GetComponent<Tree>().product = products[plantID];
             
             inventory.coin -= inventory.foodList[plantID].plantPrice;
@@ -158,8 +170,12 @@ public class PlantManager : MonoBehaviour
         if (Physics.Raycast(ray, out hit, maxDistance, plantMask))
         {
             Tree thisTree = hit.collider.gameObject.GetComponent<Tree>();
-            if (!thisTree) return;
-
+            if (!thisTree) 
+            {
+                Debug.Log("no tree?");
+                return;
+            }
+            
             thisTree.Shake(5f);
             foreach (Transform slot in thisTree.slots)
             {

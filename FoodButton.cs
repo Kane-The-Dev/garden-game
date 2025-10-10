@@ -13,12 +13,17 @@ public class FoodButton : MonoBehaviour
         inventory = FindObjectOfType<Inventory>();
     }
 
-    public void OnClick()
+    public void OnClick(int quantity)
     {
-        if(inventory.foodList[productID].n <= 0) return;
+        if (inventory.foodList[productID].n < quantity) return;
 
-        inventory.coin += inventory.foodList[productID].sellPrice;
-        inventory.foodList[productID].UpdateN(-1);
+        for (int i = 0; i < quantity; i++)
+        {
+            Debug.Log("Foood");
+        }
+
+        inventory.coin += quantity * inventory.foodList[productID].sellPrice;
+        inventory.foodList[productID].UpdateN(-1 * quantity);
         inventory.UpdateStorage();
     }
 }

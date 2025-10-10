@@ -57,7 +57,7 @@ public class Inventory : MonoBehaviour
         int count = 0;
         foreach (var item in foodList)
         {
-            Debug.Log(item.name + " = " + item.n);
+            // Debug.Log(item.name + " = " + item.n);
             GameObject newItem = Instantiate(plantItemPrefab, shop);
 
             PlantButton thisButton = newItem.transform.GetChild(0).GetComponent<PlantButton>();
@@ -68,7 +68,7 @@ public class Inventory : MonoBehaviour
             thisButton.plantName = item.name;
             thisButton.plantPrice = item.plantPrice;
             
-            if(item.levelReq == 0) newItem.transform.GetChild(1).gameObject.SetActive(false);
+            if (item.levelReq == 0) newItem.transform.GetChild(1).gameObject.SetActive(false);
             newItem.transform.GetChild(1).GetComponent<UILock>().levelRequirement = item.levelReq;
         }
     }
@@ -83,32 +83,12 @@ public class Inventory : MonoBehaviour
         int count = 0;
         foreach (var item in foodList)
         {
-            Debug.Log(item.name + " = " + item.n);
+            // Debug.Log(item.name + " = " + item.n);
             GameObject newItem = Instantiate(foodItemPrefab, storage);
             newItem.GetComponent<FoodButton>().productID = count++;
             newItem.GetComponent<FoodButton>().sellPrice = item.sellPrice;
-            newItem.transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = item.name;
-            newItem.transform.GetChild(1).GetComponent<TextMeshProUGUI>().text = item.n.ToString() + " left";
-        }
-    }
-
-    public void AddItem(string itemName)
-    {
-        /*
-        if (inventory.ContainsKey(itemName))
-            inventory[itemName]++;
-        else
-            inventory[itemName] = 1;
-        */
-    }
-
-    public void DecreaseItem(string itemName)
-    {
-        if (inventory.ContainsKey(itemName))
-        {
-            inventory[itemName]--;
-            if (inventory[itemName] <= 0)
-                inventory.Remove(itemName);
+            newItem.transform.GetChild(1).GetComponent<TextMeshProUGUI>().text = item.name;
+            newItem.transform.GetChild(2).GetComponent<TextMeshProUGUI>().text = item.n.ToString() + " left";
         }
     }
 }
