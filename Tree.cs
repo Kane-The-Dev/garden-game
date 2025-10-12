@@ -22,11 +22,11 @@ public class Tree : MonoBehaviour
     public bool chopped = false;
     public float shakeAmplitude;
 
-    void Start()
+    void Awake()
     {
         growthIndex = 0.2f;
         multiplier = 1f;
-        transform.localScale = new Vector3(1,1,1) * growthIndex;
+        transform.localScale = new Vector3(1,1,1) * 0.2f * maxGrowth;
     }
 
     // Update is called once per frame
@@ -37,7 +37,7 @@ public class Tree : MonoBehaviour
 
         if (growthIndex < maxGrowth && !chopped)
         {  
-            growthIndex += Time.deltaTime * 0.05f * maxGrowth * growthSpeed * multiplier * 10f;
+            growthIndex += Time.deltaTime * 0.05f * maxGrowth * growthSpeed * multiplier;
             transform.localScale = new Vector3(1,1,1) * growthIndex;
         }
         else if (!isProduct && !reproductive)
@@ -74,7 +74,7 @@ public class Tree : MonoBehaviour
 
             if (emptySlots.Count == 0)
             {
-                yield return new WaitForSeconds(Random.Range(3f,6f));
+                yield return new WaitForSeconds(Random.Range(3f,6f) / multiplier);
                 continue;
             }
 
@@ -82,7 +82,7 @@ public class Tree : MonoBehaviour
             
             Instantiate(product, toGrow);
             fruitCount++;
-            yield return new WaitForSeconds(Random.Range(3f,6f));
+            yield return new WaitForSeconds(Random.Range(3f,6f) / multiplier);
         }
     }
 }

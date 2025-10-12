@@ -99,7 +99,7 @@ public class PlantManager : MonoBehaviour
             Tree[] trees = FindObjectsOfType<Tree>();
             foreach (Tree tree in trees)
             {
-                Debug.Log(Vector3.Distance(tree.transform.position, hit.point));
+                // Debug.Log(Vector3.Distance(tree.transform.position, hit.point));
                 if (!tree.isProduct && Vector3.Distance(tree.transform.position, hit.point) < 4f)
                 {
                     Debug.Log("Overlap other trees");
