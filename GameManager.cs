@@ -19,7 +19,7 @@ public class GameManager : MonoBehaviour
     public void ChangeMode()
     {
         if (mode == 0) {
-            mode = 1;
+            mode = 1; // feeding
 
             cam.target = table;
             cam.movable = false;
@@ -29,13 +29,13 @@ public class GameManager : MonoBehaviour
             foodStorage.SetActive(true);
         }
         else {
-            mode = 0;
+            mode = 0; // gardening
 
             cam.target = garden;
             cam.movable = true;
 
             gardenTools.SetActive(true);
-            plantShop.SetActive(true);
+            if (FindObjectOfType<PlantManager>().mode == 0) plantShop.SetActive(true);
             foodStorage.SetActive(false);
         }
         cam.targetReached = false;

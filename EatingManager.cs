@@ -41,7 +41,7 @@ public class EatingManager : MonoBehaviour
             rb.useGravity = true;
         }
 
-        Tree tree = obj.GetComponent<Tree>();
+        Growable tree = obj.GetComponent<Growable>();
         if (tree != null) 
         {
             tree.chopped = true;

@@ -10,6 +10,7 @@ public class CameraMovement : MonoBehaviour
     void Start()
     {
         rb = GetComponent<Rigidbody>();
+        targetReached = true;
         movable = true;
     }
 
@@ -29,13 +30,13 @@ public class CameraMovement : MonoBehaviour
             );
 
             // Stop if close enough
-            if (Vector3.Distance(transform.position, target.position) < 0.01f &&
+            if (Vector3.Distance(transform.position, target.position) < 0.1f &&
                 Quaternion.Angle(transform.rotation, target.rotation) < 0.5f) {
                 targetReached = true;
             }
         }
 
-        if (!movable) return;
+        if (!movable || !targetReached) return;
 
         movementX = Input.GetAxisRaw("Horizontal");
         movementZ = Input.GetAxisRaw("Vertical");
