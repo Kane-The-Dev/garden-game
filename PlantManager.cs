@@ -62,11 +62,11 @@ public class PlantManager : MonoBehaviour
             randomZ = Random.Range(-3f, 23f);
 
             if (Physics.Raycast(new Vector3(randomX, 10f, randomZ), Vector3.down, out RaycastHit hit, maxDistance, groundMask))
-            Instantiate(
-                decorations[Random.Range(0, decorations.Length)], 
-                hit.point, 
-                Quaternion.Euler(0f, Random.Range(-90f, 90f), 0f)
-            );
+                Instantiate(
+                    decorations[Random.Range(0, decorations.Length)], 
+                    hit.point, 
+                    Quaternion.Euler(0f, Random.Range(-90f, 90f), 0f)
+                );
         }
     }
 
@@ -87,20 +87,11 @@ public class PlantManager : MonoBehaviour
 
         if (Physics.Raycast(ray, out hit, maxDistance, groundMask))
         {
-            /*
-            Collider[] overlaps = Physics.OverlapSphere(hit.point, 2.5f, plantMask);
-            if (overlaps.Length > 0)
-            {
-                Debug.Log("Overlap other trees");
-                return;
-            }
-            */
-
-            Tree[] trees = FindObjectsOfType<Tree>();
-            foreach (Tree tree in trees)
+            Growable[] trees = FindObjectsOfType<Growable>();
+            foreach (Growable tree in trees)
             {
                 // Debug.Log(Vector3.Distance(tree.transform.position, hit.point));
-                if (!tree.isProduct && Vector3.Distance(tree.transform.position, hit.point) < 4f)
+                if (!tree.isProduct && Vector3.Distance(tree.transform.position, hit.point) < 3.5f)
                 {
                     Debug.Log("Overlap other trees");
                     return;
@@ -120,8 +111,8 @@ public class PlantManager : MonoBehaviour
                 Quaternion.Euler(0f, Random.Range(0f, 180f), 0f)
             );
 
-            newTree.GetComponent<Tree>().maxGrowth *= Random.Range(0.9f, 1.1f);
-            newTree.GetComponent<Tree>().product = products[plantID];
+            newTree.GetComponent<Growable>().maxGrowth *= Random.Range(0.85f, 1f);
+            newTree.GetComponent<Growable>().product = products[plantID];
             
             inventory.coin -= inventory.foodList[plantID].plantPrice;
             inventory.exp += 15f;
@@ -149,7 +140,7 @@ public class PlantManager : MonoBehaviour
 
             foreach (RaycastHit p in hits)
             {
-                Tree tree = p.collider.GetComponent<Tree>();
+                Growable tree = p.collider.GetComponent<Growable>();
                 if (tree != null)
                 {
                     tree.multiplier = 1.5f;
@@ -169,7 +160,7 @@ public class PlantManager : MonoBehaviour
 
         if (Physics.Raycast(ray, out hit, maxDistance, plantMask))
         {
-            Tree thisTree = hit.collider.gameObject.GetComponent<Tree>();
+            Growable thisTree = hit.collider.gameObject.GetComponent<Growable>();
             if (!thisTree) 
             {
                 Debug.Log("no tree?");
@@ -179,9 +170,9 @@ public class PlantManager : MonoBehaviour
             thisTree.Shake(5f);
             foreach (Transform slot in thisTree.slots)
             {
-                if (slot.childCount > 0 && slot.GetChild(0).GetComponent<Tree>())
+                if (slot.childCount > 0 && slot.GetChild(0).GetComponent<Growable>())
                 {
-                    Tree thisFruit = slot.GetChild(0).GetComponent<Tree>();
+                    Growable thisFruit = slot.GetChild(0).GetComponent<Growable>();
                     if (thisFruit.growthIndex >= 0.9 * thisFruit.maxGrowth)
                     {
                         slot.GetChild(0).parent = null;
@@ -189,7 +180,6 @@ public class PlantManager : MonoBehaviour
                         thisFruit.gameObject.GetComponent<Rigidbody>().constraints = RigidbodyConstraints.None;
                         thisFruit.gameObject.GetComponent<Rigidbody>().useGravity = true;
 
-                        // inventory.AddItem(thisFruit.productName);
                         inventory.exp += 3f;
                         inventory.foodList[thisFruit.productID].UpdateN(1);
 
@@ -216,29 +206,11 @@ public class PlantManager : MonoBehaviour
 
         if (Physics.Raycast(ray, out hit, maxDistance, plantMask))
         {
-            Tree thisTree = hit.collider.gameObject.GetComponent<Tree>();
+            Growable thisTree = hit.collider.gameObject.GetComponent<Growable>();
             if (!thisTree) return;
 
             thisTree.chopped = true;
-
-            Rigidbody rb = thisTree.gameObject.GetComponent<Rigidbody>();
-            rb.constraints = RigidbodyConstraints.None;
-            rb.useGravity = true;
-            
-            Vector3 randomDirection = new Vector3(
-                Random.Range(-1f, 1f),
-                0.5f,
-                Random.Range(-1f, 1f)
-            ).normalized;
-            Vector3 forcePoint = rb.position + Vector3.up * (thisTree.transform.localScale.y * 4f);
-            rb.AddForceAtPosition(randomDirection * Random.Range(20f, 30f), forcePoint, ForceMode.Impulse);
-
-            Vector3 randomTorque = new Vector3(
-                Random.Range(-50f, 50f),
-                Random.Range(-50f, 50f),
-                Random.Range(-50f, 50f)
-            );
-            rb.AddTorque(randomTorque);
+            thisTree.Chop();
 
             GetComponent<Inventory>().exp += 5f;
             Destroy(thisTree.gameObject, 5f);
