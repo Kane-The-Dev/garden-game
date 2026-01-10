@@ -22,40 +22,20 @@ public class ShopManager : MonoBehaviour
             Destroy(child.gameObject);
         }
 
-        int count = 0;
-        foreach (var item in foodList)
+        foreach (var item in foodList.OrderBy(f => f.levelReq))
         {
-            // Debug.Log(item.name + " = " + item.n);
             GameObject newItem = Instantiate(plantItemPrefab, shop);
 
             PlantButton thisButton = newItem.transform.GetChild(0).GetComponent<PlantButton>();
             shop.gameObject.GetComponent<ButtonGroup>().buttons.Add(thisButton.myImage);
             thisButton.myGroup = shop.gameObject.GetComponent<ButtonGroup>();
             
-            thisButton.plantID = count++;
+            thisButton.plantID = item.ID;
             thisButton.plantName = item.name;
             thisButton.plantPrice = item.plantPrice;
             
             if (item.levelReq == 0) newItem.transform.GetChild(1).gameObject.SetActive(false);
             newItem.transform.GetChild(1).GetComponent<UILock>().levelRequirement = item.levelReq;
-        }
-
-        // Sort shop theo levelRequirement
-        List<Transform> items = new List<Transform>();
-        foreach (Transform child in shop)
-        {
-            items.Add(child);
-        }
-        
-        items = items.OrderBy(item =>
-            item.GetChild(1)
-                .GetComponent<UILock>()
-                .levelRequirement
-        ).ToList();
-
-        for (int i = 0; i < items.Count; i++)
-        {
-            items[i].SetSiblingIndex(i);
         }
     }
 }

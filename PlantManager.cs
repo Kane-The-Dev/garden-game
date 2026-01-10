@@ -115,7 +115,7 @@ public class PlantManager : MonoBehaviour
             newTree.GetComponent<Growable>().product = products[plantID];
             
             inventory.coin -= inventory.foodList[plantID].plantPrice;
-            inventory.exp += 15f;
+            inventory.exp += 25f;
         }
         else
         {
@@ -209,10 +209,10 @@ public class PlantManager : MonoBehaviour
             Growable thisTree = hit.collider.gameObject.GetComponent<Growable>();
             if (!thisTree) return;
 
-            thisTree.chopped = true;
             thisTree.Chop();
+            thisTree.chopped = true;
 
-            GetComponent<Inventory>().exp += 5f;
+            GetComponent<Inventory>().exp += 10f;
             Destroy(thisTree.gameObject, 5f);
         }
         else

@@ -1,8 +1,8 @@
 [System.Serializable]
 public class Item{
 
+    public int ID;
     public string name;
-
     public int plantPrice;
     public int sellPrice;
     public float growthSpeed;
@@ -10,8 +10,9 @@ public class Item{
 
     public int n; // number in stock
 
-    public void Set(string _name, int _plantPrice, int _sellPrice, float _growthSpeed, int _levelReq)
+    public void Set(int _ID, string _name, int _plantPrice, int _sellPrice, float _growthSpeed, int _levelReq)
     {
+        this.ID = _ID;
         this.name = _name;
         this.plantPrice = _plantPrice;
         this.sellPrice = _sellPrice;

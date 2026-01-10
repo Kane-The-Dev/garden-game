@@ -18,7 +18,10 @@ public class FoodButton : MonoBehaviour
 
     public void OnClick(int quantity)
     {
-        if (inventory.foodList[productID].n < quantity) return;
+        if (inventory.foodList[productID].n < quantity) {
+            Debug.Log(inventory.foodList[productID].name + "out of stock" + inventory.foodList[productID].n);
+            return;
+        }
 
         for (int i = 0; i < quantity; i++)
         eater.q.Enqueue(productID);

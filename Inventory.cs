@@ -55,15 +55,18 @@ public class Inventory : MonoBehaviour
             Destroy(child.gameObject);
         }
 
-        int count = 0;
-        foreach (var item in foodList)
+        foreach (var item in foodList.OrderBy(f => f.levelReq))
         {
-            // Debug.Log(item.name + " = " + item.n);
             GameObject newItem = Instantiate(foodItemPrefab, storage);
-            newItem.GetComponent<FoodButton>().productID = count++;
-            newItem.GetComponent<FoodButton>().sellPrice = item.sellPrice;
-            newItem.transform.GetChild(1).GetComponent<TextMeshProUGUI>().text = item.name;
-            newItem.transform.GetChild(2).GetComponent<TextMeshProUGUI>().text = item.n.ToString() + " left";
+            var fb = newItem.GetComponent<FoodButton>();
+            fb.productID = item.ID;
+            fb.sellPrice = item.sellPrice;
+
+            newItem.transform.GetChild(1)
+                .GetComponent<TextMeshProUGUI>().text = item.name;
+
+            newItem.transform.GetChild(2)
+                .GetComponent<TextMeshProUGUI>().text = item.n + " left";
         }
     }
 }

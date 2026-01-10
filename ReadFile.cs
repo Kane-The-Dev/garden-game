@@ -21,16 +21,17 @@ public class ReadFile : MonoBehaviour
                 (char[])null, 
                 System.StringSplitOptions.RemoveEmptyEntries
             );
-            if (parts.Length < 5) continue;
+            if (parts.Length < 6) continue;
 
-            string name = parts[0];
-            int.TryParse(parts[1], out int plant);
-            int.TryParse(parts[2], out int sell);
-            float.TryParse(parts[3], out float speed);
-            int.TryParse(parts[4], out int requirement);
+            int.TryParse(parts[0], out int id);
+            string name = parts[1];
+            int.TryParse(parts[2], out int plant);
+            int.TryParse(parts[3], out int sell);
+            float.TryParse(parts[4], out float speed);
+            int.TryParse(parts[5], out int requirement);
 
             Item newItem =  new Item();
-            newItem.Set(name, plant, sell, speed, requirement);
+            newItem.Set(id, name, plant, sell, speed, requirement);
             list.Add(newItem);
         }
     }

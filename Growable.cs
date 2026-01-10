@@ -76,28 +76,30 @@ public class Growable : MonoBehaviour
 
     public void Chop()
     {
+        if (chopped) return;
+
         Rigidbody rb = gameObject.GetComponent<Rigidbody>();
         rb.constraints = RigidbodyConstraints.None;
         rb.useGravity = true;
         
         Vector3 randomDirection = new Vector3(
             Random.Range(-1f, 1f),
-            0.5f,
+            0f,
             Random.Range(-1f, 1f)
         ).normalized;
 
         Vector3 forcePoint = rb.position + Vector3.up * (transform.localScale.y * 4f);
 
         rb.AddForceAtPosition(
-            randomDirection * Random.Range(20f, 30f), 
+            randomDirection * Random.Range(5f, 10f) * transform.localScale.x, 
             forcePoint, 
             ForceMode.Impulse
         );
 
         Vector3 randomTorque = new Vector3(
-            Random.Range(-50f, 50f),
-            Random.Range(-50f, 50f),
-            Random.Range(-50f, 50f)
+            Random.Range(-20f, 20f),
+            Random.Range(-20f, 20f),
+            Random.Range(-20f, 20f)
         );
         rb.AddTorque(randomTorque);
     }
