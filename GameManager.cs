@@ -4,11 +4,23 @@ using UnityEngine;
 
 public class GameManager : MonoBehaviour
 {
+    public static GameManager instance;
+
     int mode; // 0 garden, 1 table
     [SerializeField] Transform garden, table;
     CameraMovement cam;
 
-    [SerializeField] GameObject gardenTools, plantShop, foodStorage; 
+    [SerializeField] GameObject gardenTools, plantShop, foodStorage;
+
+    public int timeControl;
+
+    void Awake()
+    {
+        if(instance != null && instance != this)
+            Destroy(gameObject);
+        else
+            instance = this;
+    }
 
     void Start()
     {

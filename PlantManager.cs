@@ -90,7 +90,6 @@ public class PlantManager : MonoBehaviour
             Growable[] trees = FindObjectsOfType<Growable>();
             foreach (Growable tree in trees)
             {
-                // Debug.Log(Vector3.Distance(tree.transform.position, hit.point));
                 if (!tree.isProduct && Vector3.Distance(tree.transform.position, hit.point) < 3.5f)
                 {
                     Debug.Log("Overlap other trees");
@@ -111,8 +110,10 @@ public class PlantManager : MonoBehaviour
                 Quaternion.Euler(0f, Random.Range(0f, 180f), 0f)
             );
 
-            newTree.GetComponent<Growable>().maxGrowth *= Random.Range(0.85f, 1f);
-            newTree.GetComponent<Growable>().product = products[plantID];
+            var g = newTree.GetComponent<Growable>();
+            g.growthSpeed = inventory.foodList[plantID].growthSpeed;
+            g.maxGrowth *= Random.Range(0.85f, 1f);
+            g.product = products[plantID];
             
             inventory.coin -= inventory.foodList[plantID].plantPrice;
             inventory.exp += 25f;
@@ -177,8 +178,9 @@ public class PlantManager : MonoBehaviour
                     {
                         slot.GetChild(0).parent = null;
 
-                        thisFruit.gameObject.GetComponent<Rigidbody>().constraints = RigidbodyConstraints.None;
-                        thisFruit.gameObject.GetComponent<Rigidbody>().useGravity = true;
+                        var rb = thisFruit.gameObject.GetComponent<Rigidbody>();
+                        rb.constraints = RigidbodyConstraints.None;
+                        rb.useGravity = true;
 
                         inventory.exp += 3f;
                         inventory.foodList[thisFruit.productID].UpdateN(1);

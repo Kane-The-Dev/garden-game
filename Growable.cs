@@ -7,6 +7,7 @@ public class Growable : MonoBehaviour
     [Header("Growth")]
     public float maxGrowth;
     public float growthIndex, growthSpeed = 1f, multiplier;
+    public float timeIndex;
 
     [Header("Tree")]
     public GameObject product, leaf;
@@ -33,12 +34,14 @@ public class Growable : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        timeIndex = GameManager.instance.timeControl * 0.05f;
+
         if (multiplier > 1f)
-        multiplier -= Time.deltaTime * 0.05f;
+        multiplier -= Time.deltaTime * timeIndex;
 
         if (growthIndex < maxGrowth && !chopped)
         {  
-            growthIndex += Time.deltaTime * 0.05f * maxGrowth * growthSpeed * multiplier;
+            growthIndex += Time.deltaTime * timeIndex * maxGrowth * growthSpeed * multiplier;
             transform.localScale = new Vector3(1,1,1) * growthIndex;
         }
         else if (!isProduct && !reproductive)
@@ -48,7 +51,7 @@ public class Growable : MonoBehaviour
         }
 
         // shaking
-        if (shakeAmplitude >= 0f)
+        if (!isProduct && shakeAmplitude >= 0f)
         {
             shakeAmplitude -= 10f * Time.deltaTime;
             float rotX = Mathf.Sin(Time.time * 10f) * shakeAmplitude * shakeDirection.x;
@@ -108,6 +111,9 @@ public class Growable : MonoBehaviour
     {
         while (!chopped)
         {
+            while (timeIndex <= 0.005f)
+                yield return null;
+
             List<Transform> emptySlots = new List<Transform>();
             foreach (Transform slot in slots)
             {
@@ -117,17 +123,20 @@ public class Growable : MonoBehaviour
                 }
             }
 
+            float delay = Random.Range(0.15f, 0.3f) / (growthSpeed * multiplier) / timeIndex;
+
             if (emptySlots.Count == 0)
             {
-                yield return new WaitForSeconds(Random.Range(3f, 6f) / multiplier);
+                yield return new WaitForSeconds(delay);
                 continue;
             }
 
-            Transform toGrow = emptySlots[Random.Range(0,emptySlots.Count)];
+            Transform toGrow = emptySlots[Random.Range(0, emptySlots.Count)];
             
             Instantiate(product, toGrow);
+
             fruitCount++;
-            yield return new WaitForSeconds(Random.Range(3f, 6f) / multiplier);
+            yield return new WaitForSeconds(delay);
         }
     }
 }
