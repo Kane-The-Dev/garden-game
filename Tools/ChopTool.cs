@@ -4,7 +4,7 @@ using UnityEngine;
 public class ChopTool : MonoBehaviour
 {
     float maxDistance = 100f;
-    [SerializeField] float delay;
+    [SerializeField] float speed;
 
     Inventory inventory;
 
@@ -22,21 +22,11 @@ public class ChopTool : MonoBehaviour
             Growable thisTree = hit.collider.gameObject.GetComponent<Growable>();
             if (!thisTree) return;
 
-            thisTree.Chop();
-            thisTree.chopped = true;
-
-            inventory.exp += 10f;
-            Destroy(thisTree.gameObject, 5f);
+            thisTree.chopIndex += speed * Time.deltaTime;
         }
-        else
-        {
-            Debug.Log("No hit detected");
-        }
+        // else
+        // {
+        //     Debug.Log("No hit detected");
+        // }
     }
-
-    // IEnumerator TreeFall(Growable myTree)
-    // {
-    //     yield return new WaitForSeconds(delay / 3f);
-
-    // }
 }

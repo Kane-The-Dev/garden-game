@@ -14,6 +14,8 @@ public class Growable : MonoBehaviour
     public Transform[] slots;
     public bool reproductive = false;
     public int fruitCount;
+    public float chopIndex;
+    float prevChopIndex;
     
     [Header("Product")]
     public bool isProduct;
@@ -29,6 +31,8 @@ public class Growable : MonoBehaviour
         growthIndex = 0.2f;
         multiplier = 1f;
         transform.localScale = new Vector3(1,1,1) * 0.2f * maxGrowth;
+        chopIndex = 0f;
+        prevChopIndex = 0f;
     }
 
     // Update is called once per frame
@@ -36,6 +40,7 @@ public class Growable : MonoBehaviour
     {
         timeIndex = GameManager.instance.timeControl * 0.05f;
 
+        // growing
         if (multiplier > 1f)
         multiplier -= Time.deltaTime * timeIndex;
 
@@ -62,6 +67,29 @@ public class Growable : MonoBehaviour
                 rotZ
             );
         }
+        
+        // falling
+        if (chopIndex > 0f && !chopped)
+        {
+            if (chopIndex - prevChopIndex > 0f)
+            {
+                if (chopIndex >= 0.3333f && prevChopIndex < 0.3333f)
+                    Shake(5f);
+                
+                if (chopIndex >= 0.6666f && prevChopIndex < 0.6666f)
+                    Shake(5f);
+            }
+            chopIndex -= Time.deltaTime / 3f;
+        }
+        
+        if (chopIndex >= 1f)
+        {
+            Chop();
+            FindObjectOfType<Inventory>().exp += 10f;
+            Destroy(gameObject, 5f);
+        }
+
+        prevChopIndex = chopIndex;
     }
 
     public void Shake(float amplitude)
@@ -80,6 +108,8 @@ public class Growable : MonoBehaviour
     public void Chop()
     {
         if (chopped) return;
+
+        chopped = true;
 
         Rigidbody rb = gameObject.GetComponent<Rigidbody>();
         rb.constraints = RigidbodyConstraints.None;

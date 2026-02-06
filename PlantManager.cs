@@ -21,7 +21,7 @@ public class PlantManager : MonoBehaviour
     {
         mode = 0;
         plantID = -1;
-        
+
         cam = GetComponent<Camera>();
         
         plantTool = GetComponent<PlantTool>();
@@ -39,8 +39,18 @@ public class PlantManager : MonoBehaviour
         if (Input.GetMouseButtonUp(0) && mode == 1)
             waterTool.StopWater();
 
-        if (Input.GetMouseButton(0) && mode == 1)
-            waterTool.WaterTree(ray, groundMask, fruitMask);
+        if (Input.GetMouseButton(0))
+        {
+            switch (mode) {
+                case 1:
+                    waterTool.WaterTree(ray, groundMask, fruitMask);
+                    break;
+                case 3:
+                    chopTool.ChopTree(ray, plantMask);
+                    break;
+            }
+        }
+            
         
         if (Input.GetMouseButtonDown(0))
         {
@@ -59,7 +69,6 @@ public class PlantManager : MonoBehaviour
                     break;
                 case 3:
                     harvestTool.HarvestTree(ray, plantMask);
-                    chopTool.ChopTree(ray, plantMask);
                     break;
             }
         }
