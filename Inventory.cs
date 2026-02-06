@@ -7,13 +7,16 @@ using TMPro;
 public class Inventory : MonoBehaviour
 {
     public List<Item> foodList = new List<Item>();
-    Dictionary<string, int> inventory = new Dictionary<string, int>();
+    public Dictionary<string, int> myInventory = new Dictionary<string, int>();
     [SerializeField] Transform storage;
     [SerializeField] GameObject foodItemPrefab;
 
     public int coin, level;
     public float exp;
     [SerializeField] TextMeshProUGUI coinDisplay, levelDisplay, expDisplay;
+
+    public ShopManager shop;
+    public PlantSelection selection;
 
     void Awake()
     {
@@ -25,26 +28,27 @@ public class Inventory : MonoBehaviour
     {
         if (Input.GetKeyDown(KeyCode.I))
         {
-            foreach (var item in inventory)
+            foreach (var item in myInventory)
             {
                 Debug.Log(item.Key + " = " + item.Value);
             }
         }
 
         if (coinDisplay)
-        coinDisplay.text = "Bank: " + coin.ToString() + "G";
+            coinDisplay.text = "Bank: " + coin.ToString() + "G";
 
         if (levelDisplay)
-        levelDisplay.text = level.ToString();
+            levelDisplay.text = level.ToString();
 
         if (expDisplay)
-        expDisplay.text = exp.ToString("F0") + "/100 EXP";
+            expDisplay.text = exp.ToString("F0") + "/100 EXP";
 
-        exp += Time.deltaTime;
+        exp += Time.deltaTime * GameManager.instance.timeControl;
         if (exp >= 100f)
         {
             exp = 0f;
             level++;
+            shop.RefreshShop();
         }
     }
 

@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 
 public class ChopTool : MonoBehaviour
@@ -24,7 +25,7 @@ public class ChopTool : MonoBehaviour
             thisTree.Chop();
             thisTree.chopped = true;
 
-            GetComponent<Inventory>().exp += 10f;
+            inventory.exp += 10f;
             Destroy(thisTree.gameObject, 5f);
         }
         else
@@ -32,4 +33,10 @@ public class ChopTool : MonoBehaviour
             Debug.Log("No hit detected");
         }
     }
+
+    // IEnumerator TreeFall(Growable myTree)
+    // {
+    //     yield return new WaitForSeconds(delay / 3f);
+
+    // }
 }

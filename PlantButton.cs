@@ -12,10 +12,14 @@ public class PlantButton : MonoBehaviour
     public ButtonGroup myGroup;
     public Image myImage;
     [SerializeField] TextMeshProUGUI display;
+    public Inventory inventory;
 
-    void Start()
+    public void Refresh()
     {
-        display.text = plantName + '\n' + plantPrice.ToString() + 'G';
+        if (inventory.myInventory.ContainsKey(plantName))
+            display.text = plantName + "\n(" + inventory.myInventory[plantName] + ")";
+        else
+            display.text = plantName + "\n(" + 0 + ")";
     }
 
     public void OnClick()

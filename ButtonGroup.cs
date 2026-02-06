@@ -7,11 +7,18 @@ using UnityEngine.EventSystems;
 public class ButtonGroup : MonoBehaviour
 {
     public List<Image> buttons;
-    [SerializeField] Color chosen, disabled;
+    [SerializeField] Color selected, disabled;
 
     void Start()
     {
-        buttons[0].color = chosen;
+        UpdateSelected(0);
+    }
+
+    public void UpdateSelected(int i)
+    {
+        Debug.Log("Selected plantID is " + i);
+        if (buttons.Count > i)
+            buttons[i].color = selected;
     }
     
     public void OnClick(GameObject pressed)
@@ -24,7 +31,7 @@ public class ButtonGroup : MonoBehaviour
             }
             else
             {
-                button.color = chosen;
+                button.color = selected;
             }
         }
     }

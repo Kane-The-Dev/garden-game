@@ -16,7 +16,7 @@ public class GameManager : MonoBehaviour
 
     void Awake()
     {
-        if(instance != null && instance != this)
+        if (instance != null && instance != this)
             Destroy(gameObject);
         else
             instance = this;
@@ -47,7 +47,9 @@ public class GameManager : MonoBehaviour
             cam.movable = true;
 
             gardenTools.SetActive(true);
-            if (FindObjectOfType<PlantManager>().mode == 0) plantShop.SetActive(true);
+            if (FindObjectOfType<PlantManager>().mode == 0)
+                plantShop.SetActive(true);
+
             foodStorage.SetActive(false);
         }
         cam.targetReached = false;

@@ -5,7 +5,7 @@ public class PlantManager : MonoBehaviour
 {
     Camera cam;
     
-    [SerializeField] GameObject[] plants, products, decorations;
+    [SerializeField] GameObject[] decorations;
     [SerializeField] LayerMask plantMask, groundMask, fruitMask;
 
     public PlantTool plantTool;
@@ -19,13 +19,16 @@ public class PlantManager : MonoBehaviour
 
     void Start()
     {
+        mode = 0;
+        plantID = -1;
+        
         cam = GetComponent<Camera>();
         
         plantTool = GetComponent<PlantTool>();
         waterTool = GetComponent<WaterTool>();
         harvestTool = GetComponent<HarvestTool>();
         chopTool = GetComponent<ChopTool>();
-
+        
         InitializeGarden();
     }
 

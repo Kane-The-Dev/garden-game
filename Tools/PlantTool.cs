@@ -19,7 +19,16 @@ public class PlantTool : MonoBehaviour
         if (Physics.Raycast(ray, out hit, maxDistance, mask))
         {
             if (hit.collider.CompareTag("Obstacle")) {
-                Debug.Log("Obstacle hit");
+                Debug.Log("Hit an obstacle!");
+                return;
+            }
+
+            if (plantID < 0) return;
+
+            string plantName = inventory.foodList[plantID].name;
+            if (inventory.myInventory[plantName] <= 0)
+            {
+                Debug.Log("Out of seed!");
                 return;
             }
 
@@ -28,15 +37,9 @@ public class PlantTool : MonoBehaviour
             {
                 if (!tree.isProduct && Vector3.Distance(tree.transform.position, hit.point) < 3.5f)
                 {
-                    Debug.Log("Overlap other trees");
+                    Debug.Log("Overlap other trees!");
                     return;
                 }
-            }
-
-            if (inventory.coin < inventory.foodList[plantID].plantPrice)
-            {
-                Debug.Log("No more money");
-                return;
             }
 
             int random = Random.Range(0, plants.Length);
@@ -51,8 +54,10 @@ public class PlantTool : MonoBehaviour
             g.maxGrowth *= Random.Range(0.85f, 1f);
             g.product = products[plantID];
             
-            inventory.coin -= inventory.foodList[plantID].plantPrice;
+            inventory.myInventory[plantName]--;
             inventory.exp += 25f;
+
+            inventory.selection.RefreshPlants();
         }
     }
 }
