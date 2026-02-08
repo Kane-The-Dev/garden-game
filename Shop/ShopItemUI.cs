@@ -9,9 +9,9 @@ public class ShopItemUI : MonoBehaviour
     public bool isLocked, isSoldOut;
     ShopManager shop;
 
-    void Awake()
+    void Start()
     {
-        shop = FindObjectOfType<ShopManager>();
+        shop = GameManager.instance.sm;
 
         isLocked = true;
         isSoldOut = false;

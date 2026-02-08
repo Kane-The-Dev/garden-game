@@ -27,11 +27,13 @@ public class WaterTool : MonoBehaviour
                 return;
             }
 
-            waterVFX.transform.position = hit.point + Vector3.up * 8f;
+            Vector3 pointA = hit.point + Vector3.up * 10f;
+            Vector3 pointB = hit.point - Vector3.up * 5f;
+            waterVFX.transform.position = hit.point + Vector3.up * 10f;
 
             Collider[] hits = Physics.OverlapCapsule(
-                hit.point + Vector3.up * 20f,
-                hit.point,
+                pointA,
+                pointB,
                 radius,
                 fMask,
                 QueryTriggerInteraction.Ignore

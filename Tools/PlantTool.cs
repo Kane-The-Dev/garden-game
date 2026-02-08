@@ -9,7 +9,7 @@ public class PlantTool : MonoBehaviour
 
     void Start() 
     {
-        inventory = FindObjectOfType<Inventory>();
+        inventory = GameManager.instance.inventory;
     }
 
     public void PlantTree(int plantID, Ray ray, LayerMask mask)

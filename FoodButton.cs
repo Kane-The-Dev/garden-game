@@ -12,7 +12,7 @@ public class FoodButton : MonoBehaviour
 
     void Start()
     {
-        inventory = FindObjectOfType<Inventory>();
+        inventory = GameManager.instance.inventory;
         eater = FindObjectOfType<EatingManager>();
     }
 

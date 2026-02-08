@@ -7,7 +7,7 @@ public class PlantUnlock : ShopItem
 
     public override void OnPurchase()
     {
-        inventory = FindObjectOfType<Inventory>();
+        inventory = GameManager.instance.inventory;
 
         if (!inventory.myInventory.ContainsKey(itemName))
             inventory.myInventory[itemName] = 0;

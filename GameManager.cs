@@ -5,11 +5,12 @@ using UnityEngine;
 public class GameManager : MonoBehaviour
 {
     public static GameManager instance;
-
     int mode; // 0 garden, 1 table
     [SerializeField] Transform garden, table;
     CameraMovement cam;
-
+    public PlantManager pm;
+    public ShopManager sm;
+    public Inventory inventory;
     [SerializeField] GameObject gardenTools, plantShop, foodStorage;
 
     public int timeControl;
@@ -20,12 +21,12 @@ public class GameManager : MonoBehaviour
             Destroy(gameObject);
         else
             instance = this;
-    }
 
-    void Start()
-    {
         mode = 0;
         cam = FindObjectOfType<CameraMovement>();
+        pm = FindObjectOfType<PlantManager>();
+        sm = FindObjectOfType<ShopManager>();
+        inventory = FindObjectOfType<Inventory>();
     }
 
     public void ChangeMode()
@@ -47,7 +48,7 @@ public class GameManager : MonoBehaviour
             cam.movable = true;
 
             gardenTools.SetActive(true);
-            if (FindObjectOfType<PlantManager>().mode == 0)
+            if (pm.mode == 0)
                 plantShop.SetActive(true);
 
             foodStorage.SetActive(false);

@@ -16,10 +16,10 @@ public class UILock : MonoBehaviour
 
     public void Unlock()
     {
-        int currentLevel = FindObjectOfType<Inventory>().level;
+        int currentLevel = GameManager.instance.inventory.level;
         if (currentLevel >= levelRequirement)
         Destroy(gameObject);
         else
-        Debug.Log("Chưa đủ kinh nghiệm");
+        Debug.Log("Insufficient level!");
     }
 }

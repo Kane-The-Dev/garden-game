@@ -8,13 +8,15 @@ public class PlantSelection : MonoBehaviour
     public List<Item> foodList = new();
     [SerializeField] Transform selection;
     [SerializeField] GameObject plantButton;
+    PlantManager pm;
     Inventory inventory;
     ButtonGroup group;
 
     void Start()
     {
         FindObjectOfType<ReadFile>().LoadItems(foodList);
-        inventory = FindObjectOfType<Inventory>();
+        pm = GameManager.instance.pm;
+        inventory = GameManager.instance.inventory;
         group = selection.gameObject.GetComponent<ButtonGroup>();
     }
 
@@ -41,8 +43,11 @@ public class PlantSelection : MonoBehaviour
             thisButton.plantPrice = item.plantPrice;
             thisButton.inventory = inventory;
             thisButton.Refresh();
+
+            if (thisButton.plantID == pm.plantID)
+                thisButton?.OnClick();
         }
 
-        thisButton?.OnClick();
+        // thisButton?.OnClick();
     }
 }

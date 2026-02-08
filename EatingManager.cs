@@ -41,12 +41,14 @@ public class EatingManager : MonoBehaviour
             rb.useGravity = true;
         }
 
-        Growable tree = obj.GetComponent<Growable>();
-        if (tree != null) 
+        Growable fruit = obj.GetComponent<Growable>();
+        if (fruit != null) 
         {
-            tree.chopped = true;
-            obj.transform.localScale = new Vector3(1,1,1) * tree.maxGrowth * 0.75f;
+            fruit.chopped = true;
+            obj.transform.localScale = Vector3.one * fruit.maxGrowth * 0.75f;
         }
+
+        Destroy(obj, 5f);
     }
 
     void OnTriggerEnter(Collider collider)

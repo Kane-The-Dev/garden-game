@@ -3,54 +3,48 @@ using UnityEngine;
 public class HarvestTool : MonoBehaviour
 {
     float maxDistance = 100f;
-    [SerializeField] float radius;
+    [SerializeField] float radius, speed;
         
     Inventory inventory;
 
     void Start() 
     {
-        inventory = FindObjectOfType<Inventory>();
+        inventory = GameManager.instance.inventory;
     }
 
-    public void HarvestTree(Ray ray, LayerMask mask)
+    public void HarvestTree(Ray ray, LayerMask gMask, LayerMask pMask)
     {
         RaycastHit hit;
 
-        if (Physics.Raycast(ray, out hit, maxDistance, mask))
+        if (Physics.Raycast(ray, out hit, maxDistance, gMask))
         {
-            Growable thisTree = hit.collider.gameObject.GetComponent<Growable>();
-            if (!thisTree) 
-            {
-                Debug.Log("no tree?");
+            if (hit.collider.CompareTag("Obstacle")) {
                 return;
             }
-            
-            thisTree.Shake(5f);
-            foreach (Transform slot in thisTree.slots)
+
+            Vector3 pointA = hit.point + Vector3.up * 10f;
+            Vector3 pointB = hit.point - Vector3.up * 5f;
+
+            Collider[] hits = Physics.OverlapCapsule(
+                pointA,
+                pointB,
+                radius,
+                pMask,
+                QueryTriggerInteraction.Ignore
+            );
+
+            foreach (Collider p in hits)
             {
-                if (slot.childCount > 0 && slot.GetChild(0).GetComponent<Growable>())
+                Growable tree = p.GetComponent<Growable>();
+                if (tree != null)
                 {
-                    Growable thisFruit = slot.GetChild(0).GetComponent<Growable>();
-                    if (thisFruit.growthIndex >= 0.9 * thisFruit.maxGrowth)
-                    {
-                        slot.GetChild(0).parent = null;
-
-                        var rb = thisFruit.gameObject.GetComponent<Rigidbody>();
-                        rb.constraints = RigidbodyConstraints.None;
-                        rb.useGravity = true;
-
-                        inventory.exp += 3f;
-                        inventory.foodList[thisFruit.productID].UpdateN(1);
-
-                        thisTree.fruitCount--;
-
-                        Destroy(thisFruit.gameObject, 3f);
-                    }
-                    // else Debug.Log("Nothing to harvest!");
+                    tree.harvestIndex += speed * Time.deltaTime;
                 }
             }
-
-            inventory.UpdateStorage();
+        }
+        else
+        {
+            Debug.Log("No hit detected");
         }
     }
 }

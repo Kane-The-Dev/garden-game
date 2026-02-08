@@ -12,10 +12,10 @@ public class ShopManager : MonoBehaviour
     [SerializeField] GameObject shopButton;
     Inventory inventory;
 
-    void Awake()
+    void Start()
     {
         FindObjectOfType<ReadFile>().LoadItems(foodList);
-        inventory = FindObjectOfType<Inventory>();
+        inventory = GameManager.instance.inventory;
         inventory.shop = this;
         InitializeShop();
         RefreshShop();

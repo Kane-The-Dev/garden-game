@@ -45,6 +45,9 @@ public class PlantManager : MonoBehaviour
                 case 1:
                     waterTool.WaterTree(ray, groundMask, fruitMask);
                     break;
+                case 2:
+                    harvestTool.HarvestTree(ray, groundMask, plantMask);
+                    break;
                 case 3:
                     chopTool.ChopTree(ray, plantMask);
                     break;
@@ -63,12 +66,6 @@ public class PlantManager : MonoBehaviour
                     break;               
                 case 1:
                     waterTool.StartWater();
-                    break;
-                case 2:
-                    harvestTool.HarvestTree(ray, plantMask);
-                    break;
-                case 3:
-                    harvestTool.HarvestTree(ray, plantMask);
                     break;
             }
         }

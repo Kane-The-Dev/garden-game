@@ -18,7 +18,7 @@ public class Inventory : MonoBehaviour
     public ShopManager shop;
     public PlantSelection selection;
 
-    void Awake()
+    void Start()
     {
         FindObjectOfType<ReadFile>().LoadItems(foodList);
         UpdateStorage();

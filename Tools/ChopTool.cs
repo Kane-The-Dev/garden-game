@@ -10,7 +10,7 @@ public class ChopTool : MonoBehaviour
 
     void Start() 
     {
-        inventory = FindObjectOfType<Inventory>();
+        inventory = GameManager.instance.inventory;
     }
 
     public void ChopTree(Ray ray, LayerMask mask)

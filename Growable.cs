@@ -14,7 +14,7 @@ public class Growable : MonoBehaviour
     public Transform[] slots;
     public bool reproductive = false;
     public int fruitCount;
-    public float chopIndex;
+    public float harvestIndex, chopIndex;
     float prevChopIndex;
     
     [Header("Product")]
@@ -31,31 +31,40 @@ public class Growable : MonoBehaviour
         growthIndex = 0.2f;
         multiplier = 1f;
         transform.localScale = new Vector3(1,1,1) * 0.2f * maxGrowth;
+        harvestIndex = 0f;
         chopIndex = 0f;
         prevChopIndex = 0f;
     }
 
-    // Update is called once per frame
     void Update()
     {
         timeIndex = GameManager.instance.timeControl * 0.05f;
 
-        // growing
+        Growing();
+        Shaking();
+        Harvesting();
+        Chopping();
+    }
+
+    void Growing()
+    {
         if (multiplier > 1f)
         multiplier -= Time.deltaTime * timeIndex;
 
         if (growthIndex < maxGrowth && !chopped)
         {  
             growthIndex += Time.deltaTime * timeIndex * maxGrowth * growthSpeed * multiplier;
-            transform.localScale = new Vector3(1,1,1) * growthIndex;
+            transform.localScale = Vector3.one * growthIndex;
         }
         else if (!isProduct && !reproductive)
         {
             StartCoroutine(GrowFruits());
             reproductive = true;
         }
+    }
 
-        // shaking
+    void Shaking()
+    {
         if (!isProduct && shakeAmplitude >= 0f)
         {
             shakeAmplitude -= 10f * Time.deltaTime;
@@ -67,8 +76,24 @@ public class Growable : MonoBehaviour
                 rotZ
             );
         }
+    }
+
+    void Harvesting()
+    {
+        if (harvestIndex > 0f)
+            harvestIndex -= Time.deltaTime / 3f;
         
-        // falling
+        if (harvestIndex >= 1f)
+        {
+            harvestIndex = 0f;
+            Shake(5f);
+            HarvestFruit();
+            HarvestFruit();
+        }
+    }
+
+    void Chopping()
+    {
         if (chopIndex > 0f && !chopped)
         {
             if (chopIndex - prevChopIndex > 0f)
@@ -85,7 +110,6 @@ public class Growable : MonoBehaviour
         if (chopIndex >= 1f)
         {
             Chop();
-            FindObjectOfType<Inventory>().exp += 10f;
             Destroy(gameObject, 5f);
         }
 
@@ -105,11 +129,41 @@ public class Growable : MonoBehaviour
         shakeDirection = Random.insideUnitCircle.normalized;
     }
 
+    public void HarvestFruit()
+    {
+        foreach (Transform slot in slots)
+        {
+            if (slot.childCount > 0)
+            {
+                Growable thisFruit = slot.GetChild(0).GetComponent<Growable>();
+                if (thisFruit && thisFruit.growthIndex >= 0.9 * thisFruit.maxGrowth)
+                {
+                    slot.GetChild(0).parent = null;
+
+                    var rb = thisFruit.gameObject.GetComponent<Rigidbody>();
+                    rb.constraints = RigidbodyConstraints.None;
+                    rb.useGravity = true;
+                    
+                    Inventory inventory = GameManager.instance.inventory;
+                    inventory.exp += 3f;
+                    inventory.foodList[thisFruit.productID].UpdateN(1);
+                    inventory.UpdateStorage();
+
+                    fruitCount--;
+                    Destroy(thisFruit.gameObject, 3f);
+                    
+                    break;
+                }
+            }
+        }
+    }
+
     public void Chop()
     {
         if (chopped) return;
 
         chopped = true;
+        FindObjectOfType<Inventory>().exp += 10f;
 
         Rigidbody rb = gameObject.GetComponent<Rigidbody>();
         rb.constraints = RigidbodyConstraints.None;
