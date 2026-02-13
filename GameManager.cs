@@ -7,7 +7,7 @@ public class GameManager : MonoBehaviour
     public static GameManager instance;
     int mode; // 0 garden, 1 table
     [SerializeField] Transform garden, table;
-    CameraMovement cam;
+    public CameraMovement cam;
     public PlantManager pm;
     public ShopManager sm;
     public Inventory inventory;

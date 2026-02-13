@@ -2,14 +2,16 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class ShopManager : MonoBehaviour
 {
     public List<Item> foodList = new();
-    List<ShopItemUI> buttons = new();
+    [SerializeField] List<ShopItemUI> buttons = new();
     Dictionary<ShopItem, int> stock = new();
-    [SerializeField] Transform shopDisplay;
+    [SerializeField] Transform plantDisplay;
     [SerializeField] GameObject shopButton;
+    [SerializeField] RectTransform shopPanel, rootLayout;
     Inventory inventory;
 
     void Start()
@@ -23,9 +25,14 @@ public class ShopManager : MonoBehaviour
     
     public void InitializeShop()
     {
-        foreach (var item in foodList.OrderBy(f => f.levelReq))
+        foreach (var upgrade in buttons) // default upgrade in stock = 1
         {
-            GameObject newItem = Instantiate(shopButton, shopDisplay);
+            stock[upgrade.myItem] = 1;
+        }
+
+        foreach (var item in foodList.OrderBy(f => f.levelReq)) // generate dynamic shop items for plants
+        {
+            GameObject newItem = Instantiate(shopButton, plantDisplay);
             
             PlantUnlock newShopItem = ScriptableObject.CreateInstance<PlantUnlock>();
             newShopItem.itemName = item.name;
@@ -35,11 +42,41 @@ public class ShopManager : MonoBehaviour
             stock[newShopItem] = 9999;
 
             ShopItemUI itemUI = newItem.GetComponent<ShopItemUI>();
+            itemUI.isLocked = inventory.level < newShopItem.requirement;
+            itemUI.isSoldOut = false;
             itemUI.myItem = newShopItem;
-            itemUI.Refresh();
 
             buttons.Add(itemUI);
         }
+
+        RefreshShop();
+    }
+
+    public void OpenShop()
+    {
+        shopPanel.gameObject.SetActive(true);
+        Invoke("RefreshLayout", 0.01f);
+    }
+
+    public void RefreshShop()
+    {
+        int currentLevel = inventory.level;
+
+        foreach (ShopItemUI button in buttons)
+        {
+            bool locked = currentLevel < button.myItem.requirement;
+            if (button.isLocked != locked)
+            {
+                button.isLocked = locked;
+                button.Refresh();
+            }
+        }
+    }
+
+    void RefreshLayout()
+    {
+        Canvas.ForceUpdateCanvases();
+        LayoutRebuilder.ForceRebuildLayoutImmediate(rootLayout);
     }
 
     public void TryPurchase(ShopItemUI myUI)
@@ -72,20 +109,5 @@ public class ShopManager : MonoBehaviour
         }
 
         myItem.OnPurchase();
-    }
-
-    public void RefreshShop()
-    {
-        int currentLevel = inventory.level;
-
-        foreach (ShopItemUI button in buttons)
-        {
-            bool locked = currentLevel < button.myItem.requirement;
-            if (button.isLocked != locked)
-            {
-                button.isLocked = locked;
-                button.Refresh();
-            }
-        }
     }
 }

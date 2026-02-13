@@ -16,7 +16,7 @@ public class WaterTool : MonoBehaviour
         waterVFX.Stop();
     }
 
-    public void WaterTree(Ray ray, LayerMask gMask, LayerMask fMask)
+    public void WaterTree(GameObject ring, Ray ray, LayerMask gMask, LayerMask fMask)
     {
         RaycastHit hit;
 
@@ -26,6 +26,9 @@ public class WaterTool : MonoBehaviour
                 StopWater();
                 return;
             }
+
+            ring.transform.localScale = new Vector3(0.2f * radius, 1f, 0.2f * radius);
+            ring.transform.position = new Vector3(hit.point.x, 0.65f, hit.point.z);
 
             Vector3 pointA = hit.point + Vector3.up * 10f;
             Vector3 pointB = hit.point - Vector3.up * 5f;

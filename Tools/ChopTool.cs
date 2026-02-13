@@ -3,7 +3,7 @@ using UnityEngine;
 
 public class ChopTool : MonoBehaviour
 {
-    float maxDistance = 100f;
+    float maxDistance = 100f, radius = 1f;
     [SerializeField] float speed;
 
     Inventory inventory;
@@ -13,20 +13,38 @@ public class ChopTool : MonoBehaviour
         inventory = GameManager.instance.inventory;
     }
 
-    public void ChopTree(Ray ray, LayerMask mask)
+    public void ChopTree(GameObject ring, Ray ray, LayerMask gMask, LayerMask pMask)
     {
         RaycastHit hit;
 
-        if (Physics.Raycast(ray, out hit, maxDistance, mask))
+        if (Physics.Raycast(ray, out hit, maxDistance, gMask))
         {
-            Growable thisTree = hit.collider.gameObject.GetComponent<Growable>();
-            if (!thisTree) return;
+            if (hit.collider.CompareTag("Obstacle")) {
+                return;
+            }
 
-            thisTree.chopIndex += speed * Time.deltaTime;
+            ring.transform.localScale = new Vector3(0.2f * radius, 1f, 0.2f * radius);
+            ring.transform.position = new Vector3(hit.point.x, 0.65f, hit.point.z);
+
+            Vector3 pointA = hit.point + Vector3.up * 10f;
+            Vector3 pointB = hit.point - Vector3.up * 5f;
+
+            Collider[] hits = Physics.OverlapCapsule(
+                pointA,
+                pointB,
+                radius,
+                pMask,
+                QueryTriggerInteraction.Ignore
+            );
+
+            foreach (Collider p in hits)
+            {
+                Growable tree = p.GetComponent<Growable>();
+                if (tree != null)
+                {
+                    tree.chopIndex += speed * Time.deltaTime;
+                }
+            }
         }
-        // else
-        // {
-        //     Debug.Log("No hit detected");
-        // }
     }
 }

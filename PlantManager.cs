@@ -4,9 +4,10 @@ using UnityEngine.EventSystems;
 public class PlantManager : MonoBehaviour
 {
     Camera cam;
-    
-    [SerializeField] GameObject[] decorations;
-    [SerializeField] LayerMask plantMask, groundMask, fruitMask;
+
+    [SerializeField] public GameObject ring;
+    [SerializeField] private GameObject[] decorations;
+    [SerializeField] private LayerMask plantMask, groundMask, fruitMask;
 
     public PlantTool plantTool;
     public WaterTool waterTool;
@@ -25,7 +26,7 @@ public class PlantManager : MonoBehaviour
         cam = GetComponent<Camera>();
         
         plantTool = GetComponent<PlantTool>();
-        waterTool = GetComponent<WaterTool>();
+        // waterTool = GetComponent<WaterTool>();
         harvestTool = GetComponent<HarvestTool>();
         chopTool = GetComponent<ChopTool>();
         
@@ -36,20 +37,28 @@ public class PlantManager : MonoBehaviour
     {
         Ray ray = cam.ScreenPointToRay(Input.mousePosition);
 
-        if (Input.GetMouseButtonUp(0) && mode == 1)
-            waterTool.StopWater();
+        if (Input.GetMouseButtonUp(0))
+        {
+            ring.SetActive(false);
+
+            switch (mode) {
+                case 1:
+                    waterTool.StopWater();
+                    break;
+            }
+        }   
 
         if (Input.GetMouseButton(0))
         {
             switch (mode) {
                 case 1:
-                    waterTool.WaterTree(ray, groundMask, fruitMask);
+                    waterTool.WaterTree(ring, ray, groundMask, fruitMask);
                     break;
                 case 2:
-                    harvestTool.HarvestTree(ray, groundMask, plantMask);
+                    harvestTool.HarvestTree(ring, ray, groundMask, plantMask);
                     break;
                 case 3:
-                    chopTool.ChopTree(ray, plantMask);
+                    chopTool.ChopTree(ring, ray, groundMask, plantMask);
                     break;
             }
         }
@@ -65,7 +74,11 @@ public class PlantManager : MonoBehaviour
                     plantTool.PlantTree(plantID, ray, groundMask);
                     break;               
                 case 1:
+                    ring.SetActive(true);
                     waterTool.StartWater();
+                    break;
+                default:
+                    ring.SetActive(true);
                     break;
             }
         }

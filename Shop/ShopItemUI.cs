@@ -12,9 +12,7 @@ public class ShopItemUI : MonoBehaviour
     void Start()
     {
         shop = GameManager.instance.sm;
-
-        isLocked = true;
-        isSoldOut = false;
+        Refresh();
     }
 
     public void Refresh()
