@@ -10,7 +10,8 @@ public class Growable : MonoBehaviour
     public float timeIndex;
 
     [Header("Tree")]
-    public GameObject product, leaf;
+    public GameObject product;
+    public GameObject leaf;
     public Transform[] slots;
     public bool reproductive = false;
     public int fruitCount;
@@ -32,7 +33,7 @@ public class Growable : MonoBehaviour
     {
         growthIndex = 0.2f;
         multiplier = 1f;
-        transform.localScale = new Vector3(1,1,1) * 0.2f * maxGrowth;
+        transform.localScale = Vector3.one * 0.2f * maxGrowth;
         harvestIndex = 0f;
         chopIndex = 0f;
     }

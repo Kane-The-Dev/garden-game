@@ -10,7 +10,7 @@ public class ShopManager : MonoBehaviour
     [SerializeField] List<ShopItemUI> buttons = new();
     Dictionary<ShopItem, int> stock = new();
     [SerializeField] Transform plantDisplay;
-    [SerializeField] GameObject shopButton;
+    [SerializeField] GameObject shopButton, displayBar, displaySection;
     [SerializeField] RectTransform shopPanel, rootLayout;
     Inventory inventory;
 
@@ -29,10 +29,20 @@ public class ShopManager : MonoBehaviour
         {
             stock[upgrade.myItem] = 1;
         }
-
+        
+        int count = 0;
+        Transform thisRow = null;
         foreach (var item in foodList.OrderBy(f => f.levelReq)) // generate dynamic shop items for plants
         {
-            GameObject newItem = Instantiate(shopButton, plantDisplay);
+            if (count % 5 == 0)
+            {
+                Instantiate(displayBar, plantDisplay);
+                GameObject newSection = Instantiate(displaySection, plantDisplay);
+                thisRow = newSection.transform;
+            }
+
+            if (!thisRow) continue;
+            GameObject newItem = Instantiate(shopButton, thisRow);
             
             PlantUnlock newShopItem = ScriptableObject.CreateInstance<PlantUnlock>();
             newShopItem.itemName = item.name;
@@ -47,6 +57,7 @@ public class ShopManager : MonoBehaviour
             itemUI.myItem = newShopItem;
 
             buttons.Add(itemUI);
+            count++;
         }
 
         RefreshShop();
