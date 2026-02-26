@@ -27,7 +27,7 @@ public class PlantManager : MonoBehaviour
         
         plantTool = GetComponent<PlantTool>();
         // waterTool = GetComponent<WaterTool>();
-        harvestTool = GetComponent<HarvestTool>();
+        // harvestTool = GetComponent<HarvestTool>();
         chopTool = GetComponent<ChopTool>();
         
         InitializeGarden();
@@ -44,6 +44,9 @@ public class PlantManager : MonoBehaviour
             switch (mode) {
                 case 1:
                     waterTool.StopWater();
+                    break;
+                case 2:
+                    harvestTool.StopHarvest();
                     break;
             }
         }   
@@ -76,6 +79,10 @@ public class PlantManager : MonoBehaviour
                 case 1:
                     ring.SetActive(true);
                     waterTool.StartWater();
+                    break;
+                case 2:
+                    ring.SetActive(true);
+                    harvestTool.StartHarvest();
                     break;
                 default:
                     ring.SetActive(true);

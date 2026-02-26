@@ -6,7 +6,7 @@ public class Growable : MonoBehaviour
 {
     [Header("Growth")]
     public float maxGrowth;
-    public float growthIndex, growthSpeed = 1f, multiplier;
+    public float growthIndex, growthSpeed = 1f, multiplier, subMultiplier;
     public float timeIndex;
 
     [Header("Tree")]
@@ -33,6 +33,7 @@ public class Growable : MonoBehaviour
     {
         growthIndex = 0.2f;
         multiplier = 1f;
+        subMultiplier = 1f;
         transform.localScale = Vector3.one * 0.2f * maxGrowth;
         harvestIndex = 0f;
         chopIndex = 0f;
@@ -53,9 +54,12 @@ public class Growable : MonoBehaviour
         if (multiplier > 1f)
         multiplier -= Time.deltaTime * timeIndex;
 
+        if (subMultiplier > 1f)
+        subMultiplier -= Time.deltaTime * timeIndex;
+
         if (growthIndex < maxGrowth && !chopped)
         {  
-            growthIndex += Time.deltaTime * timeIndex * maxGrowth * growthSpeed * multiplier;
+            growthIndex += Time.deltaTime * timeIndex * maxGrowth * growthSpeed * multiplier * subMultiplier;
             transform.localScale = Vector3.one * growthIndex;
         }
         else if (!isProduct && !reproductive)
