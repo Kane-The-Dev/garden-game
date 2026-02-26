@@ -29,9 +29,10 @@ public class ReadFile : MonoBehaviour
             int.TryParse(parts[3], out int sell);
             float.TryParse(parts[4], out float speed);
             int.TryParse(parts[5], out int requirement);
+            string type = parts[6];
 
             Item newItem =  new Item();
-            newItem.Set(id, name, plant, sell, speed, requirement);
+            newItem.Set(id, name, plant, sell, speed, requirement, type);
             list.Add(newItem);
         }
     }

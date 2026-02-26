@@ -42,7 +42,16 @@ public class PlantTool : MonoBehaviour
                 }
             }
 
-            int random = Random.Range(0, plants.Length);
+            int random = 0;
+            if (inventory.foodList[plantID].type == "Tree")
+                random = Random.Range(0, 2);
+            else if (inventory.foodList[plantID].type == "Pine")
+                random = 2;
+            else if (inventory.foodList[plantID].type == "Bush")
+                random = Random.Range(3, 5);
+            else if (inventory.foodList[plantID].type == "Ground")
+                random = 5;
+                
             GameObject newTree = Instantiate(
                 plants[random], 
                 hit.point, 
