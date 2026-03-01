@@ -47,7 +47,5 @@ public class PlantSelection : MonoBehaviour
             if (thisButton.plantID == pm.plantID)
                 thisButton?.OnClick();
         }
-
-        // thisButton?.OnClick();
     }
 }

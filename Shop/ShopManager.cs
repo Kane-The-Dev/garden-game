@@ -12,6 +12,7 @@ public class ShopManager : MonoBehaviour
     [SerializeField] Transform plantDisplay;
     [SerializeField] GameObject shopButton, displayBar, displaySection;
     [SerializeField] RectTransform shopPanel, rootLayout;
+    [SerializeField] ShopItem[] other;
     Inventory inventory;
 
     void Start()
@@ -34,6 +35,15 @@ public class ShopManager : MonoBehaviour
         Transform thisRow = null;
         foreach (var item in foodList.OrderBy(f => f.levelReq)) // generate dynamic shop items for plants
         {
+            if (item.type == "Other") continue;
+
+            PlantUnlock newShopItem = ScriptableObject.CreateInstance<PlantUnlock>();
+            newShopItem.itemName = item.name;
+            newShopItem.price = item.plantPrice;
+            newShopItem.requirement = item.levelReq;
+
+            stock[newShopItem] = 9999;
+
             if (count % 5 == 0)
             {
                 Instantiate(displayBar, plantDisplay);
@@ -43,13 +53,6 @@ public class ShopManager : MonoBehaviour
 
             if (!thisRow) continue;
             GameObject newItem = Instantiate(shopButton, thisRow);
-            
-            PlantUnlock newShopItem = ScriptableObject.CreateInstance<PlantUnlock>();
-            newShopItem.itemName = item.name;
-            newShopItem.price = item.plantPrice;
-            newShopItem.requirement = item.levelReq;
-
-            stock[newShopItem] = 9999;
 
             ShopItemUI itemUI = newItem.GetComponent<ShopItemUI>();
             itemUI.isLocked = inventory.level < newShopItem.requirement;
@@ -59,6 +62,8 @@ public class ShopManager : MonoBehaviour
             buttons.Add(itemUI);
             count++;
         }
+
+        foreach (var item in other) stock[item] = 9999;
 
         RefreshShop();
     }

@@ -3,7 +3,7 @@ using UnityEngine;
 public class PlantTool : MonoBehaviour
 {
     float maxDistance = 100f;
-    [SerializeField] GameObject[] plants, products;
+    [SerializeField] GameObject[] plants, products, other;
      
     Inventory inventory;
 
@@ -23,17 +23,14 @@ public class PlantTool : MonoBehaviour
                 return;
             }
 
-            if (plantID < 0) return;
-
             string plantName = inventory.foodList[plantID].name;
             if (inventory.myInventory[plantName] <= 0)
             {
-                Debug.Log("Out of seed!");
+                Debug.Log("Out of seed/item!");
                 return;
             }
 
-            Growable[] trees = FindObjectsOfType<Growable>();
-            foreach (Growable tree in trees)
+            foreach (var tree in FindObjectsOfType<Growable>())
             {
                 if (!tree.isProduct && Vector3.Distance(tree.transform.position, hit.point) < 3.5f)
                 {
@@ -42,31 +39,50 @@ public class PlantTool : MonoBehaviour
                 }
             }
 
-            int random = 0;
-            if (inventory.foodList[plantID].type == "Tree")
-                random = Random.Range(0, 2);
-            else if (inventory.foodList[plantID].type == "Pine")
-                random = 2;
-            else if (inventory.foodList[plantID].type == "Bush")
-                random = Random.Range(3, 5);
-            else if (inventory.foodList[plantID].type == "Ground")
-                random = 5;
-                
-            GameObject newTree = Instantiate(
-                plants[random], 
-                hit.point, 
-                Quaternion.Euler(0f, Random.Range(0f, 180f), 0f)
-            );
+            if (plantID < 0) 
+                return;
+            else if (inventory.foodList[plantID].type != "Other") 
+                Plant(plantID, hit.point);
+            else 
+                Build(plantID, hit.point);
 
-            var g = newTree.GetComponent<Growable>();
-            g.growthSpeed = inventory.foodList[plantID].growthSpeed;
-            g.maxGrowth *= Random.Range(0.85f, 1f);
-            g.product = products[plantID];
-            
             inventory.myInventory[plantName]--;
             inventory.exp += 25f;
 
             inventory.selection.RefreshPlants();
         }
+    }
+
+    void Plant(int plantID, Vector3 point)
+    {
+        int treeType = 0;
+        if (inventory.foodList[plantID].type == "Tree")
+            treeType = Random.Range(0, 2);
+        else if (inventory.foodList[plantID].type == "Pine")
+            treeType = 2;
+        else if (inventory.foodList[plantID].type == "Bush")
+            treeType = Random.Range(3, 5);
+        else if (inventory.foodList[plantID].type == "Ground")
+            treeType = 5;
+            
+        GameObject newTree = Instantiate(
+            plants[treeType], 
+            point, 
+            Quaternion.Euler(0f, Random.Range(0f, 180f), 0f)
+        );
+
+        var g = newTree.GetComponent<Growable>();
+        g.growthSpeed = inventory.foodList[plantID].growthSpeed;
+        g.maxGrowth *= Random.Range(0.85f, 1f);
+        g.product = products[plantID];
+    }
+
+    void Build(int plantID, Vector3 point)
+    {
+        Instantiate(
+            other[plantID - products.Length],
+            point, 
+            Quaternion.Euler(0f, Random.Range(0f, 180f), 0f)
+        );
     }
 }
