@@ -49,7 +49,7 @@ public class ShopManager : MonoBehaviour
                 GameObject subBar = Instantiate(placeholderBar, plantDisplay);
                 GameObject mainBar = Instantiate(displayBar, plantDisplay.parent);
                 mainBar.GetComponent<FollowPosition>().target = subBar.GetComponent<RectTransform>();
-                
+
                 GameObject newSection = Instantiate(displaySection, plantDisplay);
                 thisRow = newSection.transform;
             }

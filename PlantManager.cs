@@ -26,9 +26,9 @@ public class PlantManager : MonoBehaviour
         cam = GetComponent<Camera>();
         
         plantTool = GetComponent<PlantTool>();
-        // waterTool = GetComponent<WaterTool>();
-        // harvestTool = GetComponent<HarvestTool>();
         chopTool = GetComponent<ChopTool>();
+
+        ring.GetComponent<Renderer>().material.color = new Color(1f, 1f, 1f, 0.8f);
         
         InitializeGarden();
     }
@@ -36,6 +36,19 @@ public class PlantManager : MonoBehaviour
     void Update()
     {
         Ray ray = cam.ScreenPointToRay(Input.mousePosition);
+
+        if (EventSystem.current.IsPointerOverGameObject())
+        {
+            ring.GetComponent<Renderer>().material.color = new Color(1f, 1f, 1f, 0.8f);
+            ring.SetActive(false);
+            return;
+        }
+
+        if (mode == 0)
+        {
+            ring.SetActive(true);
+            plantTool.PlantCheck(ring, ray, groundMask, obstacleMask);
+        }
 
         if (Input.GetMouseButtonUp(0))
         {
@@ -69,13 +82,11 @@ public class PlantManager : MonoBehaviour
         
         if (Input.GetMouseButtonDown(0))
         {
-            if (EventSystem.current.IsPointerOverGameObject())
-            return;
-
             switch (mode) {
                 case 0:
+                    if (plantID == -1) break;
                     plantTool.PlantTree(plantID, ray, groundMask, obstacleMask);
-                    break;               
+                    break;
                 case 1:
                     ring.SetActive(true);
                     waterTool.StartWater();

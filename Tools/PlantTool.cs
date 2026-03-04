@@ -3,14 +3,47 @@ using UnityEngine;
 
 public class PlantTool : MonoBehaviour
 {
-    float maxDistance = 100f;
+    float maxDistance = 100f, radius = 0.5f;
     [SerializeField] GameObject[] plants, products, other;
+    Color currentColor;
      
     Inventory inventory;
 
     void Start() 
     {
+        currentColor = Color.white;
         inventory = GameManager.instance.inventory;
+    }
+
+    public void PlantCheck(GameObject ring, Ray ray, LayerMask gMask, LayerMask oMask)
+    {
+        RaycastHit hit;
+
+        if (Physics.Raycast(ray, out hit, maxDistance, gMask))
+        {
+            ring.transform.localScale = new Vector3(0.2f * radius, 1f, 0.2f * radius);
+            ring.transform.position = new Vector3(hit.point.x, 0.65f, hit.point.z);
+
+            bool blocked = Physics.CheckSphere(
+                hit.point,
+                radius,
+                oMask,
+                QueryTriggerInteraction.Collide
+            );
+
+            Color targetColor = blocked
+                ? new Color(1f, 0f, 0f, 0.8f)
+                : new Color(1f, 1f, 1f, 0.8f);
+
+            // Smooth transition
+            currentColor = Color.Lerp(
+                currentColor,
+                targetColor,
+                Time.deltaTime * 20f
+            );
+
+            ring.GetComponent<Renderer>().material.color = currentColor;
+        }
     }
 
     public void PlantTree(int plantID, Ray ray, LayerMask gMask, LayerMask oMask)
@@ -19,7 +52,7 @@ public class PlantTool : MonoBehaviour
 
         if (Physics.Raycast(ray, out hit, maxDistance, gMask))
         {
-            if (Physics.CheckSphere(hit.point, 0.5f, oMask, QueryTriggerInteraction.Collide)) return;
+            if (Physics.CheckSphere(hit.point, radius, oMask, QueryTriggerInteraction.Collide)) return;
 
             string plantName = inventory.foodList[plantID].name;
             if (inventory.myInventory[plantName] <= 0)
@@ -27,15 +60,6 @@ public class PlantTool : MonoBehaviour
                 Debug.Log("Out of seed/item!");
                 return;
             }
-
-            // foreach (var tree in FindObjectsOfType<Growable>())
-            // {
-            //     if (!tree.isProduct && Vector3.Distance(tree.transform.position, hit.point) < 3.5f)
-            //     {
-            //         Debug.Log("Overlap other trees!");
-            //         return;
-            //     }
-            // }
 
             if (plantID < 0) 
                 return;

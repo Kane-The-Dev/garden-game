@@ -1,10 +1,12 @@
 using UnityEngine;
+using UnityEngine.UI;
 using TMPro;
 
 public class ShopItemUI : MonoBehaviour
 {
     [SerializeField] GameObject lockedTag, soldOutTag;
     [SerializeField] TextMeshProUGUI priceTag, requirementTag, nameTag;
+    [SerializeField] Button myButton;
     public ShopItem myItem;
     public bool isLocked, isSoldOut;
     ShopManager shop;
@@ -23,6 +25,7 @@ public class ShopItemUI : MonoBehaviour
 
         lockedTag.SetActive(isLocked);
         soldOutTag.SetActive(isSoldOut);
+        if (myButton) myButton.interactable = !isLocked && !isSoldOut;
     }
 
     public void OnClick()
