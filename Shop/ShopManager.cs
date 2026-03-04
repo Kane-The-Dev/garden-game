@@ -10,7 +10,7 @@ public class ShopManager : MonoBehaviour
     [SerializeField] List<ShopItemUI> buttons = new();
     Dictionary<ShopItem, int> stock = new();
     [SerializeField] Transform plantDisplay;
-    [SerializeField] GameObject shopButton, displayBar, displaySection;
+    [SerializeField] GameObject shopButton, displayBar, placeholderBar, displaySection;
     [SerializeField] RectTransform shopPanel, rootLayout;
     [SerializeField] ShopItem[] other;
     Inventory inventory;
@@ -46,7 +46,10 @@ public class ShopManager : MonoBehaviour
 
             if (count % 5 == 0)
             {
-                Instantiate(displayBar, plantDisplay);
+                GameObject subBar = Instantiate(placeholderBar, plantDisplay);
+                GameObject mainBar = Instantiate(displayBar, plantDisplay.parent);
+                mainBar.GetComponent<FollowPosition>().target = subBar.GetComponent<RectTransform>();
+                
                 GameObject newSection = Instantiate(displaySection, plantDisplay);
                 thisRow = newSection.transform;
             }

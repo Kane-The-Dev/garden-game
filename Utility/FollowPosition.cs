@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+[ExecuteAlways]
 public class FollowPosition : MonoBehaviour
 {
     public RectTransform target;
@@ -15,6 +16,7 @@ public class FollowPosition : MonoBehaviour
 
     void LateUpdate()
     {
+        if (target)
         rect.position = target.position + offset;
     }
 }

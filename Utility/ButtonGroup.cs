@@ -11,7 +11,9 @@ public class ButtonGroup : MonoBehaviour
 
     void Start()
     {
-        UpdateSelected(0);
+        // UpdateSelected(0);
+        if (buttons.Count > 0)
+            OnClick(buttons[0].gameObject);
     }
 
     public void UpdateSelected(int i)
