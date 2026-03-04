@@ -7,7 +7,7 @@ public class PlantManager : MonoBehaviour
 
     [SerializeField] public GameObject ring;
     [SerializeField] private GameObject[] decorations;
-    [SerializeField] private LayerMask plantMask, groundMask, fruitMask;
+    [SerializeField] private LayerMask plantMask, groundMask, fruitMask, obstacleMask;
 
     public PlantTool plantTool;
     public WaterTool waterTool;
@@ -74,7 +74,7 @@ public class PlantManager : MonoBehaviour
 
             switch (mode) {
                 case 0:
-                    plantTool.PlantTree(plantID, ray, groundMask);
+                    plantTool.PlantTree(plantID, ray, groundMask, obstacleMask);
                     break;               
                 case 1:
                     ring.SetActive(true);

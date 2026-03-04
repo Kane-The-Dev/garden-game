@@ -48,15 +48,16 @@ public class EatingManager : MonoBehaviour
             obj.transform.localScale = Vector3.one * fruit.maxGrowth * 0.75f;
         }
 
-        Destroy(obj, 5f);
+        // Destroy(obj, 5f);
     }
 
     void OnTriggerEnter(Collider collider)
     {
         if (collider.CompareTag("Food"))
         {
-            player.localScale += new Vector3(0.001f, 0.001f, 0.001f);
-            Destroy(collider.gameObject);
+            Debug.Log("Loaded more food!");
+            //player.localScale += new Vector3(0.001f, 0.001f, 0.001f);
+            //Destroy(collider.gameObject);
         }
     }
 }

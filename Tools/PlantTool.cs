@@ -1,3 +1,4 @@
+using System.Linq;
 using UnityEngine;
 
 public class PlantTool : MonoBehaviour
@@ -12,16 +13,13 @@ public class PlantTool : MonoBehaviour
         inventory = GameManager.instance.inventory;
     }
 
-    public void PlantTree(int plantID, Ray ray, LayerMask mask)
+    public void PlantTree(int plantID, Ray ray, LayerMask gMask, LayerMask oMask)
     {
         RaycastHit hit;
 
-        if (Physics.Raycast(ray, out hit, maxDistance, mask))
+        if (Physics.Raycast(ray, out hit, maxDistance, gMask))
         {
-            if (hit.collider.CompareTag("Obstacle")) {
-                Debug.Log("Hit an obstacle!");
-                return;
-            }
+            if (Physics.CheckSphere(hit.point, 0.5f, oMask, QueryTriggerInteraction.Collide)) return;
 
             string plantName = inventory.foodList[plantID].name;
             if (inventory.myInventory[plantName] <= 0)
@@ -30,14 +28,14 @@ public class PlantTool : MonoBehaviour
                 return;
             }
 
-            foreach (var tree in FindObjectsOfType<Growable>())
-            {
-                if (!tree.isProduct && Vector3.Distance(tree.transform.position, hit.point) < 3.5f)
-                {
-                    Debug.Log("Overlap other trees!");
-                    return;
-                }
-            }
+            // foreach (var tree in FindObjectsOfType<Growable>())
+            // {
+            //     if (!tree.isProduct && Vector3.Distance(tree.transform.position, hit.point) < 3.5f)
+            //     {
+            //         Debug.Log("Overlap other trees!");
+            //         return;
+            //     }
+            // }
 
             if (plantID < 0) 
                 return;
@@ -71,7 +69,7 @@ public class PlantTool : MonoBehaviour
             Quaternion.Euler(0f, Random.Range(0f, 180f), 0f)
         );
 
-        var g = newTree.GetComponent<Growable>();
+        var g = newTree.transform.GetChild(0).GetComponent<Growable>();
         g.growthSpeed = inventory.foodList[plantID].growthSpeed;
         g.maxGrowth *= Random.Range(0.85f, 1f);
         g.product = products[plantID];
