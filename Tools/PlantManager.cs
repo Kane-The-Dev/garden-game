@@ -6,7 +6,6 @@ public class PlantManager : MonoBehaviour
     Camera cam;
 
     [SerializeField] public GameObject ring;
-    [SerializeField] private GameObject[] decorations;
     [SerializeField] private LayerMask plantMask, groundMask, fruitMask, obstacleMask;
 
     public PlantTool plantTool;
@@ -16,7 +15,6 @@ public class PlantManager : MonoBehaviour
     
     public int mode; // 0 = plant, 1 = water, 2 = harvest, 3 = chop
     public int plantID;
-    float maxDistance = 100f;
 
     void Start()
     {
@@ -26,11 +24,8 @@ public class PlantManager : MonoBehaviour
         cam = GetComponent<Camera>();
         
         plantTool = GetComponent<PlantTool>();
-        chopTool = GetComponent<ChopTool>();
 
         ring.GetComponent<Renderer>().material.color = new Color(1f, 1f, 1f, 0.8f);
-        
-        InitializeGarden();
     }
 
     void Update()
@@ -99,33 +94,6 @@ public class PlantManager : MonoBehaviour
                     ring.SetActive(true);
                     break;
             }
-        }
-    }
-
-    void InitializeGarden()
-    {
-        int n = Random.Range(20, 30);
-        float randomX, randomZ;
-
-        for (int i = 0; i < n; i++)
-        {
-            randomX = Random.Range(-3f, 23f);
-            randomZ = Random.Range(-3f, 23f);
-
-            Vector3 point = new Vector3(randomX, 10f, randomZ);
-
-            if (Physics.Raycast(point, Vector3.down, out RaycastHit hit, maxDistance, groundMask))
-                
-                if (hit.collider.CompareTag("Obstacle")) {
-                    i--;
-                    continue;
-                }
-
-                Instantiate(
-                    decorations[Random.Range(0, decorations.Length)], 
-                    hit.point, 
-                    Quaternion.Euler(0f, Random.Range(-90f, 90f), 0f)
-                );
         }
     }
 

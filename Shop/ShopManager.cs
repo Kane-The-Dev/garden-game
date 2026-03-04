@@ -12,7 +12,7 @@ public class ShopManager : MonoBehaviour
     [SerializeField] Transform plantDisplay;
     [SerializeField] GameObject shopButton, displayBar, placeholderBar, displaySection;
     [SerializeField] RectTransform shopPanel, rootLayout;
-    [SerializeField] ShopItem[] other;
+    [SerializeField] ShopItem[] specialItems; // items that are tools but have infinite stock
     Inventory inventory;
 
     void Start()
@@ -26,7 +26,7 @@ public class ShopManager : MonoBehaviour
     
     public void InitializeShop()
     {
-        foreach (var upgrade in buttons) // default upgrade in stock = 1
+        foreach (var upgrade in buttons) // default tools in stock = 1
         {
             stock[upgrade.myItem] = 1;
         }
@@ -66,7 +66,7 @@ public class ShopManager : MonoBehaviour
             count++;
         }
 
-        foreach (var item in other) stock[item] = 9999;
+        foreach (var item in specialItems) stock[item] = 9999;
 
         RefreshShop();
     }
