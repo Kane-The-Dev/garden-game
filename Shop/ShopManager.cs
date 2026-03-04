@@ -79,14 +79,25 @@ public class ShopManager : MonoBehaviour
 
     public void RefreshShop()
     {
-        int currentLevel = inventory.level;
-
         foreach (ShopItemUI button in buttons)
         {
-            bool locked = currentLevel < button.myItem.requirement;
-            if (button.isLocked != locked)
+            int condition = button.myItem.CanPurchase(inventory);
+            
+            if (button.isLocked != (condition == 1))
             {
-                button.isLocked = locked;
+                button.isLocked = condition == 1;
+                button.Refresh();
+            }
+
+            if (button.prevLocked != (condition == 3))
+            {
+                button.prevLocked = condition == 3;
+                button.Refresh();
+            }
+
+            if (stock[button.myItem] == 0)
+            {
+                button.isSoldOut = true;
                 button.Refresh();
             }
         }
@@ -102,15 +113,9 @@ public class ShopManager : MonoBehaviour
     {
         ShopItem myItem = myUI.myItem;
 
-        if (inventory.level < myItem.requirement) 
+        if (myItem.CanPurchase(inventory) != 0)
         {
-            Debug.Log("Insufficient level!");
-            return;
-        }
-
-        if (inventory.coin < myItem.price)
-        {
-            Debug.Log("Insufficient money!");
+            Debug.Log("Cannot buy because of code " + myItem.CanPurchase(inventory));
             return;
         }
 
@@ -121,12 +126,8 @@ public class ShopManager : MonoBehaviour
         }
 
         stock[myItem]--;
-        if (stock[myItem] == 0)
-        {
-            myUI.isSoldOut = true;
-            myUI.Refresh();
-        }
 
         myItem.OnPurchase();
+        RefreshShop();
     }
 }

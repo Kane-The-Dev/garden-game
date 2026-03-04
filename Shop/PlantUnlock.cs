@@ -20,4 +20,21 @@ public class PlantUnlock : ShopItem
 
         Debug.Log("You unlocked " + itemName);
     }
+
+    public override int CanPurchase(Inventory inventory)
+    {
+        if (inventory.level < requirement) 
+        {
+            // Debug.Log("Insufficient level!");
+            return 1;
+        }
+
+        if (inventory.coin < price)
+        {
+            // Debug.Log("Insufficient money!");
+            return 2;
+        }
+            
+        return 0;
+    }
 }

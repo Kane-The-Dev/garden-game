@@ -4,11 +4,11 @@ using TMPro;
 
 public class ShopItemUI : MonoBehaviour
 {
-    [SerializeField] GameObject lockedTag, soldOutTag;
+    [SerializeField] GameObject lockedTag, soldOutTag, prevLockedTag;
     [SerializeField] TextMeshProUGUI priceTag, requirementTag, nameTag;
     [SerializeField] Button myButton;
     public ShopItem myItem;
-    public bool isLocked, isSoldOut;
+    public bool isLocked, isSoldOut, prevLocked;
     ShopManager shop;
 
     void Start()
@@ -24,8 +24,10 @@ public class ShopItemUI : MonoBehaviour
         nameTag.text = myItem.itemName;
 
         lockedTag.SetActive(isLocked);
+        if (!isLocked) prevLockedTag.SetActive(prevLocked);
         soldOutTag.SetActive(isSoldOut);
-        if (myButton) myButton.interactable = !isLocked && !isSoldOut;
+        
+        if (myButton) myButton.interactable = !isLocked && !isSoldOut && !prevLocked;
     }
 
     public void OnClick()

@@ -12,9 +12,6 @@ public class ToolUnlock : ShopItem
     {
         inventory = GameManager.instance.inventory;
 
-        if (prevUpgrade != "None" && !inventory.myInventory.ContainsKey(prevUpgrade))
-            Debug.Log("Unlock " + prevUpgrade + " first!");
-
         if (!inventory.myInventory.ContainsKey(itemName))
             inventory.myInventory[itemName] = 0;
 
@@ -37,6 +34,29 @@ public class ToolUnlock : ShopItem
         }
 
         Debug.Log("You unlocked " + itemName);
+    }
+
+    public override int CanPurchase(Inventory inventory)
+    {
+        if (inventory.level < requirement) 
+        {
+            // Debug.Log("Insufficient level!");
+            return 1;
+        }
+
+        if (inventory.coin < price)
+        {
+            // Debug.Log("Insufficient money!");
+            return 2;
+        }
+
+        if (prevUpgrade != "None" && !inventory.myInventory.ContainsKey(prevUpgrade))
+        {
+            // Debug.Log("Unlock " + prevUpgrade + " first!");
+            return 3;
+        }
+            
+        return 0;
     }
 }
 
