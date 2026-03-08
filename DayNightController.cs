@@ -11,14 +11,18 @@ public class DayNightController : MonoBehaviour
     public float startTime = 0f;  // 0-1
 
     [Header("Light Settings")]
-    public Gradient lightColor;
-    public AnimationCurve lightIntensity;
+    public Gradient lightColor, skyColor;
+    public AnimationCurve lightIntensity, skyIntensity;
+
+    Material skyboxInstance;
 
     float time;
 
     void Start()
     {
         time = startTime;
+        skyboxInstance = new Material(RenderSettings.skybox);
+        RenderSettings.skybox = skyboxInstance;
     }
 
     void Update()
@@ -43,5 +47,9 @@ public class DayNightController : MonoBehaviour
 
         // Update intensity
         sun.intensity = lightIntensity.Evaluate(time);
+
+        skyboxInstance.SetColor("_Tint", skyColor.Evaluate(time));
+        skyboxInstance.SetFloat("_Exposure", skyIntensity.Evaluate(time));
+        DynamicGI.UpdateEnvironment();
     }
 }
