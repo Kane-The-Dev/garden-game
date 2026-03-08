@@ -3,17 +3,26 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
 
 public class ShopManager : MonoBehaviour
 {
     public List<Item> foodList = new();
+
+    [Header("Display Shelves")]
     [SerializeField] List<ShopItemUI> buttons = new();
     Dictionary<ShopItem, int> stock = new();
     [SerializeField] Transform plantDisplay;
     [SerializeField] GameObject shopButton, displayBar, placeholderBar, displaySection;
     [SerializeField] RectTransform shopPanel, rootLayout;
     [SerializeField] ShopItem[] specialItems; // items that are tools but have infinite stock
+
+    [Header("Display Board")]
+    [SerializeField] TextMeshProUGUI stats;
+    [SerializeField] TextMeshProUGUI itemName, itemDescription, itemPrice;
+
     Inventory inventory;
+    ShopItemUI selectedUI;
 
     void Start()
     {
@@ -101,6 +110,8 @@ public class ShopManager : MonoBehaviour
                 button.Refresh();
             }
         }
+
+        stats.text = "Lv. " + inventory.level + " | Bank: " + inventory.coin + "G";
     }
 
     void RefreshLayout()
@@ -109,9 +120,16 @@ public class ShopManager : MonoBehaviour
         LayoutRebuilder.ForceRebuildLayoutImmediate(rootLayout);
     }
 
-    public void TryPurchase(ShopItemUI myUI)
+    public void SetPurchase(ShopItemUI myUI)
     {
-        ShopItem myItem = myUI.myItem;
+        selectedUI = myUI;
+        itemName.text = myUI.myItem.itemName;
+        itemPrice.text = myUI.myItem.price.ToString();
+    }
+
+    public void TryPurchase()
+    {
+        ShopItem myItem = selectedUI.myItem;
 
         if (myItem.CanPurchase(inventory) != 0)
         {

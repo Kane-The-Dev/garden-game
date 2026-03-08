@@ -11,7 +11,8 @@ public class DayNightController : MonoBehaviour
     public float startTime = 0f;  // 0-1
 
     [Header("Light Settings")]
-    public Gradient lightColor, skyColor;
+    public Gradient lightColor;
+    public Gradient skyColor;
     public AnimationCurve lightIntensity, skyIntensity;
 
     Material skyboxInstance;

@@ -32,6 +32,6 @@ public class ShopItemUI : MonoBehaviour
 
     public void OnClick()
     {
-        shop.TryPurchase(this);
+        shop.SetPurchase(this);
     }
 }
