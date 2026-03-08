@@ -13,7 +13,7 @@ public class FoodButton : MonoBehaviour
     void Start()
     {
         inventory = GameManager.instance.inventory;
-        eater = FindObjectOfType<EatingManager>();
+        eater = GameManager.instance.em;
     }
 
     public void OnClick(int quantity)
@@ -26,7 +26,7 @@ public class FoodButton : MonoBehaviour
         for (int i = 0; i < quantity; i++)
         eater.q.Enqueue(productID);
 
-        inventory.coin += quantity * inventory.foodList[productID].sellPrice;
+        eater.accumulatedStonks += quantity * inventory.foodList[productID].sellPrice;
         inventory.foodList[productID].UpdateN(-1 * quantity);
         inventory.UpdateStorage();
     }

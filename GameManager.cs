@@ -11,6 +11,7 @@ public class GameManager : MonoBehaviour
     public PlantManager pm;
     public ShopManager sm;
     public Inventory inventory;
+    public EatingManager em;
     [SerializeField] GameObject gardenTools, plantShop, foodStorage;
 
     public int timeControl;
