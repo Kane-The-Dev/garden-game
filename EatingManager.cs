@@ -5,7 +5,8 @@ using UnityEngine;
 
 public class EatingManager : MonoBehaviour
 {
-    [SerializeField] GameObject[] food, spawnedFood;
+    [SerializeField] GameObject[] food;
+    List<GameObject> spawnedFood = new List<GameObject>();
     [SerializeField] GameObject truck_kun;
     GameObject myTruck;
     public Transform drop;
@@ -79,9 +80,7 @@ public class EatingManager : MonoBehaviour
             obj.transform.localScale = Vector3.one * fruit.maxGrowth * 0.75f;
         }
 
-        spawnedFood.Append(obj);
-
-        // Destroy(obj, 5f);
+        spawnedFood.Add(obj);
     }
 
     void OnTriggerEnter(Collider collider)
@@ -89,8 +88,6 @@ public class EatingManager : MonoBehaviour
         if (collider.CompareTag("Food"))
         {
             Debug.Log("Loaded more food!");
-            //player.localScale += new Vector3(0.001f, 0.001f, 0.001f);
-            //Destroy(collider.gameObject);
         }
     }
 }

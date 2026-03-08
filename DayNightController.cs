@@ -1,10 +1,14 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using TMPro;
 
 public class DayNightController : MonoBehaviour
 {
     public Light sun;
+
+    [Header("Visualization")]
+    [SerializeField] TextMeshProUGUI dayDisplay;
 
     [Header("Rotation")]
     public float dayLength = 60f; // seconds for full cycle
@@ -18,9 +22,11 @@ public class DayNightController : MonoBehaviour
     Material skyboxInstance;
 
     float time;
+    int dayCount;
 
     void Start()
     {
+        dayCount = 0;
         time = startTime;
         skyboxInstance = new Material(RenderSettings.skybox);
         RenderSettings.skybox = skyboxInstance;
@@ -29,7 +35,10 @@ public class DayNightController : MonoBehaviour
     void Update()
     {
         time += Time.deltaTime / dayLength;
+        if (time >= 1f) dayCount += 1;
         time %= 1f;
+
+        dayDisplay.text = dayCount.ToString();
 
         UpdateSun();
     }

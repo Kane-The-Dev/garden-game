@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.UI;
 using TMPro;
 
 public class Inventory : MonoBehaviour
@@ -13,7 +14,8 @@ public class Inventory : MonoBehaviour
 
     public int coin, level;
     public float exp;
-    [SerializeField] TextMeshProUGUI coinDisplay, levelDisplay, expDisplay;
+    [SerializeField] TextMeshProUGUI coinDisplay, levelDisplay;
+    [SerializeField] Slider expDisplay;
 
     public ShopManager shop;
     public PlantSelection selection;
@@ -41,7 +43,7 @@ public class Inventory : MonoBehaviour
             levelDisplay.text = level.ToString();
 
         if (expDisplay)
-            expDisplay.text = exp.ToString("F0") + "/100";
+            expDisplay.value = exp / 100f;
 
         exp += Time.deltaTime * GameManager.instance.timeControl;
         if (exp >= 100f)
