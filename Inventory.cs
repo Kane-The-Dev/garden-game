@@ -35,13 +35,13 @@ public class Inventory : MonoBehaviour
         }
 
         if (coinDisplay)
-            coinDisplay.text = "Bank: " + coin.ToString() + "G";
+            coinDisplay.text = coin.ToString() + "G";
 
         if (levelDisplay)
             levelDisplay.text = level.ToString();
 
         if (expDisplay)
-            expDisplay.text = exp.ToString("F0") + "/100 EXP";
+            expDisplay.text = exp.ToString("F0") + "/100";
 
         exp += Time.deltaTime * GameManager.instance.timeControl;
         if (exp >= 100f)

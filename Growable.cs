@@ -16,6 +16,7 @@ public class Growable : MonoBehaviour
     public bool reproductive = false;
     public int fruitCount;
     public float harvestIndex, chopIndex;
+    [SerializeField] Transform effectSpawnPoint;
     int chopStage = 0;
     const float STAGE1 = 0.3333f;
     const float STAGE2 = 0.6666f;
@@ -150,7 +151,7 @@ public class Growable : MonoBehaviour
     {
         float myGrowth = transform.localScale.x / maxGrowth;
         GameObject burst = Instantiate(leaf, 
-            transform.position + new Vector3(0f, 3f * myGrowth, 0f), 
+            effectSpawnPoint.position, 
             Quaternion.identity
         );
         burst.transform.localScale = new Vector3(myGrowth, myGrowth, myGrowth);
