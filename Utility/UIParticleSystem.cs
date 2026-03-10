@@ -6,7 +6,7 @@ public class UIParticleSystem : MonoBehaviour
 {
     [SerializeField] GameObject particlePrefab;
     [SerializeField] Transform canvas;
-    [SerializeField] float minSpeed, maxSpeed, gravity, rotation, minLifetime, maxLifetime;
+    [SerializeField] float minSpeed, maxSpeed, gravity, rotation, minFlip, maxFlip, minLifetime, maxLifetime;
     [SerializeField] int minCount, maxCount;
 
     public void Burst()
@@ -23,6 +23,7 @@ public class UIParticleSystem : MonoBehaviour
 
             p.gravity = gravity;
             p.spinSpeed = Random.Range(-rotation, rotation);
+            p.flipSpeed = Random.Range(minFlip, maxFlip);
             p.lifetime = Random.Range(minLifetime, maxLifetime);
         }
     }
