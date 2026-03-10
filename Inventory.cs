@@ -70,6 +70,8 @@ public class Inventory : MonoBehaviour
 
         foreach (var item in foodList.OrderBy(f => f.levelReq))
         {
+            if (item.type == "Other") continue;
+            
             GameObject newItem = Instantiate(foodItemPrefab, storage);
             var fb = newItem.GetComponent<FoodButton>();
             fb.productID = item.ID;

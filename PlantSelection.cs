@@ -7,7 +7,7 @@ public class PlantSelection : MonoBehaviour
 {
     public List<Item> foodList = new();
     [SerializeField] Transform selection;
-    [SerializeField] GameObject plantButton;
+    [SerializeField] GameObject plantButton, constructButton;
     PlantManager pm;
     Inventory inventory;
     ButtonGroup group;
@@ -32,7 +32,8 @@ public class PlantSelection : MonoBehaviour
             if (!inventory.myInventory.ContainsKey(item.name))
                 continue;
 
-            GameObject newItem = Instantiate(plantButton, selection);
+            GameObject newItem = (item.type == "Other") ? 
+                Instantiate(constructButton, selection) : Instantiate(plantButton, selection);
 
             thisButton = newItem.transform.GetChild(0).GetComponent<PlantButton>();
             group.buttons.Add(thisButton.myImage);

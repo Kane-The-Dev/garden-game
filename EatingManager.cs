@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using TMPro;
 
 public class EatingManager : MonoBehaviour
 {
@@ -10,7 +11,9 @@ public class EatingManager : MonoBehaviour
     [SerializeField] GameObject truck_kun;
     GameObject myTruck;
     public Transform drop;
-    [SerializeField] float delay, timer, cooldown, cooldownTimer;
+    [SerializeField] float delay, timer, cooldown;
+    public float cooldownTimer;
+    [SerializeField] TextMeshProUGUI stonksDisplay;
     public Queue<int> q;
     public int accumulatedStonks;
     Rigidbody rb;
@@ -38,20 +41,26 @@ public class EatingManager : MonoBehaviour
 
         if (cooldownTimer > 0) cooldownTimer -= Time.deltaTime * GameManager.instance.timeControl;
         if (myTruck == null && cooldownTimer <= 0) SpawnTruck();
+        if (stonksDisplay) stonksDisplay.text = accumulatedStonks + "G";
 
         if (Input.GetKeyDown(KeyCode.B))
         {
-            if (q.Count > 0 || cooldownTimer > 0) return;
-            
-            rb.constraints = RigidbodyConstraints.None;
-            rb.AddForce(transform.forward * 1500f + Vector3.up * 200f, ForceMode.Impulse);
-            GameManager.instance.inventory.coin += accumulatedStonks;
-            accumulatedStonks = 0;
-            cooldownTimer = cooldown;
-
-            foreach(GameObject obj in spawnedFood) Destroy(obj, 10f);
-            Destroy(myTruck, 10f);
+            // ConfirmSale();
         }
+    }
+
+    public void ConfirmSale()
+    {
+        if (q.Count > 0 || cooldownTimer > 0) return;
+            
+        rb.constraints = RigidbodyConstraints.None;
+        rb.AddForce(transform.forward * 1500f + Vector3.up * 200f, ForceMode.Impulse);
+        GameManager.instance.inventory.coin += accumulatedStonks;
+        accumulatedStonks = 0;
+        cooldownTimer = cooldown;
+
+        foreach(GameObject obj in spawnedFood) Destroy(obj, 10f);
+        Destroy(myTruck, 10f);
     }
 
     void SpawnTruck()
