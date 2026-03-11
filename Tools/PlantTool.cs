@@ -6,6 +6,7 @@ public class PlantTool : MonoBehaviour
     float maxDistance = 100f, radius = 0.5f;
     [SerializeField] GameObject[] plants, products, other;
     Color currentColor;
+    Renderer ringRender;
      
     Inventory inventory;
 
@@ -22,7 +23,7 @@ public class PlantTool : MonoBehaviour
         if (Physics.Raycast(ray, out hit, maxDistance, gMask))
         {
             ring.transform.localScale = new Vector3(0.2f * radius, 1f, 0.2f * radius);
-            ring.transform.position = new Vector3(hit.point.x, 0.65f, hit.point.z);
+            ring.transform.position = new Vector3(hit.point.x, hit.point.y + 0.1f, hit.point.z);
 
             bool blocked = Physics.CheckSphere(
                 hit.point,
@@ -41,8 +42,9 @@ public class PlantTool : MonoBehaviour
                 targetColor,
                 Time.deltaTime * 20f
             );
-
-            ring.GetComponent<Renderer>().material.color = currentColor;
+            
+            if (!ringRender) ringRender = ring.GetComponent<Renderer>();
+            ringRender.material.color = currentColor;
         }
     }
 

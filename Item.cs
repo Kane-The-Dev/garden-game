@@ -9,10 +9,12 @@ public class Item{
     public int levelReq;
     public string type;
 
+    public string description;
+
     public int n; // number in stock
 
     public void Set(int _ID, string _name, int _plantPrice, 
-        int _sellPrice, float _growthSpeed, int _levelReq, string _type)
+        int _sellPrice, float _growthSpeed, int _levelReq, string _type, string _description)
     {
         this.ID = _ID;
         this.name = _name;
@@ -21,6 +23,7 @@ public class Item{
         this.growthSpeed = _growthSpeed;
         this.levelReq = _levelReq;
         this.type = _type;
+        this.description = _description;
     }
 
     public void UpdateN(int value)

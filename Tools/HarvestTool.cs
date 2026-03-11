@@ -30,7 +30,7 @@ public class HarvestTool : MonoBehaviour
             }
 
             ring.transform.localScale = new Vector3(0.2f * radius, 1f, 0.2f * radius);
-            ring.transform.position = new Vector3(hit.point.x, 0.65f, hit.point.z);
+            ring.transform.position = new Vector3(hit.point.x, hit.point.y + 0.1f, hit.point.z);
 
             if (mainVFX) mainVFX.transform.position = hit.point;
             if (subVFX) subVFX.transform.position = hit.point;

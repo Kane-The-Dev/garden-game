@@ -18,10 +18,11 @@ public class ReadFile : MonoBehaviour
         foreach (string line in lines)
         {
             string[] parts = line.Split(
-                (char[])null, 
+                (char[])null,
+                8,
                 System.StringSplitOptions.RemoveEmptyEntries
             );
-            if (parts.Length < 6) continue;
+            if (parts.Length < 7) continue;
 
             int.TryParse(parts[0], out int id);
             string name = parts[1];
@@ -30,9 +31,10 @@ public class ReadFile : MonoBehaviour
             float.TryParse(parts[4], out float speed);
             int.TryParse(parts[5], out int requirement);
             string type = parts[6];
+            string description = parts[7];
 
             Item newItem =  new Item();
-            newItem.Set(id, name, plant, sell, speed, requirement, type);
+            newItem.Set(id, name, plant, sell, speed, requirement, type, description);
             list.Add(newItem);
         }
     }

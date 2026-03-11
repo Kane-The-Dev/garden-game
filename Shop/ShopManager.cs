@@ -50,6 +50,7 @@ public class ShopManager : MonoBehaviour
             newShopItem.itemName = item.name;
             newShopItem.price = item.plantPrice;
             newShopItem.requirement = item.levelReq;
+            newShopItem.description = item.description;
 
             stock[newShopItem] = 9999;
 
@@ -125,10 +126,12 @@ public class ShopManager : MonoBehaviour
         selectedUI = myUI;
         itemName.text = myUI.myItem.itemName;
         itemPrice.text = myUI.myItem.price.ToString();
+        itemDescription.text = myUI.myItem.description;
     }
 
     public void TryPurchase()
     {
+        if (selectedUI == null) return;
         ShopItem myItem = selectedUI.myItem;
 
         if (myItem.CanPurchase(inventory) != 0)

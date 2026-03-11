@@ -3,7 +3,7 @@ using UnityEngine;
 public abstract class ShopItem : ScriptableObject
 {
     public int requirement, price;
-    public string itemName;
+    public string itemName, description;
 
     public abstract void OnPurchase();
     public abstract int CanPurchase(Inventory inventory);

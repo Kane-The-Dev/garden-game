@@ -54,7 +54,7 @@ public class EatingManager : MonoBehaviour
         if (q.Count > 0 || cooldownTimer > 0) return;
             
         rb.constraints = RigidbodyConstraints.None;
-        rb.AddForce(transform.forward * 1500f + Vector3.up * 200f, ForceMode.Impulse);
+        rb.AddForce(transform.forward * 2000f + Vector3.up * 400f, ForceMode.Impulse);
         GameManager.instance.inventory.coin += accumulatedStonks;
         accumulatedStonks = 0;
         cooldownTimer = cooldown;

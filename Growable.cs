@@ -18,8 +18,9 @@ public class Growable : MonoBehaviour
     public float harvestIndex, chopIndex;
     [SerializeField] Transform effectSpawnPoint;
     int chopStage = 0;
-    const float STAGE1 = 0.3333f;
-    const float STAGE2 = 0.6666f;
+    public float STAGE1 = 0.3333f;
+    public float STAGE2 = 0.6666f;
+    public float STAGE3 = 1f;
     
     [Header("Product")]
     public bool isProduct;
@@ -109,7 +110,7 @@ public class Growable : MonoBehaviour
 
         // Determine stage from chopIndex
         int newStage;
-        if (chopIndex >= 1f)
+        if (chopIndex >= STAGE3)
             newStage = 3;
         else if (chopIndex >= STAGE2)
             newStage = 2;

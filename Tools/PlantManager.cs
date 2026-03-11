@@ -72,8 +72,7 @@ public class PlantManager : MonoBehaviour
                     chopTool.ChopTree(ring, ray, groundMask, plantMask);
                     break;
             }
-        }
-            
+        }  
         
         if (Input.GetMouseButtonDown(0))
         {
