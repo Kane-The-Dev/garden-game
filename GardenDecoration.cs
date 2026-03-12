@@ -5,12 +5,13 @@ using UnityEngine;
 public class GardenDecoration : MonoBehaviour
 {
     [SerializeField] private GameObject[] decorations, trees;
-    [SerializeField] private LayerMask groundMask;
+    [SerializeField] private LayerMask groundMask, obstacleMask;
     [SerializeField] Vector3 center;
     [SerializeField] float radius;
     [SerializeField] int minCount, maxCount;
     float maxDistance = 100f;
     int n1, n2;
+    List<GameObject> spawned = new List<GameObject>();
     
     void Start()
     {
@@ -32,11 +33,10 @@ public class GardenDecoration : MonoBehaviour
                 Vector3.down, 
                 out RaycastHit hit, 
                 maxDistance, 
-                groundMask, 
-                QueryTriggerInteraction.Collide
+                groundMask
             )) 
             {
-                if (hit.collider.CompareTag("Obstacle"))
+                if (Physics.CheckSphere(hit.point, 0.1f, obstacleMask, QueryTriggerInteraction.Collide))
                 {
                     i--;
                     continue;
@@ -79,7 +79,13 @@ public class GardenDecoration : MonoBehaviour
 
                 decor.transform.localScale *= Random.Range(0.8f, 1.2f);
                 decor.transform.parent = this.transform;
+                spawned.Add(decor);
             }
+        }
+
+        foreach (GameObject obj in spawned)
+        {
+            obj.GetComponent<SphereCollider>().enabled = false;
         }
     }
 }

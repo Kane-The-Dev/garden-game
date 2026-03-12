@@ -2,10 +2,11 @@ using UnityEngine;
 
 public class CameraMovement : MonoBehaviour
 {
-    public float speed, movementX, movementZ;
+    public float speed, movementX, movementZ, factor;
     public bool movable, targetReached;
     public Transform target;
     Rigidbody rb;
+    [SerializeField] float restrictedRadius;
 
     void Start()
     {
@@ -16,6 +17,12 @@ public class CameraMovement : MonoBehaviour
 
     void Update()
     {
+        Vector2 myXZ = new Vector2(transform.position.x, transform.position.z);
+        float dist = Vector2.Distance(myXZ, Vector2.zero);
+        float slowRadius = restrictedRadius - 5f;
+        factor = Mathf.InverseLerp(restrictedRadius, slowRadius, dist);
+        factor = Mathf.Max(factor, 0.05f);
+
         if (!targetReached && target != null)
         {
             transform.position = Vector3.Lerp(
@@ -41,6 +48,6 @@ public class CameraMovement : MonoBehaviour
         movementX = Input.GetAxisRaw("Horizontal");
         movementZ = Input.GetAxisRaw("Vertical");
         Vector3 direction = new Vector3(movementX, 0f, movementZ).normalized;
-        rb.velocity = direction * speed;
+        rb.velocity = direction * speed * factor;
     }
 }
