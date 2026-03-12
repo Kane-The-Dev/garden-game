@@ -23,11 +23,19 @@ public class ShopItemUI : MonoBehaviour
         requirementTag.text = "Unlock at\nLvl. " + myItem.requirement.ToString();
         nameTag.text = myItem.itemName;
 
-        lockedTag.SetActive(isLocked);
-        if (!isLocked) prevLockedTag.SetActive(prevLocked);
-        soldOutTag.SetActive(isSoldOut);
-        
-        if (myButton) myButton.interactable = !isLocked && !isSoldOut && !prevLocked;
+        lockedTag.SetActive(false);
+        prevLockedTag.SetActive(false);
+        soldOutTag.SetActive(false);
+
+        if (isLocked)
+            lockedTag.SetActive(true);
+        else if (prevLocked)
+            prevLockedTag.SetActive(true);
+        else if (isSoldOut)
+            soldOutTag.SetActive(true);
+
+        if (myButton)
+            myButton.interactable = !isLocked && !prevLocked && !isSoldOut;
     }
 
     public void OnClick()

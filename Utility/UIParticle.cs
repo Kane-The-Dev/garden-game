@@ -8,7 +8,7 @@ public class UIParticle : MonoBehaviour
 {
     [SerializeField] bool type; // 0 = image, 1 = text
     [SerializeField] Image img;
-    [SerializeField] TextMeshProUGUI text;
+    public TextMeshProUGUI text;
     public Vector2 velocity;
     public float gravity = -800f;
     public float lifetime = 1f;

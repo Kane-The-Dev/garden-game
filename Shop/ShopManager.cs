@@ -20,6 +20,7 @@ public class ShopManager : MonoBehaviour
     [Header("Display Board")]
     [SerializeField] TextMeshProUGUI stats;
     [SerializeField] TextMeshProUGUI itemName, itemDescription, itemPrice;
+    [SerializeField] UIParticleSystem buyMessage;
 
     Inventory inventory;
     ShopItemUI selectedUI;
@@ -92,22 +93,21 @@ public class ShopManager : MonoBehaviour
         foreach (ShopItemUI button in buttons)
         {
             int condition = button.myItem.CanPurchase(inventory);
-            
-            if (button.isLocked != (condition == 1))
-            {
-                button.isLocked = condition == 1;
-                button.Refresh();
-            }
 
-            if (button.prevLocked != (condition == 3))
-            {
-                button.prevLocked = condition == 3;
-                button.Refresh();
-            }
+            bool newLocked = condition == 1;
+            bool newPrevLocked = condition == 3;
+            bool newSoldOut = stock[button.myItem] == 0;
 
-            if (stock[button.myItem] == 0)
+            bool changed =
+                button.isLocked != newLocked ||
+                button.prevLocked != newPrevLocked ||
+                button.isSoldOut != newSoldOut;
+
+            if (changed)
             {
-                button.isSoldOut = true;
+                button.isLocked = newLocked;
+                button.prevLocked = newPrevLocked;
+                button.isSoldOut = newSoldOut;
                 button.Refresh();
             }
         }
@@ -137,16 +137,19 @@ public class ShopManager : MonoBehaviour
         if (myItem.CanPurchase(inventory) != 0)
         {
             Debug.Log("Cannot buy because of code " + myItem.CanPurchase(inventory));
+            if (myItem.CanPurchase(inventory) == 2) buyMessage.Burst("Out of money!");
             return;
         }
 
         if (stock[myItem] <= 0)
         {
             Debug.Log("Out of stock!");
+            buyMessage.Burst("Out of stock!");
             return;   
         }
 
         stock[myItem]--;
+        buyMessage.Burst("+1");
 
         myItem.OnPurchase();
         RefreshShop();

@@ -50,10 +50,10 @@ public class ToolUnlock : ShopItem
             return 2;
         }
 
-        if (prevUpgrade != "None" && !inventory.myInventory.ContainsKey(prevUpgrade))
+        if (prevUpgrade != "None")
         {
-            // Debug.Log("Unlock " + prevUpgrade + " first!");
-            return 3;
+            if (!inventory.myInventory.ContainsKey(prevUpgrade) || inventory.myInventory[prevUpgrade] <= 0)
+                return 3;
         }
             
         return 0;
