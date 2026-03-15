@@ -3,6 +3,13 @@ using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
 
+[System.Serializable]
+public class LightData
+{
+    public Light light;
+    public float maxIntensity = 1f;
+}
+
 public class DayNightController : MonoBehaviour
 {
     public Light sun;
@@ -11,14 +18,18 @@ public class DayNightController : MonoBehaviour
     [SerializeField] TextMeshProUGUI dayDisplay;
     [SerializeField] RectTransform clock;
 
-    [Header("Rotation")]
+    [Header("Time Settings")]
     public float dayLength = 60f; // seconds for full cycle
     public float startTime = 0f;  // 0-1
 
-    [Header("Light Settings")]
-    public Gradient lightColor;
-    public Gradient skyColor;
-    public AnimationCurve lightIntensity, skyIntensity;
+    [Header("Sky Settings")]
+    [SerializeField] Gradient lightColor;
+    [SerializeField] Gradient skyColor;
+    [SerializeField] AnimationCurve lightIntensity, skyIntensity;
+
+    [Header("Other Light Sources")]
+    [SerializeField] LightData[] lights;
+    [SerializeField] AnimationCurve intensityCurve;
 
     Material skyboxInstance;
 
@@ -41,6 +52,12 @@ public class DayNightController : MonoBehaviour
 
         dayDisplay.text = dayCount.ToString();
         clock.rotation = Quaternion.Euler(0f, 0f, 360f * time);
+
+        float value = intensityCurve.Evaluate(time);
+        foreach (LightData l in lights)
+        {
+            l.light.intensity = value * l.maxIntensity;
+        }
 
         UpdateSun();
     }

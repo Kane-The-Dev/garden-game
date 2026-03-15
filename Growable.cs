@@ -140,7 +140,7 @@ public class Growable : MonoBehaviour
             {
                 HarvestFruit(10);
                 Chop();
-                Destroy(gameObject, 5f);
+                Destroy(transform.parent.gameObject, 5f);
             }
         }
 

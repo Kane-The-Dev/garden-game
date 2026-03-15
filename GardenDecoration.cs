@@ -4,17 +4,25 @@ using UnityEngine;
 
 public class GardenDecoration : MonoBehaviour
 {
-    [SerializeField] private GameObject[] decorations, trees;
-    [SerializeField] private LayerMask groundMask, obstacleMask;
+    [Header("Decoration")]
+    [SerializeField] GameObject[] decorations, trees;
+    [SerializeField] LayerMask groundMask, obstacleMask;
     [SerializeField] Vector3 center;
     [SerializeField] float radius;
     [SerializeField] int minCount, maxCount;
+
+    [Header("Fences")]
+    [SerializeField] Animator fenceAnimator;
+
     float maxDistance = 100f;
     int n1, n2;
     List<GameObject> spawned = new List<GameObject>();
+
+    GameManager gm;
     
     void Start()
     {
+        gm = GameManager.instance;
         n1 = decorations.Length;
         n2 = trees.Length;
         InitializeGarden();
@@ -87,5 +95,22 @@ public class GardenDecoration : MonoBehaviour
         {
             obj.GetComponent<SphereCollider>().enabled = false;
         }
+    }
+
+    public void UpgradeGarden()
+    {
+        fenceAnimator.SetTrigger("Upgrade!");
+        gm.sm.shopPanel.gameObject.SetActive(false);
+        gm.ChangeMode(2);
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
+        Invoke("FinishUpgrade", 8f);
+    }
+
+    void FinishUpgrade()
+    {
+        gm.ChangeMode(0);
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
     }
 }

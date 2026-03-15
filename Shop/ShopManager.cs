@@ -14,7 +14,8 @@ public class ShopManager : MonoBehaviour
     Dictionary<ShopItem, int> stock = new();
     [SerializeField] Transform plantDisplay;
     [SerializeField] GameObject shopButton, displayBar, placeholderBar, displaySection;
-    [SerializeField] RectTransform shopPanel, rootLayout;
+    [SerializeField] RectTransform rootLayout;
+    public RectTransform shopPanel;
     [SerializeField] ShopItem[] specialItems; // items that are tools but have infinite stock
 
     [Header("Display Board")]
