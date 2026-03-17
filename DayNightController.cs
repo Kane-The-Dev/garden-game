@@ -17,6 +17,7 @@ public class DayNightController : MonoBehaviour
     [Header("Visualization")]
     [SerializeField] TextMeshProUGUI dayDisplay;
     [SerializeField] RectTransform clock;
+    [SerializeField] float clockOffset;
 
     [Header("Time Settings")]
     public float dayLength = 60f; // seconds for full cycle
@@ -51,7 +52,7 @@ public class DayNightController : MonoBehaviour
         time %= 1f;
 
         dayDisplay.text = dayCount.ToString();
-        clock.rotation = Quaternion.Euler(0f, 0f, 360f * time);
+        clock.rotation = Quaternion.Euler(0f, 0f, clockOffset + 360f * time);
 
         float value = intensityCurve.Evaluate(time);
         foreach (LightData l in lights)

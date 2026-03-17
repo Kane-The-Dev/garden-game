@@ -6,16 +6,25 @@ using TMPro;
 
 public class EatingManager : MonoBehaviour
 {
+    [Header("Food Dropping")]
     [SerializeField] GameObject[] food;
     List<GameObject> spawnedFood = new List<GameObject>();
+    public Queue<int> q;
+    [SerializeField] float delay, timer, cooldown;
+    public float cooldownTimer;
+
+    [Header("Truck")]
     [SerializeField] GameObject truck_kun;
     GameObject myTruck;
     public Transform drop;
-    [SerializeField] float delay, timer, cooldown;
-    public float cooldownTimer;
-    [SerializeField] TextMeshProUGUI stonksDisplay;
-    public Queue<int> q;
+    
+    [Header("Other")]
     public int accumulatedStonks;
+    [SerializeField] TextMeshProUGUI stonksDisplay;
+    [SerializeField] TextMeshPro infoBoard;
+
+    [SerializeField] AudioSource cashier, engine;
+
     Rigidbody rb;
 
     void Start()
@@ -39,8 +48,14 @@ public class EatingManager : MonoBehaviour
             }
         }
 
-        if (cooldownTimer > 0) cooldownTimer -= Time.deltaTime * GameManager.instance.timeControl;
-        if (myTruck == null && cooldownTimer <= 0) SpawnTruck();
+        if (cooldownTimer > 0) {
+            if (infoBoard) infoBoard.text = "Truck will be back after " + cooldownTimer.ToString("F0");
+            cooldownTimer -= Time.deltaTime * GameManager.instance.timeControl;
+        }
+        if (myTruck == null && cooldownTimer <= 0) {
+            if (infoBoard) infoBoard.text = "Sell your stock here!";
+            SpawnTruck();
+        }
         if (stonksDisplay) stonksDisplay.text = accumulatedStonks + "G";
 
         if (Input.GetKeyDown(KeyCode.B))
@@ -52,13 +67,25 @@ public class EatingManager : MonoBehaviour
     public void ConfirmSale()
     {
         if (q.Count > 0 || cooldownTimer > 0) return;
-            
-        rb.constraints = RigidbodyConstraints.None;
-        rb.AddForce(transform.forward * 2000f + Vector3.up * 400f, ForceMode.Impulse);
-        GameManager.instance.inventory.coin += accumulatedStonks;
-        accumulatedStonks = 0;
+
         cooldownTimer = cooldown;
 
+        cashier.Play();
+        engine.Play();
+
+        for (int i = 0; i < 4; i++)
+            myTruck.transform.GetChild(i).GetComponent<Spin>().speed = 180f;
+            
+        rb.constraints = RigidbodyConstraints.None;
+        GameManager.instance.inventory.coin += accumulatedStonks;
+        accumulatedStonks = 0;
+
+        Invoke("MoveTruck", 4f);
+    }
+
+    void MoveTruck()
+    {
+        rb.AddForce(transform.forward * 2000f + Vector3.up * 400f, ForceMode.Impulse);
         foreach(GameObject obj in spawnedFood) Destroy(obj, 10f);
         Destroy(myTruck, 10f);
     }
@@ -67,7 +94,7 @@ public class EatingManager : MonoBehaviour
     {
         GameObject thisTruck = Instantiate(truck_kun, transform.position, transform.rotation);
         myTruck = thisTruck;
-        drop = myTruck.transform.GetChild(0);
+        drop = myTruck.transform.GetChild(5);
         rb = myTruck.GetComponent<Rigidbody>();
     }
 

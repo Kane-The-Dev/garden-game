@@ -4,6 +4,7 @@ using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using UnityEditor.Search;
 
 public class ShopManager : MonoBehaviour
 {
@@ -22,6 +23,10 @@ public class ShopManager : MonoBehaviour
     [SerializeField] TextMeshProUGUI stats;
     [SerializeField] TextMeshProUGUI itemName, itemDescription, itemPrice;
     [SerializeField] UIParticleSystem buyMessage;
+
+    [Header("Other")]
+    [SerializeField] AudioSource source;
+    [SerializeField] AudioClip purchase, error;
 
     Inventory inventory;
     ShopItemUI selectedUI;
@@ -139,6 +144,7 @@ public class ShopManager : MonoBehaviour
         {
             Debug.Log("Cannot buy because of code " + myItem.CanPurchase(inventory));
             if (myItem.CanPurchase(inventory) == 2) buyMessage.Burst("Out of money!");
+            source.PlayOneShot(error);
             return;
         }
 
@@ -146,11 +152,13 @@ public class ShopManager : MonoBehaviour
         {
             Debug.Log("Out of stock!");
             buyMessage.Burst("Out of stock!");
+            source.PlayOneShot(error);
             return;   
         }
 
         stock[myItem]--;
         buyMessage.Burst("+1");
+        source.PlayOneShot(purchase);
 
         myItem.OnPurchase();
         RefreshShop();

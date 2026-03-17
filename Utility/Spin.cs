@@ -8,7 +8,10 @@ public class Spin : MonoBehaviour
     public bool z;
 
     [Header("Settings")]
-    public float speed = 90f; // degree per second
+    public float speed = 90f; // rotating speed (deg/sec)
+    public float acceleration = 5f;
+
+    private float currentSpeed = 0f;
 
     void Update()
     {
@@ -20,6 +23,8 @@ public class Spin : MonoBehaviour
 
         if (axis == Vector3.zero) return;
 
-        transform.Rotate(axis.normalized * speed * Time.deltaTime, Space.Self);
+        currentSpeed = Mathf.Lerp(currentSpeed, speed, acceleration * Time.deltaTime);
+
+        transform.Rotate(axis.normalized * currentSpeed * Time.deltaTime, Space.Self);
     }
 }

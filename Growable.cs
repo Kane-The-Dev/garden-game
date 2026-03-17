@@ -26,6 +26,10 @@ public class Growable : MonoBehaviour
     public bool isProduct;
     public int productID;
 
+    [Header("Sound Effect")]
+    [SerializeField] AudioSource source;
+    [SerializeField] AudioClip[] plant, chop, leaves, fall; 
+
     [Header("Other")]
     public bool chopped = false;
     [SerializeField] float shakeAmplitude;
@@ -39,6 +43,11 @@ public class Growable : MonoBehaviour
         transform.localScale = Vector3.one * 0.2f * maxGrowth;
         harvestIndex = 0f;
         chopIndex = 0f;
+
+        if (!isProduct) {
+            RandomizeAudio();
+            source.PlayOneShot(plant[Random.Range(0, plant.Length)]);
+        }
     }
 
     void Update()
@@ -121,6 +130,9 @@ public class Growable : MonoBehaviour
 
         if (newStage > chopStage)
         {
+            RandomizeAudio();
+            source.PlayOneShot(chop[Random.Range(0, chop.Length)]);
+
             // Stage 0 → 1
             if (chopStage < 1 && newStage >= 1)
             {
@@ -141,15 +153,20 @@ public class Growable : MonoBehaviour
                 HarvestFruit(10);
                 Chop();
                 Destroy(transform.parent.gameObject, 5f);
+
+                RandomizeAudio();
+                source.PlayOneShot(fall[0]);
             }
         }
 
         chopStage = newStage;
     }
 
-
     public void Shake(float amplitude)
     {
+        RandomizeAudio();
+        source.PlayOneShot(leaves[Random.Range(0, leaves.Length)]);
+
         float myGrowth = transform.localScale.x / maxGrowth;
         GameObject burst = Instantiate(leaf, 
             effectSpawnPoint.position, 
@@ -257,5 +274,11 @@ public class Growable : MonoBehaviour
             fruitCount++;
             yield return new WaitForSeconds(delay);
         }
+    }
+
+    void RandomizeAudio()
+    {
+        source.pitch = Random.Range(0.9f, 1.1f);
+        source.volume = Random.Range(0.9f, 1.1f);
     }
 }
