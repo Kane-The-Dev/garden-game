@@ -39,7 +39,7 @@ public class WaterTool : MonoBehaviour
                 pointB,
                 radius,
                 fMask,
-                QueryTriggerInteraction.Ignore
+                QueryTriggerInteraction.Collide
             );
 
             foreach (Collider p in hits)

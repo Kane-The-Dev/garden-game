@@ -25,6 +25,7 @@ public class Growable : MonoBehaviour
     [Header("Product")]
     public bool isProduct;
     public int productID;
+    Collider col;
 
     [Header("Sound Effect")]
     [SerializeField] AudioSource source;
@@ -34,6 +35,7 @@ public class Growable : MonoBehaviour
     public bool chopped = false;
     [SerializeField] float shakeAmplitude;
     Vector2 shakeDirection;
+    GameManager gm;
 
     void Awake()
     {
@@ -50,14 +52,31 @@ public class Growable : MonoBehaviour
         }
     }
 
+    void Start()
+    {
+        gm = GameManager.instance;
+        if (isProduct) {
+            col = GetComponent<Collider>();
+            col.isTrigger = true;
+        }
+    }
+
     void Update()
     {
-        timeIndex = GameManager.instance.timeControl * 0.05f;
+        timeIndex = gm.timeControl * 0.05f;
 
         Growing();
+
+        if (isProduct) return;
         Shaking();
         Harvesting();
         Chopping();
+    }
+
+    public IEnumerator ActivateCollider()
+    {
+        yield return new WaitForSeconds(0.3f);
+        col.isTrigger = false;
     }
 
     void Growing()
@@ -104,7 +123,7 @@ public class Growable : MonoBehaviour
         {
             harvestIndex = 0f;
             HarvestFruit(2);
-            Shake(5f);
+            Shake(3f);
         }
     }
 
@@ -130,6 +149,7 @@ public class Growable : MonoBehaviour
 
         if (newStage > chopStage)
         {
+            gm.cam.ScreenShake(0.05f);
             RandomizeAudio();
             source.PlayOneShot(chop[Random.Range(0, chop.Length)]);
 
@@ -164,6 +184,8 @@ public class Growable : MonoBehaviour
 
     public void Shake(float amplitude)
     {
+        if (isProduct) return;
+
         RandomizeAudio();
         source.PlayOneShot(leaves[Random.Range(0, leaves.Length)]);
 
@@ -180,7 +202,7 @@ public class Growable : MonoBehaviour
 
     public void HarvestFruit(int quantity)
     {
-        Debug.Log("Harvesting " + quantity + " fruits!");
+        // Debug.Log("Harvesting " + quantity + " fruits!");
         if (quantity <= 0) return;
 
         foreach (Transform slot in slots)
@@ -190,11 +212,16 @@ public class Growable : MonoBehaviour
                 Growable thisFruit = slot.GetChild(0).GetComponent<Growable>();
                 if (thisFruit && thisFruit.growthIndex >= 0.9 * thisFruit.maxGrowth)
                 {
+                    thisFruit.chopped = true;
+                    thisFruit.StartCoroutine(thisFruit.ActivateCollider());
                     slot.GetChild(0).parent = null;
 
                     var rb = thisFruit.gameObject.GetComponent<Rigidbody>();
                     rb.constraints = RigidbodyConstraints.None;
                     rb.useGravity = true;
+
+                    Vector3 dir = (thisFruit.transform.position - transform.position).normalized;
+                    rb.AddForce(new Vector3(dir.x, 5f, dir.z), ForceMode.Impulse);
                     
                     Inventory inventory = GameManager.instance.inventory;
                     inventory.exp += 3f;
@@ -213,6 +240,12 @@ public class Growable : MonoBehaviour
     public void Chop()
     {
         if (chopped) return;
+
+        foreach (Transform slot in slots)
+        {
+            if (slot.childCount > 0)
+                slot.GetChild(0).GetComponent<Growable>().chopped = true;
+        }
 
         chopped = true;
         GameManager.instance.inventory.exp += 10f;
@@ -269,7 +302,8 @@ public class Growable : MonoBehaviour
 
             Transform toGrow = emptySlots[Random.Range(0, emptySlots.Count)];
             
-            Instantiate(product, toGrow);
+            var newProduct = Instantiate(product, toGrow);
+            newProduct.GetComponent<Growable>().growthSpeed = growthSpeed;
 
             fruitCount++;
             yield return new WaitForSeconds(delay);
@@ -279,6 +313,6 @@ public class Growable : MonoBehaviour
     void RandomizeAudio()
     {
         source.pitch = Random.Range(0.9f, 1.1f);
-        source.volume = Random.Range(0.9f, 1.1f);
+        source.volume = Random.Range(0.85f, 1f);
     }
 }

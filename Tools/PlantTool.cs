@@ -3,8 +3,11 @@ using UnityEngine;
 
 public class PlantTool : MonoBehaviour
 {
+    public int plantID;
     float maxDistance = 100f, radius = 0.5f;
-    [SerializeField] GameObject[] plants, products, other;
+    [SerializeField] GameObject[] plants;
+    [SerializeField] float[] plantRadius;
+    [SerializeField] GameObject[] products, other;
     Color currentColor;
     Renderer ringRender;
      
@@ -14,10 +17,32 @@ public class PlantTool : MonoBehaviour
     {
         currentColor = Color.white;
         inventory = GameManager.instance.inventory;
+        plantID = -1;
+    }
+
+    int GetTreeType()
+    {
+        int treeType = 0;
+        if (inventory.foodList[plantID].type == "Tree")
+            treeType = Random.Range(0, 2);
+        else if (inventory.foodList[plantID].type == "Pine")
+            treeType = 2;
+        else if (inventory.foodList[plantID].type == "Bush")
+            treeType = Random.Range(3, 5);
+        else if (inventory.foodList[plantID].type == "Ground")
+            treeType = 5;
+        else
+            treeType = -1;
+
+        return treeType;
     }
 
     public void PlantCheck(GameObject ring, Ray ray, LayerMask gMask, LayerMask oMask)
     {
+        if (plantID < 0) return;
+
+        int treeType = GetTreeType();
+        radius = treeType >= 0 ? plantRadius[treeType] : 0.5f;
         RaycastHit hit;
 
         if (Physics.Raycast(ray, out hit, maxDistance, gMask))
@@ -48,8 +73,10 @@ public class PlantTool : MonoBehaviour
         }
     }
 
-    public void PlantTree(int plantID, Ray ray, LayerMask gMask, LayerMask oMask)
+    public void PlantTree(Ray ray, LayerMask gMask, LayerMask oMask)
     {
+        if (plantID < 0) return;
+
         RaycastHit hit;
 
         if (Physics.Raycast(ray, out hit, maxDistance, gMask))
@@ -79,15 +106,7 @@ public class PlantTool : MonoBehaviour
 
     void Plant(int plantID, Vector3 point)
     {
-        int treeType = 0;
-        if (inventory.foodList[plantID].type == "Tree")
-            treeType = Random.Range(0, 2);
-        else if (inventory.foodList[plantID].type == "Pine")
-            treeType = 2;
-        else if (inventory.foodList[plantID].type == "Bush")
-            treeType = Random.Range(3, 5);
-        else if (inventory.foodList[plantID].type == "Ground")
-            treeType = 5;
+        int treeType = GetTreeType();
             
         GameObject newTree = Instantiate(
             plants[treeType], 

@@ -14,17 +14,14 @@ public class PlantManager : MonoBehaviour
     public ChopTool chopTool;
     
     public int mode; // 0 = plant, 1 = water, 2 = harvest, 3 = chop
-    public int plantID;
+    // public int plantID;
 
     void Start()
     {
         mode = 0;
-        plantID = -1;
-
+        // plantID = -1;
         cam = GetComponent<Camera>();
-        
         plantTool = GetComponent<PlantTool>();
-
         ring.GetComponent<Renderer>().material.color = new Color(1f, 1f, 1f, 0.8f);
     }
 
@@ -32,14 +29,14 @@ public class PlantManager : MonoBehaviour
     {
         Ray ray = cam.ScreenPointToRay(Input.mousePosition);
 
-        if (EventSystem.current.IsPointerOverGameObject())
+        if (EventSystem.current.IsPointerOverGameObject() || GameManager.instance.currentMode != 0)
         {
             ring.GetComponent<Renderer>().material.color = new Color(1f, 1f, 1f, 0.8f);
             ring.SetActive(false);
             return;
         }
 
-        if (mode == 0)
+        if (mode == 0 && plantTool.plantID >= 0)
         {
             ring.SetActive(true);
             plantTool.PlantCheck(ring, ray, groundMask, obstacleMask);
@@ -78,8 +75,7 @@ public class PlantManager : MonoBehaviour
         {
             switch (mode) {
                 case 0:
-                    if (plantID == -1) break;
-                    plantTool.PlantTree(plantID, ray, groundMask, obstacleMask);
+                    plantTool.PlantTree(ray, groundMask, obstacleMask);
                     break;
                 case 1:
                     ring.SetActive(true);
@@ -103,6 +99,6 @@ public class PlantManager : MonoBehaviour
 
     public void ChangePlant(int newPlantID)
     {
-        plantID = newPlantID;
+        plantTool.plantID = newPlantID;
     }
 }

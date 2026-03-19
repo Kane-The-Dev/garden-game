@@ -30,7 +30,7 @@ public class PlantButton : MonoBehaviour
 
     public void OnClick()
     {
-        FindObjectOfType<PlantManager>().ChangePlant(plantID);
+        GameManager.instance.pm.ChangePlant(plantID);
         myGroup.OnClick(gameObject);
     }
 }
