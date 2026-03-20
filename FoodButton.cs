@@ -30,10 +30,18 @@ public class FoodButton : MonoBehaviour
             return;
         }
 
-        for (int i = 0; i < quantity; i++)
-        eater.q.Enqueue(productID);
+        if (eater.totalWeight + quantity * inventory.foodList[productID].weight > 30) 
+        {
+            Debug.Log("Truck is overloaded!");
+            return;
+        }
 
+        for (int i = 0; i < quantity; i++)
+            eater.q.Enqueue(productID);
+
+        eater.totalWeight += quantity * inventory.foodList[productID].weight;
         eater.accumulatedStonks += quantity * inventory.foodList[productID].sellPrice;
+
         inventory.foodList[productID].UpdateN(-1 * quantity);
         inventory.UpdateStorage();
     }

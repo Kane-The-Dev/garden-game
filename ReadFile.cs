@@ -19,10 +19,10 @@ public class ReadFile : MonoBehaviour
         {
             string[] parts = line.Split(
                 (char[])null,
-                8,
+                9,
                 System.StringSplitOptions.RemoveEmptyEntries
             );
-            if (parts.Length < 7) continue;
+            if (parts.Length < 8) continue;
 
             int.TryParse(parts[0], out int id);
             string name = parts[1];
@@ -30,11 +30,12 @@ public class ReadFile : MonoBehaviour
             int.TryParse(parts[3], out int sell);
             float.TryParse(parts[4], out float speed);
             int.TryParse(parts[5], out int requirement);
-            string type = parts[6];
-            string description = parts[7];
+            float.TryParse(parts[6], out float weight);
+            string type = parts[7];
+            string description = parts[8];
 
             Item newItem =  new Item();
-            newItem.Set(id, name, plant, sell, speed, requirement, type, description);
+            newItem.Set(id, name, plant, sell, speed, requirement, weight, type, description);
             list.Add(newItem);
         }
     }

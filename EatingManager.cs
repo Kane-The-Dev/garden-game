@@ -11,6 +11,7 @@ public class EatingManager : MonoBehaviour
     List<GameObject> spawnedFood = new List<GameObject>();
     public Queue<int> q;
     [SerializeField] float delay, timer, cooldown;
+    public float totalWeight;
     public float cooldownTimer;
 
     [Header("Truck")]
@@ -78,6 +79,7 @@ public class EatingManager : MonoBehaviour
             
         rb.constraints = RigidbodyConstraints.None;
         GameManager.instance.inventory.coin += accumulatedStonks;
+        totalWeight = 0;
         accumulatedStonks = 0;
 
         Invoke("MoveTruck", 4f);
@@ -85,7 +87,9 @@ public class EatingManager : MonoBehaviour
 
     void MoveTruck()
     {
-        rb.AddForce(transform.forward * 2000f + Vector3.up * 400f, ForceMode.Impulse);
+        Vector3 moveDir = transform.forward * 2000f + Vector3.up * 500f;
+        rb.AddForce(moveDir * (1 + totalWeight * 0.2f), ForceMode.Impulse);
+        Debug.Log("Your force is " + (moveDir * (1 + totalWeight * 0.4f)));
         foreach(GameObject obj in spawnedFood) Destroy(obj, 10f);
         Destroy(myTruck, 10f);
     }
