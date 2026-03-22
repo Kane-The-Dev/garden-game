@@ -89,7 +89,7 @@ public class EatingManager : MonoBehaviour
     {
         Vector3 moveDir = transform.forward * 2000f + Vector3.up * 500f;
         rb.AddForce(moveDir * (1 + totalWeight * 0.2f), ForceMode.Impulse);
-        Debug.Log("Your force is " + (moveDir * (1 + totalWeight * 0.4f)));
+        Debug.Log("Your force is " + (moveDir * (1 + totalWeight * 0.5f)));
         foreach(GameObject obj in spawnedFood) Destroy(obj, 10f);
         Destroy(myTruck, 10f);
     }

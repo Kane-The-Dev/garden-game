@@ -18,6 +18,10 @@ public class GardenDecoration : MonoBehaviour
     int n1, n2;
     List<GameObject> spawned = new List<GameObject>();
 
+    // wind settings
+    Dictionary<GameObject, float> offset = new Dictionary<GameObject, float>();
+    Dictionary<GameObject, float> amplitude = new Dictionary<GameObject, float>();
+
     GameManager gm;
     
     void Start()
@@ -26,6 +30,11 @@ public class GardenDecoration : MonoBehaviour
         n1 = decorations.Length;
         n2 = trees.Length;
         InitializeGarden();
+    }
+
+    void Update()
+    {
+        UpdateGarden();
     }
 
     void InitializeGarden()
@@ -88,12 +97,33 @@ public class GardenDecoration : MonoBehaviour
                 decor.transform.localScale *= Random.Range(0.8f, 1.2f);
                 decor.transform.parent = this.transform;
                 spawned.Add(decor);
+
+                float random = Random.Range(4.5f, 5.4f);
+                if (decor.name.Contains("Tree")) random *= 0.2f;
+                else if (decor.name.Contains("Rock")) random *= 0f;
+
+                amplitude[decor] = random;
+                offset[decor] = Random.Range(0f, 90f);
             }
         }
 
         foreach (GameObject obj in spawned)
         {
             obj.GetComponent<SphereCollider>().enabled = false;
+        }
+    }
+
+    void UpdateGarden()
+    {
+        foreach (GameObject obj in spawned)
+        {
+            if (obj == null) continue;
+
+            float rotX = Mathf.Sin(Time.time * 0.5f + offset[obj]) * amplitude[obj];
+            float rotZ = Mathf.Sin(Time.time * 0.5f + offset[obj]) * amplitude[obj];
+
+            Vector3 euler = obj.transform.eulerAngles;
+            obj.transform.rotation = Quaternion.Euler(rotX, euler.y, rotZ);
         }
     }
 

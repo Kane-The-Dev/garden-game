@@ -118,6 +118,8 @@ public class PlantTool : MonoBehaviour
         g.growthSpeed = inventory.foodList[plantID].growthSpeed;
         g.maxGrowth *= Random.Range(0.85f, 1f);
         g.product = products[plantID];
+        g.offset = Random.Range(0f, 90f);
+        g.amplitude = Random.Range(3.6f, 4f) * (treeType > 2 ? 1f : 0.25f);
     }
 
     void Build(int plantID, Vector3 point)

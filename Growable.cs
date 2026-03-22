@@ -27,9 +27,13 @@ public class Growable : MonoBehaviour
     public int productID;
     Collider col;
 
+    [Header("Wiggle")]
+    public float offset;
+    public float amplitude;
+
     [Header("Sound Effect")]
     [SerializeField] AudioSource source;
-    [SerializeField] AudioClip[] plant, chop, leaves, fall; 
+    [SerializeField] AudioClip[] plant, chop, leaves, fall;
 
     [Header("Other")]
     public bool chopped = false;
@@ -55,10 +59,16 @@ public class Growable : MonoBehaviour
     void Start()
     {
         gm = GameManager.instance;
-        if (isProduct) {
+        if (isProduct && growthSpeed != 0) {
             col = GetComponent<Collider>();
             col.isTrigger = true;
         }
+    }
+
+    public IEnumerator ActivateCollider()
+    {
+        yield return new WaitForSeconds(0.3f);
+        col.isTrigger = false;
     }
 
     void Update()
@@ -68,15 +78,20 @@ public class Growable : MonoBehaviour
         Growing();
 
         if (isProduct) return;
+
+        Wiggling();
         Shaking();
         Harvesting();
         Chopping();
     }
 
-    public IEnumerator ActivateCollider()
+    void Wiggling()
     {
-        yield return new WaitForSeconds(0.3f);
-        col.isTrigger = false;
+        float rotX = Mathf.Sin(Time.time * 0.5f + offset) * amplitude;
+        float rotZ = Mathf.Sin(Time.time * 0.5f + offset) * amplitude;
+
+        Vector3 euler = transform.parent.eulerAngles;
+        transform.parent.rotation = Quaternion.Euler(rotX, euler.y, rotZ);
     }
 
     void Growing()
@@ -97,6 +112,24 @@ public class Growable : MonoBehaviour
             StartCoroutine(GrowFruits());
             reproductive = true;
         }
+    }
+
+    public void Shake(float amplitude)
+    {
+        if (isProduct) return;
+
+        RandomizeAudio();
+        source.PlayOneShot(leaves[Random.Range(0, leaves.Length)]);
+
+        float myGrowth = transform.localScale.x / maxGrowth;
+        GameObject burst = Instantiate(leaf, 
+            effectSpawnPoint.position, 
+            Quaternion.identity
+        );
+        burst.transform.localScale = new Vector3(myGrowth, myGrowth, myGrowth);
+        
+        shakeAmplitude = amplitude;
+        shakeDirection = Random.insideUnitCircle.normalized;
     }
 
     void Shaking()
@@ -182,24 +215,6 @@ public class Growable : MonoBehaviour
         chopStage = newStage;
     }
 
-    public void Shake(float amplitude)
-    {
-        if (isProduct) return;
-
-        RandomizeAudio();
-        source.PlayOneShot(leaves[Random.Range(0, leaves.Length)]);
-
-        float myGrowth = transform.localScale.x / maxGrowth;
-        GameObject burst = Instantiate(leaf, 
-            effectSpawnPoint.position, 
-            Quaternion.identity
-        );
-        burst.transform.localScale = new Vector3(myGrowth, myGrowth, myGrowth);
-        
-        shakeAmplitude = amplitude;
-        shakeDirection = Random.insideUnitCircle.normalized;
-    }
-
     public void HarvestFruit(int quantity)
     {
         // Debug.Log("Harvesting " + quantity + " fruits!");
@@ -220,10 +235,15 @@ public class Growable : MonoBehaviour
                     rb.constraints = RigidbodyConstraints.None;
                     rb.useGravity = true;
 
-                    Vector3 dir = (thisFruit.transform.position - transform.position).normalized;
-                    rb.AddForce(new Vector3(dir.x, 5f, dir.z), ForceMode.Impulse);
-                    
                     Inventory inventory = GameManager.instance.inventory;
+
+                    Vector3 dir = (thisFruit.transform.position - transform.position).normalized;
+                    // Debug.Log(inventory.foodList[thisFruit.productID].weight);
+                    rb.AddForce(
+                        new Vector3(dir.x, 6f, dir.z) * inventory.foodList[thisFruit.productID].weight, 
+                        ForceMode.Impulse
+                    );
+                    
                     inventory.exp += 3f;
                     inventory.foodList[thisFruit.productID].UpdateN(1);
                     inventory.UpdateStorage();
@@ -303,7 +323,8 @@ public class Growable : MonoBehaviour
             Transform toGrow = emptySlots[Random.Range(0, emptySlots.Count)];
             
             var newProduct = Instantiate(product, toGrow);
-            newProduct.GetComponent<Growable>().growthSpeed = growthSpeed;
+            var newFruit = newProduct.GetComponent<Growable>();
+            newFruit.growthSpeed = growthSpeed;
 
             fruitCount++;
             yield return new WaitForSeconds(delay);
