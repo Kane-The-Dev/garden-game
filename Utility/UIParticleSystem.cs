@@ -4,10 +4,25 @@ using UnityEngine;
 
 public class UIParticleSystem : MonoBehaviour
 {
-    [SerializeField] GameObject particlePrefab;
-    [SerializeField] Transform canvas;
-    [SerializeField] float minSpeed, maxSpeed, gravity, rotation, minFlip, maxFlip, minLifetime, maxLifetime;
-    [SerializeField] int minCount, maxCount;
+    public GameObject particlePrefab;
+    public Transform canvas;
+    public float minSpeed, maxSpeed, gravity, rotation, minFlip, maxFlip, minLifetime, maxLifetime;
+    public int minCount, maxCount;
+    public RectTransform target;
+
+    void ApplySettings(UIParticle p)
+    {
+        Vector2 dir = Random.insideUnitCircle.normalized;
+        float speed = Random.Range(minSpeed, maxSpeed);
+        p.velocity = dir * speed;
+
+        p.gravity = gravity;
+        p.spinSpeed = Random.Range(-rotation, rotation);
+        p.flipSpeed = Random.Range(minFlip, maxFlip);
+        p.lifetime = Random.Range(minLifetime, maxLifetime);
+
+        if (target) p.target = target;
+    }
 
     public void Burst()
     {
@@ -17,14 +32,7 @@ public class UIParticleSystem : MonoBehaviour
             GameObject obj = Instantiate(particlePrefab, canvas);
             UIParticle p = obj.GetComponent<UIParticle>();
 
-            Vector2 dir = Random.insideUnitCircle.normalized;
-            float speed = Random.Range(minSpeed, maxSpeed);
-            p.velocity = dir * speed;
-
-            p.gravity = gravity;
-            p.spinSpeed = Random.Range(-rotation, rotation);
-            p.flipSpeed = Random.Range(minFlip, maxFlip);
-            p.lifetime = Random.Range(minLifetime, maxLifetime);
+            ApplySettings(p);
         }
     }
 
@@ -37,15 +45,26 @@ public class UIParticleSystem : MonoBehaviour
             UIParticle p = obj.GetComponent<UIParticle>();
 
             p.text.text = msg;
+            ApplySettings(p);
+        }
+    }
 
-            Vector2 dir = Random.insideUnitCircle.normalized;
-            float speed = Random.Range(minSpeed, maxSpeed);
-            p.velocity = dir * speed;
+    public void Emission(float delay)
+    {
+        StartCoroutine(EmitOverTime(delay));
+    }
 
-            p.gravity = gravity;
-            p.spinSpeed = Random.Range(-rotation, rotation);
-            p.flipSpeed = Random.Range(minFlip, maxFlip);
-            p.lifetime = Random.Range(minLifetime, maxLifetime);
+    IEnumerator EmitOverTime(float delay)
+    {
+        int count = Random.Range(minCount, maxCount);
+        for (int i = 0; i < count; i++)
+        {
+            GameObject obj = Instantiate(particlePrefab, canvas);
+            UIParticle p = obj.GetComponent<UIParticle>();
+
+            ApplySettings(p);
+
+            yield return new WaitForSeconds(delay);
         }
     }
 }

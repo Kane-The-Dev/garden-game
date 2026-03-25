@@ -11,20 +11,23 @@ public class EatingManager : MonoBehaviour
     List<GameObject> spawnedFood = new List<GameObject>();
     public Queue<int> q;
     [SerializeField] float delay, timer, cooldown;
-    public float totalWeight;
-    public float cooldownTimer;
+    public float totalWeight, cooldownTimer;
+    public int accumulatedStonks;
 
     [Header("Truck")]
     [SerializeField] GameObject truck_kun;
     GameObject myTruck;
     public Transform drop;
     
-    [Header("Other")]
-    public int accumulatedStonks;
+    [Header("Audio")]
+    [SerializeField] AudioSource cashier;
+    [SerializeField] AudioSource engine;
+    [SerializeField] AudioClip cashIn, error;
+
+    [Header("Display")]
     [SerializeField] TextMeshProUGUI stonksDisplay;
     [SerializeField] TextMeshPro infoBoard;
-
-    [SerializeField] AudioSource cashier, engine;
+    [SerializeField] UIParticleSystem sellMessage, coinBurst;
 
     Rigidbody rb;
 
@@ -67,15 +70,35 @@ public class EatingManager : MonoBehaviour
 
     public void ConfirmSale()
     {
-        if (q.Count > 0 || cooldownTimer > 0) return;
+        if (q.Count > 0) {
+            sellMessage.Burst("Food is loading!");
+            cashier.PlayOneShot(error);
+            return;
+        }
+
+        if (cooldownTimer > 0) {
+            sellMessage.Burst("Wait for truck!");
+            cashier.PlayOneShot(error);
+            return;
+        }
+
+        if (accumulatedStonks <= 0) {
+            sellMessage.Burst("Nothing to sell!");
+            cashier.PlayOneShot(error);
+            return;
+        }
 
         cooldownTimer = cooldown;
 
-        cashier.Play();
+        cashier.PlayOneShot(cashIn);
         engine.Play();
 
         for (int i = 0; i < 4; i++)
             myTruck.transform.GetChild(i).GetComponent<Spin>().speed = 180f;
+
+        coinBurst.minCount = Mathf.Min(1 + accumulatedStonks / 10, 30);
+        coinBurst.maxCount = Mathf.Min(1 + accumulatedStonks / 10, 30);
+        coinBurst.Emission(0.05f);
             
         rb.constraints = RigidbodyConstraints.None;
         GameManager.instance.inventory.coin += accumulatedStonks;
@@ -100,6 +123,7 @@ public class EatingManager : MonoBehaviour
         myTruck = thisTruck;
         drop = myTruck.transform.GetChild(5);
         rb = myTruck.GetComponent<Rigidbody>();
+        engine = thisTruck.GetComponent<AudioSource>();
     }
 
     void SpawnFood(int ID)

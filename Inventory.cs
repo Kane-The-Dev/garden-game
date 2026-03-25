@@ -57,8 +57,8 @@ public class Inventory : MonoBehaviour
             shop.RefreshShop();
         }
 
-        if (prevCoin != coin) coinBurst.Burst();
-        prevCoin = coin;
+        // if (prevCoin != coin) coinBurst.Burst();
+        // prevCoin = coin;
     }
 
     public void UpdateStorage()
