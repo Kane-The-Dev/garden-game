@@ -5,11 +5,14 @@ using UnityEngine;
 [CreateAssetMenu(menuName = "Shop Items/Expansion")]
 public class ExpansionUnlock : ShopItem
 {
-    Inventory inventory;
+    // Inventory inventory;
 
-    public override void OnPurchase()
+    public override void OnPurchase(Inventory inventory)
     {
+        inventory.coin -= price;
+
         GameManager.instance.gd.UpgradeGarden();
+        
         Debug.Log("You unlocked " + itemName);
     }
 

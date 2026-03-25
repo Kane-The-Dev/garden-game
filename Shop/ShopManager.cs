@@ -160,7 +160,7 @@ public class ShopManager : MonoBehaviour
         buyMessage.Burst("+1");
         source.PlayOneShot(purchase);
 
-        myItem.OnPurchase();
+        myItem.OnPurchase(inventory);
         RefreshShop();
     }
 }

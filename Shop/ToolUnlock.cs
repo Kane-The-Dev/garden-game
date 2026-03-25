@@ -6,12 +6,10 @@ public class ToolUnlock : ShopItem
     [SerializeField] int toolType; // 1 = water, 2 = harvest, 3 = chop
     [SerializeField] GameObject myTool;
     [SerializeField] string prevUpgrade;
-    Inventory inventory;
+    // Inventory inventory;
     
-    public override void OnPurchase()
+    public override void OnPurchase(Inventory inventory)
     {
-        inventory = GameManager.instance.inventory;
-
         if (!inventory.myInventory.ContainsKey(itemName))
             inventory.myInventory[itemName] = 0;
 
