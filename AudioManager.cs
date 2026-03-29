@@ -1,53 +1,81 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Audio;
+
+[System.Serializable]
+public class Clip
+{
+    public AudioClip sound;
+    public float volume;
+}
 
 public class AudioManager : MonoBehaviour
 {
-    public static AudioManager Instance;
+    public static AudioManager instance;
 
     [Header("Audio Sources")]
-    [SerializeField] AudioSource music;
     [SerializeField] AudioSource ambient;
-    [SerializeField] AudioSource button;
-    [SerializeField] AudioSource sfxSource;
+    [SerializeField] AdvancedAudioSource music, UISource;
+    
+    [SerializeField] AudioMixer musicMixer, SFXMixer;
 
-    [Header("Volume")]
-    [Range(0f,1f)] public float masterVolume = 1f;
+    [Header("Clips")]
+    [SerializeField] Clip[] UISounds;
+    [SerializeField] Clip[] musicDiscs;
+
+    [Header("Settings")]
     [Range(0f,1f)] public float musicVolume = 1f;
-    [Range(0f,1f)] public float sfxVolume = 1f;
-    [Range(0f,1f)] public float uiVolume = 1f;
+    [Range(0f,1f)] public float ambientVolume = 1f;
+    [Range(0f,1f)] public float SFXVolume = 1f;
+
+    [SerializeField] int nowPlaying = 0;
 
     void Awake()
     {
-        if (Instance != null && Instance != this)
+        if (instance != null && instance != this)
         {
             Destroy(gameObject);
             return;
         }
 
-        Instance = this;
+        instance = this;
         DontDestroyOnLoad(gameObject);
     }
 
-    void Update()
+    void Start()
     {
-        
+        StartCoroutine(ChangeSong());
     }
 
-    public void PlayMusic(bool loop = true)
+    IEnumerator ChangeSong()
     {
-        music.Play();
+        while (true)
+        {
+            Clip nextSong = musicDiscs[(++nowPlaying) % musicDiscs.Length];
+            music.Play(nextSong.sound, nextSong.volume);
+            yield return new WaitWhile(() => music.source.isPlaying);
+        }
+    }
+
+    public void PlayAmbient(bool loop = true)
+    {
         ambient.Play();
     }
 
-    public void PlaySFX(AudioClip clip)
+    public void ApplyVolumes()
     {
-        sfxSource.PlayOneShot(clip);
+        float dB1 = Mathf.Log10(Mathf.Max(musicVolume, 0.001f)) * 20f;
+        musicMixer.SetFloat("musicVolume", dB1);
+
+        ambient.volume = ambientVolume;
+
+        float dB2 = Mathf.Log10(Mathf.Max(SFXVolume, 0.001f)) * 20f;
+        SFXMixer.SetFloat("SFXVolume", dB2);
     }
 
-    public void PlaySFX(AudioClip clip, Vector3 position)
+    public void PlayUISoundEffect(int clipID)
     {
-        AudioSource.PlayClipAtPoint(clip, position, masterVolume * sfxVolume);
+        UISource.PlayOneShot(UISounds[clipID].sound, UISounds[clipID].volume, true);
     }
 }

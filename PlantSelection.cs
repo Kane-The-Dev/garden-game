@@ -45,7 +45,7 @@ public class PlantSelection : MonoBehaviour
             thisButton.inventory = inventory;
             thisButton.Refresh();
 
-            if (thisButton.plantID == pm.plantID)
+            if (thisButton.plantID == pm.plantTool.plantID)
                 thisButton?.OnClick();
         }
     }

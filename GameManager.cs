@@ -5,14 +5,15 @@ using UnityEngine;
 public class GameManager : MonoBehaviour
 {
     public static GameManager instance;
-    int currentMode;
+    public int currentMode;
     [SerializeField] Transform garden, merchant, overview;
     public CameraMovement cam;
     public PlantManager pm;
     public ShopManager sm;
     public Inventory inventory;
     public EatingManager em;
-    public GardenDecoration gd;
+    public FenceManager fence;
+    public AudioManager am;
     [SerializeField] GameObject gardenTools, plantShop, foodStorage;
 
     public int timeControl;
@@ -24,11 +25,18 @@ public class GameManager : MonoBehaviour
         else
             instance = this;
 
+        DontDestroyOnLoad(gameObject);
+
         currentMode = 0;
         cam = FindObjectOfType<CameraMovement>();
         pm = FindObjectOfType<PlantManager>();
         sm = FindObjectOfType<ShopManager>();
         inventory = FindObjectOfType<Inventory>();
+    }
+
+    void Start()
+    {
+        am = AudioManager.instance;
     }
 
     public void ChangeMode(int mode) // 0 garden, 1 merchant, 2 overview
@@ -64,6 +72,7 @@ public class GameManager : MonoBehaviour
             foodStorage.SetActive(false);
         }
         cam.targetReached = false;
+        am.PlayUISoundEffect(5); // whoosh sound
     }
 
     public void SwapMode()

@@ -5,17 +5,20 @@ public class HarvestTool : MonoBehaviour
     float maxDistance = 100f;
     [SerializeField] float radius, speed;
     [SerializeField] ParticleSystem mainVFX, subVFX;
+    [SerializeField] AdvancedAudioSource myAAS;
         
     public void StartHarvest()
     {
         if (mainVFX) mainVFX.Play();
         if (subVFX) subVFX.Play();
+        if (myAAS) myAAS.Play(null, -1f, false, 0.5f);
     }
 
     public void StopHarvest()
     {
         if (mainVFX) mainVFX.Stop();
         if (subVFX) subVFX.Stop();
+        if (myAAS) myAAS.Stop(0.5f);
     }
 
     public void HarvestTree(GameObject ring, Ray ray, LayerMask gMask, LayerMask pMask)

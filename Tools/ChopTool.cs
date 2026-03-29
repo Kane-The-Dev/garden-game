@@ -5,12 +5,19 @@ public class ChopTool : MonoBehaviour
 {
     float maxDistance = 100f, radius = 1f;
     [SerializeField] float speed;
+    [SerializeField] AudioClip[] sounds;
+    public AdvancedAudioSource myAAS;
 
     Inventory inventory;
 
     void Start() 
     {
         inventory = GameManager.instance.inventory;
+    }
+
+    public void PlayChop()
+    {
+        if (myAAS) myAAS.PlayOneShot(sounds[Random.Range(0, sounds.Length)], -1f, true);
     }
 
     public void ChopTree(GameObject ring, Ray ray, LayerMask gMask, LayerMask pMask)
@@ -40,10 +47,12 @@ public class ChopTool : MonoBehaviour
             foreach (Collider p in hits)
             {
                 Growable tree = p.GetComponent<Growable>();
-                if (tree != null)
-                {
+
+                if (tree.myChopTool != this)
+                    tree.myChopTool = this;
+
+                if (tree != null && !tree.chopped)
                     tree.chopIndex += speed * Time.deltaTime;
-                }
             }
         }
     }

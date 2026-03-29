@@ -11,7 +11,7 @@ public class ExpansionUnlock : ShopItem
     {
         inventory.coin -= price;
 
-        GameManager.instance.gd.UpgradeGarden();
+        GameManager.instance.fence.UpgradeFence();
         
         Debug.Log("You unlocked " + itemName);
     }

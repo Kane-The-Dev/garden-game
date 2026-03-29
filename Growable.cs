@@ -32,8 +32,9 @@ public class Growable : MonoBehaviour
     public float amplitude;
 
     [Header("Sound Effect")]
-    [SerializeField] AudioSource source;
+    [SerializeField] AdvancedAudioSource myAAS;
     [SerializeField] AudioClip[] plant, chop, leaves, fall;
+    public ChopTool myChopTool;
 
     [Header("Other")]
     public bool chopped = false;
@@ -51,8 +52,7 @@ public class Growable : MonoBehaviour
         chopIndex = 0f;
 
         if (!isProduct) {
-            RandomizeAudio();
-            source.PlayOneShot(plant[Random.Range(0, plant.Length)]);
+            myAAS.PlayOneShot(plant[Random.Range(0, plant.Length)], 1f, true);
         }
     }
 
@@ -118,8 +118,7 @@ public class Growable : MonoBehaviour
     {
         if (isProduct) return;
 
-        RandomizeAudio();
-        source.PlayOneShot(leaves[Random.Range(0, leaves.Length)]);
+        myAAS.PlayOneShot(leaves[Random.Range(0, leaves.Length)], 1f, true);
 
         float myGrowth = transform.localScale.x / maxGrowth;
         GameObject burst = Instantiate(leaf, 
@@ -182,22 +181,21 @@ public class Growable : MonoBehaviour
 
         if (newStage > chopStage)
         {
-            gm.cam.ScreenShake(0.05f);
-            RandomizeAudio();
-            source.PlayOneShot(chop[Random.Range(0, chop.Length)]);
+            gm.cam.ScreenShake(0.02f);
+            myChopTool.PlayChop();
 
             // Stage 0 → 1
             if (chopStage < 1 && newStage >= 1)
             {
                 HarvestFruit(2);
-                Shake(5f);
+                Shake(3f);
             }
 
             // Stage 1 → 2
             if (chopStage < 2 && newStage >= 2)
             {
                 HarvestFruit(2);
-                Shake(5f);
+                Shake(3f);
             }
 
             // Stage 2 → 3 (final)
@@ -207,8 +205,7 @@ public class Growable : MonoBehaviour
                 Chop();
                 Destroy(transform.parent.gameObject, 5f);
 
-                RandomizeAudio();
-                source.PlayOneShot(fall[0]);
+                myAAS.PlayOneShot(fall[0], 1f, true);
             }
         }
 
@@ -329,11 +326,5 @@ public class Growable : MonoBehaviour
             fruitCount++;
             yield return new WaitForSeconds(delay);
         }
-    }
-
-    void RandomizeAudio()
-    {
-        source.pitch = Random.Range(0.9f, 1.1f);
-        source.volume = Random.Range(0.85f, 1f);
     }
 }

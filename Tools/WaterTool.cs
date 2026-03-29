@@ -5,15 +5,18 @@ public class WaterTool : MonoBehaviour
     float maxDistance = 100f;
     [SerializeField] ParticleSystem waterVFX;
     [SerializeField] float radius, multiplier;
+    [SerializeField] AdvancedAudioSource myAAS;
 
     public void StartWater()
     {
-        waterVFX.Play();
+        if (waterVFX) waterVFX.Play();
+        if (myAAS) myAAS.Play(null, -1f, false, 0.5f);
     }
 
     public void StopWater()
     {
-        waterVFX.Stop();
+        if (waterVFX) waterVFX.Stop();
+        if (myAAS) myAAS.Stop(0.5f);
     }
 
     public void WaterTree(GameObject ring, Ray ray, LayerMask gMask, LayerMask fMask)
