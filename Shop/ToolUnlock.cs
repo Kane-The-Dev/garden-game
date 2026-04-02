@@ -6,7 +6,6 @@ public class ToolUnlock : ShopItem
     [SerializeField] int toolType; // 1 = water, 2 = harvest, 3 = chop
     [SerializeField] GameObject myTool;
     [SerializeField] string prevUpgrade;
-    // Inventory inventory;
     
     public override void OnPurchase(Inventory inventory)
     {

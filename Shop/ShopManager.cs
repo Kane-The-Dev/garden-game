@@ -4,7 +4,6 @@ using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
-using UnityEditor.Search;
 
 public class ShopManager : MonoBehaviour
 {

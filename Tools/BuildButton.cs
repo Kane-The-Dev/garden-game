@@ -4,10 +4,10 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 
-public class PlantButton : MonoBehaviour
+public class BuildButton : MonoBehaviour
 {
-    public int plantID;
-    public string plantName;
+    public int buildID;
+    public string buildName;
     public ButtonGroup myGroup;
     public Image myImage;
     [SerializeField] TextMeshProUGUI display, count;
@@ -15,21 +15,21 @@ public class PlantButton : MonoBehaviour
 
     public void Refresh()
     {
-        if (inventory.myInventory.ContainsKey(plantName))
+        if (inventory.myInventory.ContainsKey(buildName))
         {
-            display.text = plantName;
-            count.text = inventory.myInventory[plantName].ToString();
+            display.text = buildName;
+            count.text = inventory.myInventory[buildName].ToString();
         }
         else
         {
-            display.text = plantName;
+            display.text = buildName;
             count.text = "0";
         }
     }
 
     public void OnClick()
     {
-        GameManager.instance.pm.ChangePlant(plantID);
+        GameManager.instance.pm.ChangeBuilding(buildID);
         myGroup.OnClick(gameObject);
     }
 }

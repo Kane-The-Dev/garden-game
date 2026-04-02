@@ -126,21 +126,4 @@ public class GardenDecoration : MonoBehaviour
             obj.transform.rotation = Quaternion.Euler(rotX, euler.y, rotZ);
         }
     }
-
-    public void UpgradeGarden()
-    {
-        fenceAnimator.SetTrigger("Upgrade!");
-        gm.sm.shopPanel.gameObject.SetActive(false);
-        gm.ChangeMode(2);
-        Cursor.lockState = CursorLockMode.Locked;
-        Cursor.visible = false;
-        Invoke("FinishUpgrade", 8f);
-    }
-
-    void FinishUpgrade()
-    {
-        gm.ChangeMode(0);
-        Cursor.lockState = CursorLockMode.None;
-        Cursor.visible = true;
-    }
 }

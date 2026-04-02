@@ -46,13 +46,26 @@ public class ChopTool : MonoBehaviour
 
             foreach (Collider p in hits)
             {
-                Growable tree = p.GetComponent<Growable>();
+                var tree = p.GetComponent<Growable>();
+                var building = p.GetComponent<Constructible>();
 
-                if (tree.myChopTool != this)
-                    tree.myChopTool = this;
+                if (tree)
+                {
+                    if (tree.myChopTool != this)
+                        tree.myChopTool = this;
 
-                if (tree != null && !tree.chopped)
-                    tree.chopIndex += speed * Time.deltaTime;
+                    if (!tree.chopped)
+                        tree.chopIndex += speed * Time.deltaTime;
+                }
+
+                if (building)
+                {
+                    if (building.myChopTool != this)
+                        building.myChopTool = this;
+
+                    if (!building.chopped)
+                        building.chopIndex += speed * Time.deltaTime;
+                }
             }
         }
     }

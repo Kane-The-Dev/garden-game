@@ -7,7 +7,7 @@ using TMPro;
 
 public class Inventory : MonoBehaviour
 {
-    public List<Item> foodList = new List<Item>();
+    public List<Item> foodList = new List<Item>(), buildingList = new();
     public Dictionary<string, int> myInventory = new Dictionary<string, int>();
     [SerializeField] Transform storage;
     [SerializeField] GameObject foodItemPrefab;
@@ -18,7 +18,7 @@ public class Inventory : MonoBehaviour
     [SerializeField] TextMeshProUGUI coinDisplay, levelDisplay;
     [SerializeField] Slider expDisplay;
 
-    [SerializeField] UIParticleSystem coinBurst;
+    // [SerializeField] UIParticleSystem coinBurst;
 
     public ShopManager shop;
     public PlantSelection selection;
@@ -26,6 +26,7 @@ public class Inventory : MonoBehaviour
     void Start()
     {
         FindObjectOfType<ReadFile>().LoadItems(foodList);
+        FindObjectOfType<ReadFile>().LoadBuildings(buildingList);
         UpdateStorage();
         prevCoin = coin;
     }

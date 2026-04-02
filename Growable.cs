@@ -9,18 +9,22 @@ public class Growable : MonoBehaviour
     public float growthIndex, growthSpeed = 1f, multiplier, subMultiplier;
     public float timeIndex;
 
-    [Header("Tree")]
+    [Header("Tree - Reproduction")]
     public GameObject product;
     public GameObject leaf;
     public Transform[] slots;
     public bool reproductive = false;
     public int fruitCount;
-    public float harvestIndex, chopIndex;
-    [SerializeField] Transform effectSpawnPoint;
+    public float harvestIndex;
+
+    [Header("Tree - Removal")]
+    public bool chopped = false;
+    public float chopIndex;
     int chopStage = 0;
     public float STAGE1 = 0.3333f;
     public float STAGE2 = 0.6666f;
     public float STAGE3 = 1f;
+    [SerializeField] Transform effectSpawnPoint;
     
     [Header("Product")]
     public bool isProduct;
@@ -28,8 +32,8 @@ public class Growable : MonoBehaviour
     Collider col;
 
     [Header("Wiggle")]
-    public float offset;
-    public float amplitude;
+    public float wiggleOffset;
+    public float wiggleAmplitude;
 
     [Header("Sound Effect")]
     [SerializeField] AdvancedAudioSource myAAS;
@@ -37,7 +41,6 @@ public class Growable : MonoBehaviour
     public ChopTool myChopTool;
 
     [Header("Other")]
-    public bool chopped = false;
     [SerializeField] float shakeAmplitude;
     Vector2 shakeDirection;
     GameManager gm;
@@ -76,10 +79,10 @@ public class Growable : MonoBehaviour
         timeIndex = gm.timeControl * 0.05f;
 
         Growing();
+        Wiggling();
 
         if (isProduct) return;
 
-        Wiggling();
         Shaking();
         Harvesting();
         Chopping();
@@ -87,8 +90,8 @@ public class Growable : MonoBehaviour
 
     void Wiggling()
     {
-        float rotX = Mathf.Sin(Time.time * 0.5f + offset) * amplitude;
-        float rotZ = Mathf.Sin(Time.time * 0.5f + offset) * amplitude;
+        float rotX = Mathf.Sin(Time.time * 0.5f + wiggleOffset) * wiggleAmplitude;
+        float rotZ = Mathf.Sin(Time.time * 0.5f + wiggleOffset) * wiggleAmplitude;
 
         Vector3 euler = transform.parent.eulerAngles;
         transform.parent.rotation = Quaternion.Euler(rotX, euler.y, rotZ);
@@ -322,6 +325,8 @@ public class Growable : MonoBehaviour
             var newProduct = Instantiate(product, toGrow);
             var newFruit = newProduct.GetComponent<Growable>();
             newFruit.growthSpeed = growthSpeed;
+            newFruit.wiggleOffset = Random.Range(0f, 90f);
+            newFruit.wiggleAmplitude = Random.Range(4f, 5f);
 
             fruitCount++;
             yield return new WaitForSeconds(delay);

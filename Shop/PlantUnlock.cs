@@ -15,6 +15,7 @@ public class PlantUnlock : ShopItem
         inventory.coin -= price;
 
         inventory.selection.RefreshPlants();
+        inventory.selection.RefreshBuildings();
 
         Debug.Log("You unlocked " + itemName);
     }
