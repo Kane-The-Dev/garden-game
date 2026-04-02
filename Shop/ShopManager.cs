@@ -21,7 +21,7 @@ public class ShopManager : MonoBehaviour
     [Header("Display Board")]
     [SerializeField] TextMeshProUGUI stats;
     [SerializeField] TextMeshProUGUI itemName, itemDescription, itemPrice;
-    [SerializeField] UIParticleSystem buyMessage;
+    [SerializeField] UIParticleSystem coinBurst;
 
     [Header("Other")]
     [SerializeField] AudioSource source;
@@ -29,17 +29,19 @@ public class ShopManager : MonoBehaviour
 
     Inventory inventory;
     ShopItemUI selectedUI;
+    GameManager gm;
 
     void Start()
     {
-        FindObjectOfType<ReadFile>().LoadItems(foodList);
-        inventory = GameManager.instance.inventory;
+        gm = GameManager.instance;
+        inventory = gm.inventory;
         inventory.shop = this;
+
         InitializeShop();
         RefreshShop();
     }
     
-    public void InitializeShop()
+    void InitializeShop()
     {
         foreach (var upgrade in buttons) // default tools in stock = 1
         {
@@ -48,7 +50,7 @@ public class ShopManager : MonoBehaviour
         
         int count = 0;
         Transform thisRow = null;
-        foreach (var item in foodList.OrderBy(f => f.levelReq)) // generate dynamic shop items for plants
+        foreach (var item in inventory.foodList.OrderBy(f => f.levelReq)) // generate dynamic shop items for plants
         {
             if (item.type == "Other") continue;
 
@@ -142,7 +144,8 @@ public class ShopManager : MonoBehaviour
         if (myItem.CanPurchase(inventory) != 0)
         {
             Debug.Log("Cannot buy because of code " + myItem.CanPurchase(inventory));
-            if (myItem.CanPurchase(inventory) == 2) buyMessage.Burst("Out of money!");
+            if (myItem.CanPurchase(inventory) == 2) 
+                gm.mouse.myEffect.Burst("Out of money!");
             source.PlayOneShot(error);
             return;
         }
@@ -150,13 +153,14 @@ public class ShopManager : MonoBehaviour
         if (stock[myItem] <= 0)
         {
             Debug.Log("Out of stock!");
-            buyMessage.Burst("Out of stock!");
+            gm.mouse.myEffect.Burst("Out of stock!");
             source.PlayOneShot(error);
             return;   
         }
 
         stock[myItem]--;
-        buyMessage.Burst("+1");
+        gm.mouse.myEffect.Burst("+1");
+        coinBurst.Burst();
         source.PlayOneShot(purchase);
 
         myItem.OnPurchase(inventory);

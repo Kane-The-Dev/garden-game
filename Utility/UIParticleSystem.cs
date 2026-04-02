@@ -30,6 +30,7 @@ public class UIParticleSystem : MonoBehaviour
         for (int i = 0; i < count; i++)
         {
             GameObject obj = Instantiate(particlePrefab, canvas);
+            obj.GetComponent<RectTransform>().position = transform.position;
             UIParticle p = obj.GetComponent<UIParticle>();
 
             ApplySettings(p);
@@ -42,6 +43,7 @@ public class UIParticleSystem : MonoBehaviour
         for (int i = 0; i < count; i++)
         {
             GameObject obj = Instantiate(particlePrefab, canvas);
+            obj.GetComponent<RectTransform>().position = transform.position;
             UIParticle p = obj.GetComponent<UIParticle>();
 
             p.text.text = msg;

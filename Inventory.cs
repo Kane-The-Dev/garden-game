@@ -13,22 +13,22 @@ public class Inventory : MonoBehaviour
     [SerializeField] GameObject foodItemPrefab;
 
     public int coin, level;
-    int prevCoin;
     public float exp;
     [SerializeField] TextMeshProUGUI coinDisplay, levelDisplay;
     [SerializeField] Slider expDisplay;
 
-    // [SerializeField] UIParticleSystem coinBurst;
-
     public ShopManager shop;
     public PlantSelection selection;
 
-    void Start()
+    void Awake()
     {
         FindObjectOfType<ReadFile>().LoadItems(foodList);
         FindObjectOfType<ReadFile>().LoadBuildings(buildingList);
+    }
+
+    void Start()
+    {
         UpdateStorage();
-        prevCoin = coin;
     }
 
     void Update()
@@ -57,9 +57,6 @@ public class Inventory : MonoBehaviour
             level++;
             shop.RefreshShop();
         }
-
-        // if (prevCoin != coin) coinBurst.Burst();
-        // prevCoin = coin;
     }
 
     public void UpdateStorage()

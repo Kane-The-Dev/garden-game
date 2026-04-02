@@ -90,11 +90,21 @@ public class Growable : MonoBehaviour
 
     void Wiggling()
     {
+        if (chopped) return;
+
         float rotX = Mathf.Sin(Time.time * 0.5f + wiggleOffset) * wiggleAmplitude;
         float rotZ = Mathf.Sin(Time.time * 0.5f + wiggleOffset) * wiggleAmplitude;
 
-        Vector3 euler = transform.parent.eulerAngles;
-        transform.parent.rotation = Quaternion.Euler(rotX, euler.y, rotZ);
+        if (isProduct)
+        {
+            Vector3 euler = transform.localEulerAngles;
+            transform.localRotation = Quaternion.Euler(rotX, euler.y, rotZ);
+        }
+        else
+        {
+            Vector3 euler = transform.parent.localEulerAngles;
+            transform.parent.localRotation = Quaternion.Euler(rotX, euler.y, rotZ);
+        }
     }
 
     void Growing()
@@ -114,6 +124,45 @@ public class Growable : MonoBehaviour
         {
             StartCoroutine(GrowFruits());
             reproductive = true;
+        }
+    }
+
+    IEnumerator GrowFruits()
+    {
+        while (!chopped)
+        {
+            while (timeIndex <= 0.005f)
+                yield return null;
+
+            List<Transform> emptySlots = new List<Transform>();
+            foreach (Transform slot in slots)
+            {
+                if (slot.childCount == 0) 
+                {
+                    emptySlots.Add(slot);
+                }
+            }
+
+            float delay = Random.Range(0.15f, 0.3f) / (growthSpeed * multiplier) / timeIndex;
+
+            if (emptySlots.Count == 0)
+            {
+                yield return new WaitForSeconds(delay);
+                continue;
+            }
+
+            Transform toGrow = emptySlots[Random.Range(0, emptySlots.Count)];
+            
+            var newProduct = Instantiate(product, toGrow);
+            newProduct.transform.localEulerAngles = Vector3.zero;
+
+            var newFruit = newProduct.GetComponent<Growable>();
+            newFruit.growthSpeed = growthSpeed;
+            newFruit.wiggleOffset = Random.Range(0f, Mathf.PI * 2f);
+            newFruit.wiggleAmplitude = Random.Range(4f, 5f);
+
+            fruitCount++;
+            yield return new WaitForSeconds(delay);
         }
     }
 
@@ -159,6 +208,49 @@ public class Growable : MonoBehaviour
             harvestIndex = 0f;
             HarvestFruit(2);
             Shake(3f);
+        }
+    }
+
+    public void HarvestFruit(int quantity)
+    {
+        // Debug.Log("Harvesting " + quantity + " fruits!");
+        if (quantity <= 0) return;
+
+        foreach (Transform slot in slots)
+        {
+            if (slot.childCount > 0)
+            {
+                Growable thisFruit = slot.GetChild(0).GetComponent<Growable>();
+                if (thisFruit && thisFruit.growthIndex >= 0.9 * thisFruit.maxGrowth)
+                {
+                    thisFruit.chopped = true;
+                    thisFruit.StartCoroutine(thisFruit.ActivateCollider());
+                    slot.GetChild(0).parent = null;
+
+                    var rb = thisFruit.gameObject.GetComponent<Rigidbody>();
+                    rb.constraints = RigidbodyConstraints.None;
+                    rb.useGravity = true;
+
+                    Inventory inventory = GameManager.instance.inventory;
+
+                    Vector3 dir = thisFruit.transform.position - transform.position;
+                    dir = new Vector3(dir.x, 0, dir.z).normalized * 2f;
+                    
+                    rb.AddForce(
+                        new Vector3(dir.x, 6f, dir.z) * inventory.foodList[thisFruit.productID].weight,
+                        ForceMode.Impulse
+                    );
+                    
+                    inventory.exp += 3f;
+                    inventory.foodList[thisFruit.productID].UpdateN(1);
+                    inventory.UpdateStorage();
+
+                    fruitCount--;
+                    Destroy(thisFruit.gameObject, 3f);
+                    
+                    if (--quantity <= 0) break;
+                }
+            }
         }
     }
 
@@ -215,48 +307,6 @@ public class Growable : MonoBehaviour
         chopStage = newStage;
     }
 
-    public void HarvestFruit(int quantity)
-    {
-        // Debug.Log("Harvesting " + quantity + " fruits!");
-        if (quantity <= 0) return;
-
-        foreach (Transform slot in slots)
-        {
-            if (slot.childCount > 0)
-            {
-                Growable thisFruit = slot.GetChild(0).GetComponent<Growable>();
-                if (thisFruit && thisFruit.growthIndex >= 0.9 * thisFruit.maxGrowth)
-                {
-                    thisFruit.chopped = true;
-                    thisFruit.StartCoroutine(thisFruit.ActivateCollider());
-                    slot.GetChild(0).parent = null;
-
-                    var rb = thisFruit.gameObject.GetComponent<Rigidbody>();
-                    rb.constraints = RigidbodyConstraints.None;
-                    rb.useGravity = true;
-
-                    Inventory inventory = GameManager.instance.inventory;
-
-                    Vector3 dir = (thisFruit.transform.position - transform.position).normalized;
-                    // Debug.Log(inventory.foodList[thisFruit.productID].weight);
-                    rb.AddForce(
-                        new Vector3(dir.x, 6f, dir.z) * inventory.foodList[thisFruit.productID].weight, 
-                        ForceMode.Impulse
-                    );
-                    
-                    inventory.exp += 3f;
-                    inventory.foodList[thisFruit.productID].UpdateN(1);
-                    inventory.UpdateStorage();
-
-                    fruitCount--;
-                    Destroy(thisFruit.gameObject, 3f);
-                    
-                    if (--quantity <= 0) break;
-                }
-            }
-        }
-    }
-
     public void Chop()
     {
         if (chopped) return;
@@ -294,42 +344,5 @@ public class Growable : MonoBehaviour
             Random.Range(-20f, 20f)
         );
         rb.AddTorque(randomTorque);
-    }
-
-    IEnumerator GrowFruits()
-    {
-        while (!chopped)
-        {
-            while (timeIndex <= 0.005f)
-                yield return null;
-
-            List<Transform> emptySlots = new List<Transform>();
-            foreach (Transform slot in slots)
-            {
-                if (slot.childCount == 0) 
-                {
-                    emptySlots.Add(slot);
-                }
-            }
-
-            float delay = Random.Range(0.15f, 0.3f) / (growthSpeed * multiplier) / timeIndex;
-
-            if (emptySlots.Count == 0)
-            {
-                yield return new WaitForSeconds(delay);
-                continue;
-            }
-
-            Transform toGrow = emptySlots[Random.Range(0, emptySlots.Count)];
-            
-            var newProduct = Instantiate(product, toGrow);
-            var newFruit = newProduct.GetComponent<Growable>();
-            newFruit.growthSpeed = growthSpeed;
-            newFruit.wiggleOffset = Random.Range(0f, 90f);
-            newFruit.wiggleAmplitude = Random.Range(4f, 5f);
-
-            fruitCount++;
-            yield return new WaitForSeconds(delay);
-        }
     }
 }

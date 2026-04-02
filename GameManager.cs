@@ -14,7 +14,8 @@ public class GameManager : MonoBehaviour
     public EatingManager em;
     public FenceManager fence;
     public AudioManager am;
-    [SerializeField] GameObject gardenTools, plantShop, foodStorage;
+    public FollowMouse mouse;
+    [SerializeField] GameObject gardenTools, foodStorage, weightDisplay;
 
     public int timeControl;
 
@@ -28,10 +29,15 @@ public class GameManager : MonoBehaviour
         DontDestroyOnLoad(gameObject);
 
         currentMode = 0;
-        cam = FindObjectOfType<CameraMovement>();
-        pm = FindObjectOfType<PlantManager>();
-        sm = FindObjectOfType<ShopManager>();
-        inventory = FindObjectOfType<Inventory>();
+
+        if (!cam) cam = FindObjectOfType<CameraMovement>();
+        if (!pm) pm = FindObjectOfType<PlantManager>();
+        if (!sm) sm = FindObjectOfType<ShopManager>();
+        if (!inventory) inventory = FindObjectOfType<Inventory>();
+        if (!em) em = FindObjectOfType<EatingManager>();
+        if (!fence) fence = FindObjectOfType<FenceManager>();
+        if (!am) am = FindObjectOfType<AudioManager>();
+        if (!mouse) mouse = FindObjectOfType<FollowMouse>();
     }
 
     void Start()
@@ -48,10 +54,8 @@ public class GameManager : MonoBehaviour
             cam.movable = true;
 
             gardenTools.SetActive(true);
-            if (pm.mode == 0)
-                plantShop.SetActive(true);
-
             foodStorage.SetActive(false);
+            weightDisplay.SetActive(false);
         }
         else if (mode == 1) { // merchant
 
@@ -59,8 +63,8 @@ public class GameManager : MonoBehaviour
             cam.movable = false;
 
             gardenTools.SetActive(false);
-            plantShop.SetActive(false);
             foodStorage.SetActive(true);
+            weightDisplay.SetActive(true);
         }
         else if (mode == 2) { // overview
 
@@ -68,8 +72,8 @@ public class GameManager : MonoBehaviour
             cam.movable = false;
 
             gardenTools.SetActive(false);
-            plantShop.SetActive(false);
             foodStorage.SetActive(false);
+            weightDisplay.SetActive(false);
         }
         cam.targetReached = false;
         am.PlayUISoundEffect(5); // whoosh sound

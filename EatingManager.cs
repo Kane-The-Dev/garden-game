@@ -11,12 +11,12 @@ public class EatingManager : MonoBehaviour
     List<GameObject> spawnedFood = new List<GameObject>();
     public Queue<int> q;
     [SerializeField] float delay, timer, cooldown;
-    public float totalWeight, cooldownTimer;
+    public float totalWeight, maxWeight, cooldownTimer;
     public int accumulatedStonks;
 
     [Header("Truck")]
     [SerializeField] GameObject truck_kun;
-    GameObject myTruck;
+    public GameObject myTruck;
     public Transform drop;
     
     [Header("Audio")]
@@ -25,11 +25,13 @@ public class EatingManager : MonoBehaviour
     [SerializeField] AudioClip cashIn, error;
 
     [Header("Display")]
+    [SerializeField] RectTransform weightNeedle;
     [SerializeField] TextMeshProUGUI stonksDisplay;
     [SerializeField] TextMeshPro infoBoard;
-    [SerializeField] UIParticleSystem sellMessage, coinBurst;
+    [SerializeField] UIParticleSystem coinBurst;
 
     Rigidbody rb;
+    GameManager gm;
 
     void Start()
     {
@@ -37,6 +39,7 @@ public class EatingManager : MonoBehaviour
         delay = 0.2f;
         q = new Queue<int>();
         rb = GetComponent<Rigidbody>();
+        gm = GameManager.instance;
         SpawnTruck();
     }
 
@@ -62,28 +65,29 @@ public class EatingManager : MonoBehaviour
         }
         if (stonksDisplay) stonksDisplay.text = accumulatedStonks + "G";
 
-        if (Input.GetKeyDown(KeyCode.B))
-        {
-            // ConfirmSale();
+        if (weightNeedle) {
+            float targetRotZ = 210f + 120f * totalWeight / maxWeight;
+            Quaternion targetRot = Quaternion.Euler(0f, 0f, targetRotZ);
+            weightNeedle.rotation = Quaternion.Lerp(weightNeedle.rotation, targetRot, 5f * Time.deltaTime);
         }
     }
 
     public void ConfirmSale()
     {
         if (q.Count > 0) {
-            sellMessage.Burst("Food is loading!");
+            gm.mouse.myEffect.Burst("Food is loading!");
             cashier.PlayOneShot(error);
             return;
         }
 
         if (cooldownTimer > 0) {
-            sellMessage.Burst("Wait for truck!");
+            gm.mouse.myEffect.Burst("Wait for truck!");
             cashier.PlayOneShot(error);
             return;
         }
 
         if (accumulatedStonks <= 0) {
-            sellMessage.Burst("Nothing to sell!");
+            gm.mouse.myEffect.Burst("Nothing to sell!");
             cashier.PlayOneShot(error);
             return;
         }
@@ -115,6 +119,7 @@ public class EatingManager : MonoBehaviour
         Debug.Log("Your force is " + (moveDir * (1 + totalWeight * 0.5f)));
         foreach(GameObject obj in spawnedFood) Destroy(obj, 10f);
         Destroy(myTruck, 10f);
+        myTruck = null;
     }
 
     void SpawnTruck()
