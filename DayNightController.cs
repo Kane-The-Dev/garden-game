@@ -27,8 +27,10 @@ public class DayNightController : MonoBehaviour
     [SerializeField] Gradient lightColor;
     [SerializeField] Gradient skyColor;
     [SerializeField] AnimationCurve lightIntensity, skyIntensity;
+    [SerializeField] float morning, evening;
 
     [Header("Other Light Sources")]
+    [SerializeField] GameObject[] lightBlocks;
     [SerializeField] LightData[] lights;
     [SerializeField] AnimationCurve intensityCurve;
 
@@ -36,6 +38,7 @@ public class DayNightController : MonoBehaviour
 
     float time;
     int dayCount;
+    bool lightsOut = true;
 
     void Start()
     {
@@ -48,8 +51,10 @@ public class DayNightController : MonoBehaviour
     void Update()
     {
         time += Time.deltaTime / dayLength;
-        if (time >= 1f) dayCount += 1;
-        time %= 1f;
+        if (time >= 1f) {
+            dayCount += 1;
+            time %= 1f;
+        }
 
         dayDisplay.text = dayCount.ToString();
         clock.rotation = Quaternion.Euler(0f, 0f, clockOffset + 360f * time);
@@ -58,6 +63,17 @@ public class DayNightController : MonoBehaviour
         foreach (LightData l in lights)
         {
             l.light.intensity = value * l.maxIntensity;
+        }
+
+        if (lightsOut && time > evening && time < morning)
+        {
+            foreach (GameObject l in lightBlocks) l.SetActive(true);
+            lightsOut = false;
+        }
+        else if (!lightsOut && (time > morning || time < evening))
+        {
+            foreach (GameObject l in lightBlocks) l.SetActive(false);
+            lightsOut = true;
         }
 
         UpdateSun();
