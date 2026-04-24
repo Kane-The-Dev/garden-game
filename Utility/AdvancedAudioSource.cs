@@ -7,6 +7,7 @@ public class AdvancedAudioSource : MonoBehaviour
     public AudioSource source;
     bool isFadingIn, isFadingOut;
     float fadeSpeed, defaultVolume, targetVolume;
+    public bool mute = false;
 
     void Awake()
     {
@@ -50,6 +51,8 @@ public class AdvancedAudioSource : MonoBehaviour
 
     public void Play(AudioClip clip, float volume = 1f, bool randomize = false, float fadeInDuration = 0)
     {
+        if (mute) return;
+
         if (clip) source.clip = clip; // change clip if needed
 
         if (volume < 0f) volume = defaultVolume; // if no input volume, use defaultVolume
@@ -71,6 +74,8 @@ public class AdvancedAudioSource : MonoBehaviour
 
     public void PlayOneShot(AudioClip clip, float volume = 1f, bool randomize = false)
     {
+        if (mute) return;
+
         if (volume < 0f) volume = defaultVolume;
 
         if (randomize) {
@@ -83,6 +88,8 @@ public class AdvancedAudioSource : MonoBehaviour
 
     public void Stop(float fadeOutDuration = 0)
     {
+        if (mute) return;
+
         if (fadeOutDuration > 0)
         {
             targetVolume = source.volume;

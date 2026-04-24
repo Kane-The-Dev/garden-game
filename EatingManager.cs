@@ -22,7 +22,7 @@ public class EatingManager : MonoBehaviour
     [Header("Audio")]
     [SerializeField] AudioSource cashier;
     [SerializeField] AudioSource engine;
-    [SerializeField] AudioClip cashIn, error;
+    [SerializeField] AudioClip cashIn, error, landing, starting;
 
     [Header("Display")]
     [SerializeField] RectTransform weightNeedle;
@@ -95,7 +95,13 @@ public class EatingManager : MonoBehaviour
         cooldownTimer = cooldown;
 
         cashier.PlayOneShot(cashIn);
-        engine.Play();
+        engine.PlayOneShot(starting);
+        foreach(GameObject obj in spawnedFood)
+        {
+            Growable fruit = obj.GetComponent<Growable>();
+            if (fruit != null) 
+                fruit.myAAS.mute = true; // mute fruits to prevent audio jumpscare
+        }   
 
         for (int i = 0; i < 4; i++)
             myTruck.transform.GetChild(i).GetComponent<Spin>().speed = 180f;
@@ -152,11 +158,20 @@ public class EatingManager : MonoBehaviour
         spawnedFood.Add(obj);
     }
 
-    void OnTriggerEnter(Collider collider)
+    void OnTriggerEnter(Collider col)
     {
-        if (collider.CompareTag("Food"))
+        float magnitude = col.attachedRigidbody.velocity.magnitude;
+        if (magnitude < 5f) return;
+
+        if (col.CompareTag("Food"))
         {
             Debug.Log("Loaded more food!");
+        }
+
+        if (col.CompareTag("Truck"))
+        {
+            engine.clip = landing;
+            engine.Play();
         }
     }
 }

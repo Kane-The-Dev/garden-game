@@ -36,8 +36,8 @@ public class Growable : MonoBehaviour
     public float wiggleAmplitude;
 
     [Header("Sound Effect")]
-    [SerializeField] AdvancedAudioSource myAAS;
-    [SerializeField] AudioClip[] plant, chop, leaves, fall;
+    public AdvancedAudioSource myAAS;
+    [SerializeField] AudioClip[] plant, leaves, fall, hit;
     public ChopTool myChopTool;
 
     [Header("Other")]
@@ -154,6 +154,7 @@ public class Growable : MonoBehaviour
             Transform toGrow = emptySlots[Random.Range(0, emptySlots.Count)];
             
             var newProduct = Instantiate(product, toGrow);
+            newProduct.transform.localPosition = Vector3.zero;
             newProduct.transform.localEulerAngles = Vector3.zero;
 
             var newFruit = newProduct.GetComponent<Growable>();
@@ -207,7 +208,7 @@ public class Growable : MonoBehaviour
         {
             harvestIndex = 0f;
             HarvestFruit(2);
-            Shake(3f);
+            Shake(4f);
         }
     }
 
@@ -283,14 +284,14 @@ public class Growable : MonoBehaviour
             if (chopStage < 1 && newStage >= 1)
             {
                 HarvestFruit(2);
-                Shake(3f);
+                Shake(5f);
             }
 
             // Stage 1 → 2
             if (chopStage < 2 && newStage >= 2)
             {
                 HarvestFruit(2);
-                Shake(3f);
+                Shake(5f);
             }
 
             // Stage 2 → 3 (final)
@@ -344,5 +345,20 @@ public class Growable : MonoBehaviour
             Random.Range(-20f, 20f)
         );
         rb.AddTorque(randomTorque);
+    }
+
+    void OnCollisionEnter(Collision col)
+    {
+        if (!isProduct) return;
+
+        float magnitude = col.relativeVelocity.magnitude;
+        if (magnitude < 2f) return;
+
+        if (col.gameObject.CompareTag("Ground"))
+            myAAS.Play(hit[0], Mathf.Min(0.25f, magnitude / 40f), true);
+        else if (col.gameObject.CompareTag("Truck"))
+            myAAS.Play(hit[1], magnitude / 5f, true);
+        else
+            myAAS.Play(hit[2], magnitude / 5f, true);
     }
 }

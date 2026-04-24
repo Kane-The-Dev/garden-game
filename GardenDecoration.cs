@@ -11,9 +11,6 @@ public class GardenDecoration : MonoBehaviour
     [SerializeField] float radius;
     [SerializeField] int minCount, maxCount;
 
-    [Header("Fences")]
-    [SerializeField] Animator fenceAnimator;
-
     float maxDistance = 100f;
     int n1, n2;
     List<GameObject> spawned = new List<GameObject>();
@@ -29,7 +26,7 @@ public class GardenDecoration : MonoBehaviour
         gm = GameManager.instance;
         n1 = decorations.Length;
         n2 = trees.Length;
-        InitializeGarden();
+        StartCoroutine(InitializeGarden());
     }
 
     void Update()
@@ -37,12 +34,13 @@ public class GardenDecoration : MonoBehaviour
         UpdateGarden();
     }
 
-    void InitializeGarden()
+    IEnumerator InitializeGarden()
     {
         int n = Random.Range(minCount, maxCount);
 
         for (int i = 0; i < n; i++)
         {
+            yield return new WaitForSeconds(0.01f);
             Vector3 point = center + Random.insideUnitSphere * radius;
 
             if (Physics.Raycast(
@@ -53,7 +51,7 @@ public class GardenDecoration : MonoBehaviour
                 groundMask
             )) 
             {
-                if (Physics.CheckSphere(hit.point, 0.1f, obstacleMask, QueryTriggerInteraction.Collide))
+                if (Physics.CheckSphere(hit.point, 0.5f, obstacleMask, QueryTriggerInteraction.Collide))
                 {
                     i--;
                     continue;
