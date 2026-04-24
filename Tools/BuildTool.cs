@@ -43,7 +43,7 @@ public class BuildTool : MonoBehaviour
         {
             ring.transform.localScale = new Vector3(0.2f * radius, 1f, 0.2f * radius);
             ring.transform.position = new Vector3(hit.point.x, hit.point.y + 0.1f, hit.point.z);
-            preview.transform.position = new Vector3(hit.point.x, hit.point.y + 0.1f, hit.point.z);
+            if (preview) preview.transform.position = new Vector3(hit.point.x, hit.point.y + 0.1f, hit.point.z);
 
             bool blocked = Physics.CheckSphere(
                 hit.point,

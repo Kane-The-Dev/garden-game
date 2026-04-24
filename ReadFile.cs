@@ -53,23 +53,20 @@ public class ReadFile : MonoBehaviour
         {
             string[] parts = line.Split(
                 (char[])null,
-                9,
+                6,
                 System.StringSplitOptions.RemoveEmptyEntries
             );
-            if (parts.Length < 8) continue;
+            if (parts.Length < 5) continue;
 
             int.TryParse(parts[0], out int id);
             string name = parts[1];
             int.TryParse(parts[2], out int plant);
-            int.TryParse(parts[3], out int sell);
-            float.TryParse(parts[4], out float speed);
-            int.TryParse(parts[5], out int requirement);
-            float.TryParse(parts[6], out float weight);
-            string type = parts[7];
-            string description = parts[8];
+            int.TryParse(parts[3], out int requirement);
+            string type = parts[4];
+            string description = parts[5];
 
-            Item newItem =  new Item();
-            newItem.Set(id, name, plant, sell, speed, requirement, weight, type, description);
+            Item newItem = new Item();
+            newItem.Set(id, name, plant, 0, 0, requirement, 0, type, description);
             list.Add(newItem);
         }
     }

@@ -18,13 +18,14 @@ public class Constructible : MonoBehaviour
     Vector2 shakeDirection;
 
     [Header("Sound Effects")]
-    AdvancedAudioSource myAAS;
-    AudioClip[] impacts, breaks;
+    [SerializeField] AdvancedAudioSource myAAS;
+    [SerializeField] AudioClip[] construct, impact, demolish;
     GameManager gm;
 
     void Start()
     {
         gm = GameManager.instance;
+        if (myAAS && construct.Length > 0) myAAS.PlayOneShot(construct[0], 1f, true);
     }
 
     void Update()
@@ -76,7 +77,7 @@ public class Constructible : MonoBehaviour
                 Chop();
                 Destroy(gameObject, 5f);
 
-                // myAAS.PlayOneShot(breaks[0], 1f, true);
+                if (myAAS && demolish.Length > 0) myAAS.PlayOneShot(demolish[0], 1f, true);
             }
         }
 
@@ -107,12 +108,16 @@ public class Constructible : MonoBehaviour
 
     public void Shake(float amplitude)
     {
-        // myAAS.PlayOneShot(impacts[Random.Range(0, impacts.Length)], 1f, true);
+        if (myAAS && impact.Length > 0) 
+            myAAS.PlayOneShot(impact[Random.Range(0, impact.Length)], 1f, true);
 
-        GameObject burst = Instantiate(debris, 
-            effectSpawnPoint.position, 
-            Quaternion.identity
-        );
+        if (debris && effectSpawnPoint)
+        {
+            GameObject burst = Instantiate(debris, 
+                effectSpawnPoint.position, 
+                Quaternion.identity
+            );
+        }
         
         shakeAmplitude = amplitude;
         shakeDirection = Random.insideUnitCircle.normalized;

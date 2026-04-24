@@ -54,6 +54,7 @@ public class GameManager : MonoBehaviour
             cam.movable = true;
 
             gardenTools.SetActive(true);
+            pm.ChangeMode(pm.mode);
             foodStorage.SetActive(false);
             weightDisplay.SetActive(false);
         }
