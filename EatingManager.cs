@@ -114,6 +114,7 @@ public class EatingManager : MonoBehaviour
         GameManager.instance.inventory.coin += accumulatedStonks;
         totalWeight = 0;
         accumulatedStonks = 0;
+        spawnedFood.Clear();
 
         Invoke("MoveTruck", 4f);
     }

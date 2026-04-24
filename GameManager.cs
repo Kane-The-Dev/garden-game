@@ -1,12 +1,17 @@
-using System.Collections;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
+using TMPro;
 
 public class GameManager : MonoBehaviour
 {
     public static GameManager instance;
+
+    [Header("Modes")]
     public int currentMode;
     [SerializeField] Transform garden, merchant, overview;
+
+    [Header("Managers")]
     public CameraMovement cam;
     public PlantManager pm;
     public ShopManager sm;
@@ -15,7 +20,11 @@ public class GameManager : MonoBehaviour
     public FenceManager fence;
     public AudioManager am;
     public FollowMouse mouse;
-    [SerializeField] GameObject gardenTools, foodStorage, weightDisplay;
+    public AreYouSure AYSPanel;
+
+    [Header("UI Elements")]
+    [SerializeField] GameObject gardenTools;
+    [SerializeField] GameObject foodStorage, weightDisplay;
 
     public int timeControl;
 

@@ -1,4 +1,4 @@
-using System.Collections;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -158,12 +158,33 @@ public class ShopManager : MonoBehaviour
             return;   
         }
 
-        stock[myItem]--;
-        gm.mouse.myEffect.Burst("+1");
-        coinBurst.Burst();
-        source.PlayOneShot(purchase);
+        if (myItem.price > 100f)
+        {
+            gm.AYSPanel.OpenPanel(
+                "Do you want to buy " + myItem.itemName + " for " +myItem.price + "G?", 
+                (result) => {
+                    if (result)
+                    {
+                        stock[myItem]--;
+                        gm.mouse.myEffect.Burst("+1");
+                        coinBurst.Burst();
+                        source.PlayOneShot(purchase);
 
-        myItem.OnPurchase(inventory);
-        RefreshShop();
+                        myItem.OnPurchase(inventory);
+                        RefreshShop();
+                    }
+                }
+            );
+        }
+        else
+        {
+            stock[myItem]--;
+            gm.mouse.myEffect.Burst("+1");
+            coinBurst.Burst();
+            source.PlayOneShot(purchase);
+
+            myItem.OnPurchase(inventory);
+            RefreshShop();
+        }
     }
 }
