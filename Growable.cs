@@ -16,6 +16,8 @@ public class Growable : MonoBehaviour
     public bool reproductive = false;
     public int fruitCount;
     public float harvestIndex;
+    [SerializeField] float harvestForce;
+    [SerializeField] Transform harvestPoint;
 
     [Header("Tree - Removal")]
     public bool chopped = false;
@@ -234,14 +236,14 @@ public class Growable : MonoBehaviour
 
                     Inventory inventory = GameManager.instance.inventory;
 
-                    Vector3 dir = thisFruit.transform.position - transform.position;
-                    dir = new Vector3(dir.x, 0, dir.z).normalized * 2f;
-                    
+                    // add harvest force
+                    Vector3 dir = thisFruit.transform.position - harvestPoint.position;
                     rb.AddForce(
-                        new Vector3(dir.x, 6f, dir.z) * inventory.foodList[thisFruit.productID].weight,
+                        dir.normalized * harvestForce * inventory.foodList[thisFruit.productID].weight,
                         ForceMode.Impulse
                     );
                     
+                    // update inventory
                     inventory.exp += 3f;
                     inventory.foodList[thisFruit.productID].UpdateN(1);
                     inventory.UpdateStorage();
@@ -261,8 +263,6 @@ public class Growable : MonoBehaviour
 
         if (chopIndex > 0f)
             chopIndex -= Time.deltaTime / 3f;
-
-        chopIndex = Mathf.Clamp01(chopIndex);
 
         // Determine stage from chopIndex
         int newStage;
@@ -299,9 +299,6 @@ public class Growable : MonoBehaviour
             {
                 HarvestFruit(10);
                 Chop();
-                Destroy(transform.parent.gameObject, 5f);
-
-                myAAS.PlayOneShot(fall[0], 1f, true);
             }
         }
 
@@ -345,6 +342,9 @@ public class Growable : MonoBehaviour
             Random.Range(-20f, 20f)
         );
         rb.AddTorque(randomTorque);
+
+        Destroy(transform.parent.gameObject, 5f);
+        if (myAAS & fall.Length > 0) myAAS.PlayOneShot(fall[0], 1f, true);
     }
 
     void OnCollisionEnter(Collision col)

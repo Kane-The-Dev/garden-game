@@ -6,7 +6,8 @@ public class BuildTool : MonoBehaviour
 {
     public int buildID;
     float maxDistance = 100f, radius = 0.5f, rotY;
-    [SerializeField] GameObject[] buildings, previews;
+    [SerializeField] GameObject[] buildings;
+    [SerializeField] Material previewMaterial;
     Color currentColor;
     Renderer ringRender;
      
@@ -21,15 +22,17 @@ public class BuildTool : MonoBehaviour
 
     public GameObject SpawnPreview()
     {
-        GameObject newPreview = Instantiate(previews[buildID]);
+        GameObject newPreview = Instantiate(buildings[buildID]);
+        foreach (Renderer r in newPreview.GetComponentsInChildren<Renderer>())
+            r.material = previewMaterial;
         foreach (Collider c in newPreview.GetComponentsInChildren<Collider>())
             c.enabled = false;
         return newPreview;
     }
 
-    public void RotatePreview(GameObject preview)
+    public void RotatePreview(GameObject preview, int clockwise)
     {
-        rotY += 45f * Time.deltaTime;
+        rotY += clockwise * 90f * Time.deltaTime;
         preview.transform.rotation = Quaternion.Euler(0f, rotY, 0f);
     }
 
@@ -43,7 +46,7 @@ public class BuildTool : MonoBehaviour
         {
             ring.transform.localScale = new Vector3(0.2f * radius, 1f, 0.2f * radius);
             ring.transform.position = new Vector3(hit.point.x, hit.point.y + 0.1f, hit.point.z);
-            if (preview) preview.transform.position = new Vector3(hit.point.x, hit.point.y + 0.1f, hit.point.z);
+            if (preview) preview.transform.position = new Vector3(hit.point.x, hit.point.y, hit.point.z);
 
             bool blocked = Physics.CheckSphere(
                 hit.point,
@@ -78,8 +81,8 @@ public class BuildTool : MonoBehaviour
         {
             if (Physics.CheckSphere(hit.point, radius, oMask, QueryTriggerInteraction.Collide)) return;
 
-            string plantName = inventory.buildingList[buildID].name;
-            if (inventory.myInventory[plantName] <= 0)
+            string buildName = inventory.buildingList[buildID].name;
+            if (inventory.myInventory[buildName] <= 0)
             {
                 Debug.Log("Out of seed/item!");
                 return;
@@ -88,7 +91,7 @@ public class BuildTool : MonoBehaviour
             if (buildID < 0) return;
             else Build(hit.point);
 
-            inventory.myInventory[plantName]--;
+            inventory.myInventory[buildName]--;
             inventory.exp += 25f;
 
             inventory.selection.RefreshBuildings();
@@ -98,9 +101,11 @@ public class BuildTool : MonoBehaviour
     void Build(Vector3 point)
     {
         GameObject newBuilding = Instantiate(
-            buildings[buildID], 
+            buildings[buildID],
             point, 
-            Quaternion.Euler(0f, Random.Range(0f, 180f), 0f)
+            Quaternion.Euler(0f, rotY, 0f)
         );
+
+        newBuilding.transform.GetChild(0).GetComponent<Constructible>().isPreview = false;
     }
 }

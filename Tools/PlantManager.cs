@@ -102,8 +102,11 @@ public class PlantManager : MonoBehaviour
             }
         }
 
-        if (mode == 1 && Input.GetKey(KeyCode.R))
-            buildTool.RotatePreview(buildPreview);
+        if (mode == 1)
+            if (Input.GetKey(KeyCode.R))
+                buildTool.RotatePreview(buildPreview, 1);
+            else if (Input.GetKey(KeyCode.E))
+                buildTool.RotatePreview(buildPreview, -1);
     }
 
     public void ChangeMode(int newMode)

@@ -6,6 +6,7 @@ public class Sprinkler : MonoBehaviour
 {
     [SerializeField] float radius, bonus;
     [SerializeField] LayerMask fMask;
+    [SerializeField] ParticleSystem[] waterHoses;
 
     void Start()
     {
@@ -14,6 +15,13 @@ public class Sprinkler : MonoBehaviour
 
     IEnumerator Sprinkle()
     {
+        yield return new WaitForSeconds(0.1f);
+        if (GetComponent<Constructible>().isPreview) yield break;
+
+        GetComponent<Spin>().speed = 90;
+        foreach (ParticleSystem water in waterHoses)
+            water.Play();
+        
         while (true)
         {
             yield return new WaitForSeconds(1f);
@@ -32,7 +40,6 @@ public class Sprinkler : MonoBehaviour
             {
                 Growable tree = p.GetComponent<Growable>();
                 if (tree != null) {
-                    // Debug.Log("Nearby tree found");
                     tree.subMultiplier = 1 + bonus;
                 }
             }

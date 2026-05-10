@@ -30,6 +30,8 @@ public class PlantTool : MonoBehaviour
             treeType = Random.Range(3, 5);
         else if (inventory.foodList[plantID].type == "Ground")
             treeType = 5;
+        else if (inventory.foodList[plantID].type == "Oven")
+            treeType = 6;
         else
             treeType = -1;
 
@@ -114,6 +116,6 @@ public class PlantTool : MonoBehaviour
         g.maxGrowth *= Random.Range(0.85f, 1f);
         g.product = products[plantID];
         g.wiggleOffset = Random.Range(0f, 90f);
-        g.wiggleAmplitude = Random.Range(4f, 5f) * (treeType > 2 ? 1f : 0.25f);
+        g.wiggleAmplitude *= Random.Range(4f, 5f);
     }
 }

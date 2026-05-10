@@ -25,7 +25,7 @@ public class ReadFile : MonoBehaviour
             if (parts.Length < 8) continue;
 
             int.TryParse(parts[0], out int id);
-            string name = parts[1];
+            string name = parts[1].Replace('_', ' ');
             int.TryParse(parts[2], out int plant);
             int.TryParse(parts[3], out int sell);
             float.TryParse(parts[4], out float speed);
@@ -59,7 +59,7 @@ public class ReadFile : MonoBehaviour
             if (parts.Length < 5) continue;
 
             int.TryParse(parts[0], out int id);
-            string name = parts[1];
+            string name = parts[1].Replace('_', ' ');
             int.TryParse(parts[2], out int plant);
             int.TryParse(parts[3], out int requirement);
             string type = parts[4];

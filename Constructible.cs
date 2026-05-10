@@ -14,12 +14,15 @@ public class Constructible : MonoBehaviour
     [Header("Visual Effects")]
     [SerializeField] GameObject debris;
     [SerializeField] Transform effectSpawnPoint;
-    float shakeAmplitude;
+    public float shakeAmplitude;
     Vector2 shakeDirection;
 
     [Header("Sound Effects")]
     [SerializeField] AdvancedAudioSource myAAS;
     [SerializeField] AudioClip[] construct, impact, demolish;
+
+    [Header("Other")]
+    public bool isPreview = true;
     GameManager gm;
 
     void Start()
@@ -75,9 +78,6 @@ public class Constructible : MonoBehaviour
             if (newStage == 3)
             {
                 Chop();
-                Destroy(gameObject, 5f);
-
-                if (myAAS && demolish.Length > 0) myAAS.PlayOneShot(demolish[0], 1f, true);
             }
         }
 
@@ -88,7 +88,14 @@ public class Constructible : MonoBehaviour
     {
         if (chopped) return;
         chopped = true;
-        Debug.Log("Dead");
+        Shake(3f);
+
+        GameObject model = transform.GetChild(0).gameObject;
+        GameObject root = transform.parent?.gameObject;
+        Destroy(model);
+        if (root != null) Destroy(root, 5f);
+
+        if (myAAS && demolish.Length > 0) myAAS.PlayOneShot(demolish[0], 1f, true);
     }
 
     void Shaking()
@@ -113,8 +120,9 @@ public class Constructible : MonoBehaviour
 
         if (debris && effectSpawnPoint)
         {
-            GameObject burst = Instantiate(debris, 
-                effectSpawnPoint.position, 
+            GameObject burst = Instantiate(
+                debris,
+                effectSpawnPoint.position,
                 Quaternion.identity
             );
         }
