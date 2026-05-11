@@ -48,9 +48,9 @@ public class PlantManager : MonoBehaviour
         
         if (mode == 1 && buildTool.buildID >= 0)
         {
-            ring.SetActive(true);
+            // ring.SetActive(true);
             if (buildPreview) buildPreview.SetActive(true);
-            buildTool.BuildCheck(buildPreview, ring, ray, groundMask, obstacleMask);
+            buildTool.BuildCheck(buildPreview, ray, groundMask, obstacleMask);
         }
 
         if (Input.GetMouseButtonUp(0))

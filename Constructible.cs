@@ -63,22 +63,13 @@ public class Constructible : MonoBehaviour
             myChopTool.PlayChop();
 
             // Stage 0 → 1
-            if (chopStage < 1 && newStage >= 1)
-            {
-                Shake(3f);
-            }
+            if (chopStage < 1 && newStage >= 1) Shake(3f, 1);
 
             // Stage 1 → 2
-            if (chopStage < 2 && newStage >= 2)
-            {
-                Shake(3f);
-            }
+            if (chopStage < 2 && newStage >= 2) Shake(3f, 1);
 
             // Stage 2 → 3 (final)
-            if (newStage == 3)
-            {
-                Chop();
-            }
+            if (newStage == 3) Chop();
         }
 
         chopStage = newStage;
@@ -88,14 +79,17 @@ public class Constructible : MonoBehaviour
     {
         if (chopped) return;
         chopped = true;
-        Shake(3f);
+        Shake(3f, 3);
 
         GameObject model = transform.GetChild(0).gameObject;
         GameObject root = transform.parent?.gameObject;
         Destroy(model);
         if (root != null) Destroy(root, 5f);
 
-        if (myAAS && demolish.Length > 0) myAAS.PlayOneShot(demolish[0], 1f, true);
+        if (myAAS && demolish.Length > 0) {
+            int i = Random.Range(0, demolish.Length);
+            myAAS.PlayOneShot(demolish[i], 0.3f, true);
+        }
     }
 
     void Shaking()
@@ -113,19 +107,18 @@ public class Constructible : MonoBehaviour
         }
     }
 
-    public void Shake(float amplitude)
+    public void Shake(float amplitude, int debrisCount)
     {
         if (myAAS && impact.Length > 0) 
             myAAS.PlayOneShot(impact[Random.Range(0, impact.Length)], 1f, true);
 
-        if (debris && effectSpawnPoint)
-        {
-            GameObject burst = Instantiate(
-                debris,
-                effectSpawnPoint.position,
-                Quaternion.identity
-            );
-        }
+        for (int i = 0; i < debrisCount; i++)
+            if (debris && effectSpawnPoint)
+                Instantiate(
+                    debris,
+                    effectSpawnPoint.position,
+                    Quaternion.identity
+                );
         
         shakeAmplitude = amplitude;
         shakeDirection = Random.insideUnitCircle.normalized;

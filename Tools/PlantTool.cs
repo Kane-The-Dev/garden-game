@@ -8,6 +8,7 @@ public class PlantTool : MonoBehaviour
     [SerializeField] GameObject[] plants, products;
     [SerializeField] float[] plantRadius;
     Color currentColor;
+    [SerializeField] Color valid, notValid;
     Renderer ringRender;
      
     Inventory inventory;
@@ -21,7 +22,7 @@ public class PlantTool : MonoBehaviour
 
     int GetTreeType()
     {
-        int treeType = 0;
+        int treeType;
         if (inventory.foodList[plantID].type == "Tree")
             treeType = Random.Range(0, 2);
         else if (inventory.foodList[plantID].type == "Pine")
@@ -58,9 +59,7 @@ public class PlantTool : MonoBehaviour
                 QueryTriggerInteraction.Collide
             );
 
-            Color targetColor = blocked
-                ? new Color(1f, 0f, 0f, 0.8f)
-                : new Color(1f, 1f, 1f, 0.8f);
+            Color targetColor = blocked ? notValid : valid;
 
             // Smooth transition
             currentColor = Color.Lerp(

@@ -5,12 +5,15 @@ using UnityEngine;
 public class BuildTool : MonoBehaviour
 {
     public int buildID;
-    float maxDistance = 100f, radius = 0.5f, rotY;
+    float maxDistance = 100f, rotY;
+    public bool available; // current point is available to build on
     [SerializeField] GameObject[] buildings;
     [SerializeField] Material previewMaterial;
+    Renderer previewRender;
     Color currentColor;
-    Renderer ringRender;
-     
+    [SerializeField] Color valid, notValid;
+    [SerializeField] Collider previewCollider;
+    [SerializeField] Collider[] overlapResults = new Collider[16];
     Inventory inventory;
 
     void Start() 
@@ -24,9 +27,14 @@ public class BuildTool : MonoBehaviour
     {
         GameObject newPreview = Instantiate(buildings[buildID]);
         foreach (Renderer r in newPreview.GetComponentsInChildren<Renderer>())
-            r.material = previewMaterial;
+            r.sharedMaterial = previewMaterial;
         foreach (Collider c in newPreview.GetComponentsInChildren<Collider>())
-            c.enabled = false;
+        {
+            c.enabled = true;
+            c.isTrigger = true;
+        }
+
+        previewCollider = newPreview.transform.GetChild(0).GetComponent<Collider>();
         return newPreview;
     }
 
@@ -36,7 +44,7 @@ public class BuildTool : MonoBehaviour
         preview.transform.rotation = Quaternion.Euler(0f, rotY, 0f);
     }
 
-    public void BuildCheck(GameObject preview, GameObject ring, Ray ray, LayerMask gMask, LayerMask oMask)
+    public void BuildCheck(GameObject preview, Ray ray, LayerMask gMask, LayerMask oMask)
     {
         if (buildID < 0) return;
 
@@ -44,20 +52,49 @@ public class BuildTool : MonoBehaviour
 
         if (Physics.Raycast(ray, out hit, maxDistance, gMask))
         {
-            ring.transform.localScale = new Vector3(0.2f * radius, 1f, 0.2f * radius);
-            ring.transform.position = new Vector3(hit.point.x, hit.point.y + 0.1f, hit.point.z);
             if (preview) preview.transform.position = new Vector3(hit.point.x, hit.point.y, hit.point.z);
 
-            bool blocked = Physics.CheckSphere(
-                hit.point,
-                radius,
+            bool blocked = false;
+
+            // count the number of colliders within range
+            float checkRadius = previewCollider.bounds.extents.magnitude;
+
+            int hitCount = Physics.OverlapSphereNonAlloc(
+                previewCollider.bounds.center,
+                checkRadius,
+                overlapResults,
                 oMask,
                 QueryTriggerInteraction.Collide
             );
 
-            Color targetColor = blocked
-                ? new Color(1f, 0f, 0f, 0.8f)
-                : new Color(1f, 1f, 1f, 0.8f);
+            // check each individual colliders if they are actually colliding
+            for (int i = 0; i < hitCount; i++)
+            {
+                Collider other = overlapResults[i];
+
+                if (!other)
+                    continue;
+
+                if (other.transform.IsChildOf(preview.transform))
+                    continue;
+
+                if (Physics.ComputePenetration(
+                    previewCollider,
+                    preview.transform.position,
+                    preview.transform.rotation,
+                    other,
+                    other.transform.position,
+                    other.transform.rotation,
+                    out Vector3 _, out float _
+                )) {
+                    Debug.Log("blocked!");
+                    blocked = true;
+                    break;
+                }
+            }
+
+            available = !blocked;
+            Color targetColor = blocked ? notValid : valid;
 
             // Smooth transition
             currentColor = Color.Lerp(
@@ -66,8 +103,7 @@ public class BuildTool : MonoBehaviour
                 Time.deltaTime * 20f
             );
             
-            if (!ringRender) ringRender = ring.GetComponent<Renderer>();
-            ringRender.material.color = currentColor;
+            previewMaterial.color = currentColor;
         }
     }
 
@@ -79,7 +115,7 @@ public class BuildTool : MonoBehaviour
 
         if (Physics.Raycast(ray, out hit, maxDistance, gMask))
         {
-            if (Physics.CheckSphere(hit.point, radius, oMask, QueryTriggerInteraction.Collide)) return;
+            if (!available) return;
 
             string buildName = inventory.buildingList[buildID].name;
             if (inventory.myInventory[buildName] <= 0)

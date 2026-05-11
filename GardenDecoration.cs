@@ -94,6 +94,7 @@ public class GardenDecoration : MonoBehaviour
 
                 decor.transform.localScale *= Random.Range(0.8f, 1.2f);
                 decor.transform.parent = this.transform;
+                decor.GetComponent<SphereCollider>().enabled = true;
                 spawned.Add(decor);
 
                 float random = Random.Range(4.5f, 5.4f);
