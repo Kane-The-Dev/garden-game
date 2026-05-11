@@ -12,8 +12,8 @@ public class ShopManager : MonoBehaviour
     [Header("Display Shelves")]
     [SerializeField] List<ShopItemUI> buttons = new();
     Dictionary<ShopItem, int> stock = new();
-    [SerializeField] Transform plantDisplay;
-    [SerializeField] GameObject shopButton, displayBar, placeholderBar, displaySection;
+    [SerializeField] Transform plantDisplay, buildDisplay;
+    [SerializeField] GameObject shopPack, shopCard, displayBar, placeholderBar, displaySection;
     [SerializeField] RectTransform rootLayout;
     public RectTransform shopPanel;
     [SerializeField] ShopItem[] specialItems; // items that are tools but have infinite stock
@@ -73,7 +73,43 @@ public class ShopManager : MonoBehaviour
             }
 
             if (!thisRow) continue;
-            GameObject newItem = Instantiate(shopButton, thisRow);
+            GameObject newItem = Instantiate(shopPack, thisRow);
+
+            ShopItemUI itemUI = newItem.GetComponent<ShopItemUI>();
+            itemUI.isLocked = inventory.level < newShopItem.requirement;
+            itemUI.isSoldOut = false;
+            itemUI.myItem = newShopItem;
+
+            buttons.Add(itemUI);
+            count++;
+        }
+
+        count = 0;
+        thisRow = null;
+        foreach (var item in inventory.buildingList.OrderBy(f => f.levelReq)) // generate dynamic shop items for buildings
+        {
+            if (item.type == "Other") continue;
+
+            PlantUnlock newShopItem = ScriptableObject.CreateInstance<PlantUnlock>();
+            newShopItem.itemName = item.name;
+            newShopItem.price = item.plantPrice;
+            newShopItem.requirement = item.levelReq;
+            newShopItem.description = item.description;
+
+            stock[newShopItem] = 9999;
+
+            if (count % 5 == 0)
+            {
+                GameObject subBar = Instantiate(placeholderBar, buildDisplay);
+                GameObject mainBar = Instantiate(displayBar, buildDisplay.parent);
+                mainBar.GetComponent<FollowPosition>().target = subBar.GetComponent<RectTransform>();
+
+                GameObject newSection = Instantiate(displaySection, buildDisplay);
+                thisRow = newSection.transform;
+            }
+
+            if (!thisRow) continue;
+            GameObject newItem = Instantiate(shopCard, thisRow);
 
             ShopItemUI itemUI = newItem.GetComponent<ShopItemUI>();
             itemUI.isLocked = inventory.level < newShopItem.requirement;
@@ -91,8 +127,14 @@ public class ShopManager : MonoBehaviour
 
     public void OpenShop()
     {
-        shopPanel.gameObject.SetActive(true);
+        // shopPanel.gameObject.SetActive(true);
+        gm.UIAnimator.SetTrigger("openshop");
         Invoke("RefreshLayout", 0.01f);
+    }
+
+    public void CloseShop()
+    {
+        gm.UIAnimator.SetTrigger("closeshop");
     }
 
     public void RefreshShop()

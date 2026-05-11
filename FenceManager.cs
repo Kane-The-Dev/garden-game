@@ -18,7 +18,8 @@ public class FenceManager : MonoBehaviour
     public void UpgradeFence()
     {
         animator.SetTrigger("Upgrade!");
-        gm.sm.shopPanel.gameObject.SetActive(false);
+        // gm.sm.shopPanel.gameObject.SetActive(false);
+        gm.UIAnimator.SetTrigger("closeshop");
         gm.ChangeMode(2);
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;

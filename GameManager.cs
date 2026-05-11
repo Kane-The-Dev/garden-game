@@ -25,6 +25,7 @@ public class GameManager : MonoBehaviour
     [Header("UI Elements")]
     [SerializeField] GameObject gardenTools;
     [SerializeField] GameObject foodStorage, weightDisplay;
+    public Animator UIAnimator;
 
     public int timeControl;
 
@@ -56,11 +57,12 @@ public class GameManager : MonoBehaviour
 
     public void ChangeMode(int mode) // 0 garden, 1 merchant, 2 overview
     {
-        currentMode = mode;
         if (mode == 0) { // gardening
 
             cam.target = garden;
             cam.movable = true;
+
+            if (currentMode == 1) UIAnimator.SetTrigger("closestorage");
 
             gardenTools.SetActive(true);
             pm.ChangeMode(pm.mode);
@@ -71,6 +73,8 @@ public class GameManager : MonoBehaviour
 
             cam.target = merchant;
             cam.movable = false;
+
+            UIAnimator.SetTrigger("openstorage");
 
             gardenTools.SetActive(false);
             foodStorage.SetActive(true);
@@ -85,6 +89,7 @@ public class GameManager : MonoBehaviour
             foodStorage.SetActive(false);
             weightDisplay.SetActive(false);
         }
+        currentMode = mode;
         cam.targetReached = false;
         am.PlayUISoundEffect(5); // whoosh sound
     }
