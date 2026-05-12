@@ -76,6 +76,23 @@ public class Growable : MonoBehaviour
         col.isTrigger = false;
     }
 
+    public int ripeFruitCount
+    {
+        get 
+        {
+            int count = 0;
+            foreach (Transform slot in slots) 
+            {
+                if (slot.childCount <= 0) continue;
+
+                Growable fruit = slot.GetChild(0).GetComponent<Growable>();
+                if (!fruit) continue;
+                if (fruit.growthIndex >= 0.9f * fruit.maxGrowth) count++;
+            }
+            return count;
+        }
+    }
+
     void Update()
     {
         timeIndex = gm.timeControl * 0.05f;
