@@ -28,7 +28,7 @@ public class Constructible : MonoBehaviour
     void Start()
     {
         gm = GameManager.instance;
-        if (myAAS && construct.Length > 0) myAAS.PlayOneShot(construct[0], 1f, true);
+        if (!isPreview && myAAS && construct.Length > 0) myAAS.PlayOneShot(construct[0], 1f, true);
     }
 
     void Update()

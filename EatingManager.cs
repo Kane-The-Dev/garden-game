@@ -114,7 +114,6 @@ public class EatingManager : MonoBehaviour
         GameManager.instance.inventory.coin += accumulatedStonks;
         totalWeight = 0;
         accumulatedStonks = 0;
-        spawnedFood.Clear();
 
         Invoke("MoveTruck", 4f);
     }
@@ -125,6 +124,7 @@ public class EatingManager : MonoBehaviour
         rb.AddForce(moveDir * (1 + totalWeight * 0.2f), ForceMode.Impulse);
         Debug.Log("Your force is " + (moveDir * (1 + totalWeight * 0.5f)));
         foreach(GameObject obj in spawnedFood) Destroy(obj, 10f);
+        spawnedFood.Clear();
         Destroy(myTruck, 10f);
         myTruck = null;
     }

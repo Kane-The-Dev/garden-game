@@ -9,11 +9,10 @@ public class BuildTool : MonoBehaviour
     public bool available; // current point is available to build on
     [SerializeField] GameObject[] buildings;
     [SerializeField] Material previewMaterial;
-    Renderer previewRender;
     Color currentColor;
     [SerializeField] Color valid, notValid;
-    [SerializeField] Collider previewCollider;
-    [SerializeField] Collider[] overlapResults = new Collider[16];
+    Collider previewCollider;
+    Collider[] overlapResults = new Collider[16];
     Inventory inventory;
 
     void Start() 
@@ -96,7 +95,7 @@ public class BuildTool : MonoBehaviour
             available = !blocked;
             Color targetColor = blocked ? notValid : valid;
 
-            // Smooth transition
+            // Smooth color transition
             currentColor = Color.Lerp(
                 currentColor,
                 targetColor,

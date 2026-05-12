@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.UI;
 
 public class PlantManager : MonoBehaviour
 {
@@ -9,6 +10,7 @@ public class PlantManager : MonoBehaviour
     public GameObject ring, buildPreview;
     [SerializeField] LayerMask plantMask, groundMask, fruitMask, obstacleMask;
     [SerializeField] Animator optionsAnimator;
+    [SerializeField] Button[] modes = new Button[5];
 
     public PlantTool plantTool;
     public BuildTool buildTool;
@@ -30,6 +32,32 @@ public class PlantManager : MonoBehaviour
 
     void Update()
     {
+        if (Input.GetKeyDown(KeyCode.Alpha1))
+        {
+            Debug.Log("Pressed 1");
+            modes[0].onClick.Invoke();
+        }
+        else if (Input.GetKeyDown(KeyCode.Alpha2))
+        {
+            Debug.Log("Pressed 2");
+            modes[1].onClick.Invoke();
+        }
+        else if (Input.GetKeyDown(KeyCode.Alpha3))
+        {
+            Debug.Log("Pressed 3");
+            modes[2].onClick.Invoke();
+        }
+        else if (Input.GetKeyDown(KeyCode.Alpha4))
+        {
+            Debug.Log("Pressed 4");
+            modes[3].onClick.Invoke();
+        }
+        else if (Input.GetKeyDown(KeyCode.Alpha5))
+        {
+            Debug.Log("Pressed 5");
+            modes[4].onClick.Invoke();
+        }
+
         Ray ray = cam.ScreenPointToRay(Input.mousePosition);
 
         if (EventSystem.current.IsPointerOverGameObject() || gm.currentMode != 0)

@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.Audio;
 
@@ -18,7 +19,7 @@ public class AudioManager : MonoBehaviour
     [SerializeField] AudioSource ambient;
     [SerializeField] AdvancedAudioSource music, UISource;
     
-    [SerializeField] AudioMixer musicMixer, SFXMixer;
+    [SerializeField] AudioMixer musicMixer, SFXMixer, UIMixer;
 
     [Header("Clips")]
     [SerializeField] Clip[] UISounds;
@@ -28,6 +29,7 @@ public class AudioManager : MonoBehaviour
     [Range(0f,1f)] public float musicVolume = 1f;
     [Range(0f,1f)] public float ambientVolume = 1f;
     [Range(0f,1f)] public float SFXVolume = 1f;
+    [Range(0f,1f)] public float UIVolume = 1f;
 
     [SerializeField] int nowPlaying = 0;
 
@@ -72,10 +74,14 @@ public class AudioManager : MonoBehaviour
 
         float dB2 = Mathf.Log10(Mathf.Max(SFXVolume, 0.001f)) * 20f;
         SFXMixer.SetFloat("SFXVolume", dB2);
+
+        float dB3 = Mathf.Log10(Mathf.Max(UIVolume, 0.001f)) * 20f;
+        UIMixer.SetFloat("UIVolume", dB3);
     }
 
     public void PlayUISoundEffect(int clipID)
     {
-        UISource.PlayOneShot(UISounds[clipID].sound, UISounds[clipID].volume, true);
+        if (clipID >= 0 && clipID < UISounds.Length)
+            UISource.PlayOneShot(UISounds[clipID].sound, UISounds[clipID].volume, true);
     }
 }
