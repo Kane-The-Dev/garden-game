@@ -1,3 +1,4 @@
+using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -6,19 +7,29 @@ public class PlantManager : MonoBehaviour
 {
     Camera cam;
     GameManager gm;
+    
+    [Header("Preview")]
+    public GameObject ring;
+    public GameObject buildPreview;
+    Renderer ringRender;
+    [SerializeField] Color defaultRingColor;
 
-    public GameObject ring, buildPreview;
+    [Header("Layer Masks")]
     [SerializeField] LayerMask plantMask, groundMask, fruitMask, obstacleMask;
-    [SerializeField] Animator optionsAnimator;
-    [SerializeField] Button[] modes = new Button[5];
-
+    
+    
+    [Header("Tools")]
+    public int mode; // 0 = plant, 1 = build, 2 = water, 3 = harvest, 4 = chop
     public PlantTool plantTool;
     public BuildTool buildTool;
     public WaterTool waterTool;
     public HarvestTool harvestTool;
     public ChopTool chopTool;
     
-    public int mode; // 0 = plant, 1 = build, 2 = water, 3 = harvest, 4 = chop 
+    [Header("UI")]
+    [SerializeField] Button[] modes = new Button[5];
+    [SerializeField] Animator optionsAnimator;
+    [SerializeField] TextMeshProUGUI gameTip;
     
     void Start()
     {
@@ -27,7 +38,9 @@ public class PlantManager : MonoBehaviour
         gm = GameManager.instance;
         plantTool = GetComponent<PlantTool>();
         buildTool = GetComponent<BuildTool>();
-        ring.GetComponent<Renderer>().material.color = new Color(1f, 1f, 1f, 0.8f);
+        ringRender = ring.GetComponent<Renderer>();
+        ringRender.material.color = defaultRingColor;
+        ChangeMode(0);
     }
 
     void Update()
@@ -62,11 +75,13 @@ public class PlantManager : MonoBehaviour
 
         if (EventSystem.current.IsPointerOverGameObject() || gm.currentMode != 0)
         {
+            gameTip.gameObject.SetActive(false);
             if (buildPreview) buildPreview.SetActive(false);
-            ring.GetComponent<Renderer>().material.color = new Color(1f, 1f, 1f, 0.8f);
             ring.SetActive(false);
             return;
-        } 
+        }
+
+        gameTip.gameObject.SetActive(true);
 
         if (mode == 0 && plantTool.plantID >= 0)
         {
@@ -76,7 +91,6 @@ public class PlantManager : MonoBehaviour
         
         if (mode == 1 && buildTool.buildID >= 0)
         {
-            // ring.SetActive(true);
             if (buildPreview) buildPreview.SetActive(true);
             buildTool.BuildCheck(buildPreview, ray, groundMask, obstacleMask);
         }
@@ -112,7 +126,10 @@ public class PlantManager : MonoBehaviour
         
         if (Input.GetMouseButtonDown(0))
         {
-            if (mode > 1) ring.SetActive(true);
+            if (mode > 1) {
+                ring.SetActive(true);
+                ringRender.material.color = defaultRingColor;
+            }
 
             switch (mode) {
                 case 0:
@@ -140,38 +157,55 @@ public class PlantManager : MonoBehaviour
     public void ChangeMode(int newMode)
     {
         mode = newMode;
-        if (optionsAnimator)
+        
+        switch (newMode)
         {
-            switch (newMode)
-            {
-                case 0:
-                    optionsAnimator.SetTrigger("plant");
-                    break;
-                case 1:
-                    optionsAnimator.SetTrigger("build");
-                    break;
-                default:
-                    optionsAnimator.SetTrigger("close");
-                    break;
+            case 0:
+                if (plantTool.plantID >= 0) 
+                    gameTip.text = "RMB to Plant";
+                else 
+                    gameTip.text = "Select a Plant";
 
-            }
+                if (optionsAnimator) optionsAnimator.SetTrigger("plant");
+                break;
+            case 1:
+                if (buildTool.buildID >= 0) 
+                    gameTip.text = "E/R to Rotate\nRMB to Build";
+                else
+                    gameTip.text = "Select a Building";
+
+                if (optionsAnimator) optionsAnimator.SetTrigger("build");
+                break;
+            default:
+                gameTip.text = "RMB + Hold to Start";
+                if (optionsAnimator) optionsAnimator.SetTrigger("close");
+                break;
+
         }
     }
 
     public void ChangePlant(int newPlantID)
     {
         plantTool.plantID = newPlantID;
+
+        if (plantTool.plantID >= 0) 
+            gameTip.text = "RMB to Plant";
+        else 
+            gameTip.text = "Select a Plant";
     }
 
     public void ChangeBuilding(int newBuildID)
     {
-        Debug.Log("Your buildID is " + newBuildID);
-
         if (newBuildID == buildTool.buildID) return;
 
         buildTool.buildID = newBuildID;
 
         if (buildPreview) Destroy(buildPreview);
         buildPreview = buildTool.SpawnPreview();
+
+        if (buildTool.buildID >= 0) 
+            gameTip.text = "E/R to Rotate\nRMB to Build";
+        else
+            gameTip.text = "Select a Building";
     }
 }

@@ -18,6 +18,7 @@ public class Growable : MonoBehaviour
     public float harvestIndex;
     [SerializeField] float harvestForce;
     [SerializeField] Transform harvestPoint;
+    public float harvestRange; // for auto-harvester use
 
     [Header("Tree - Removal")]
     public bool chopped = false;

@@ -15,7 +15,7 @@ public class PlantTool : MonoBehaviour
 
     void Start() 
     {
-        currentColor = Color.white;
+        currentColor = valid;
         inventory = GameManager.instance.inventory;
         plantID = -1;
     }

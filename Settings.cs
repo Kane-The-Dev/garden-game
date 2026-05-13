@@ -25,11 +25,14 @@ public class Settings : MonoBehaviour
     const string SFX_KEY = "SFX_VOLUME";
     const string UI_KEY = "UI_VOLUME";
 
+    GameManager gm;
     AudioManager am;
 
     void Start()
     {
+        gm = GameManager.instance;
         am = AudioManager.instance;
+
         mainVolume = PlayerPrefs.GetFloat(MAIN_KEY, 1f);
         musicVolume = PlayerPrefs.GetFloat(MUSIC_KEY, 1f);
         ambientVolume = PlayerPrefs.GetFloat(AMBIENT_KEY, 1f);
@@ -43,6 +46,16 @@ public class Settings : MonoBehaviour
         if (UISlider) UISlider.value = UIVolume;
 
         ApplyVolumes();
+    }
+
+    public void OpenSettings()
+    {
+        gm.UIAnimator.SetTrigger("opensettings");
+    }
+
+    public void CloseSettings()
+    {
+        gm.UIAnimator.SetTrigger("closesettings");
     }
 
     public void ChangeMainVolume(float value)
