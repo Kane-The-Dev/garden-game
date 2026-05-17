@@ -24,10 +24,9 @@ public class Growable : MonoBehaviour
     public bool chopped = false;
     public bool isOven = false;
     public float chopIndex;
+    [SerializeField] int chopStageCount = 3;
+    const float CHOP_STEP = 0.3f;
     int chopStage = 0;
-    public float STAGE1 = 0.3333f;
-    public float STAGE2 = 0.6666f;
-    public float STAGE3 = 1f;
     [SerializeField] Transform effectSpawnPoint;
     
     [Header("Product")]
@@ -284,41 +283,27 @@ public class Growable : MonoBehaviour
         if (chopIndex > 0f)
             chopIndex -= Time.deltaTime / 3f;
 
-        // Determine stage from chopIndex
-        int newStage;
-        if (chopIndex >= STAGE3)
-            newStage = 3;
-        else if (chopIndex >= STAGE2)
-            newStage = 2;
-        else if (chopIndex >= STAGE1)
-            newStage = 1;
-        else
-            newStage = 0;
+        int newStage = Mathf.FloorToInt(chopIndex / CHOP_STEP);
+        newStage = Mathf.Clamp(newStage, 0, chopStageCount);
 
         if (newStage > chopStage)
         {
             gm.cam.ScreenShake(0.02f);
             myChopTool.PlayChop();
 
-            // Stage 0 → 1
-            if (chopStage < 1 && newStage >= 1)
+            for (int stage = chopStage + 1; stage <= newStage; stage++)
             {
+                bool isFinalStage = stage >= chopStageCount;
+
+                if (isFinalStage)
+                {
+                    HarvestFruit(10);
+                    Chop();
+                    break;
+                }
+
                 HarvestFruit(2);
                 Shake(5f);
-            }
-
-            // Stage 1 → 2
-            if (chopStage < 2 && newStage >= 2)
-            {
-                HarvestFruit(2);
-                Shake(5f);
-            }
-
-            // Stage 2 → 3 (final)
-            if (newStage == 3)
-            {
-                HarvestFruit(10);
-                Chop();
             }
         }
 
