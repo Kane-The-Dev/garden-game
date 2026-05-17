@@ -65,6 +65,19 @@ public class ShopManager : MonoBehaviour
 
         buttons.Add(itemUI);
     }
+
+    Transform CreateNewRow(Transform display)
+    {
+        GameObject subBar = Instantiate(placeholderBar, display);
+        GameObject mainBar = Instantiate(displayBar, display.parent.parent);
+        FollowTransform follow = mainBar.GetComponent<FollowTransform>();
+        follow.isRect = true;
+        follow.rectTarget = subBar.GetComponent<RectTransform>();
+        follow.positionSpeed = 0f;
+
+        GameObject newSection = Instantiate(displaySection, display);
+        return newSection.transform;
+    }
     
     void InitializeShop()
     {
@@ -84,14 +97,7 @@ public class ShopManager : MonoBehaviour
             PlantUnlock newShopItem = CreateShopItem(item);
 
             if (count % 5 == 0)
-            {
-                GameObject subBar = Instantiate(placeholderBar, plantDisplay);
-                GameObject mainBar = Instantiate(displayBar, plantDisplay.parent);
-                mainBar.GetComponent<FollowPosition>().target = subBar.GetComponent<RectTransform>();
-
-                GameObject newSection = Instantiate(displaySection, plantDisplay);
-                thisRow = newSection.transform;
-            }
+                thisRow = CreateNewRow(plantDisplay);
 
             if (!thisRow) return;
             CreateShopItemUI(newShopItem, shopPack, thisRow);
@@ -106,12 +112,7 @@ public class ShopManager : MonoBehaviour
         {
             PlantUnlock newShopItem = CreateShopItem(oven);
 
-            GameObject subBar = Instantiate(placeholderBar, bakeryDisplay);
-            GameObject mainBar = Instantiate(displayBar, bakeryDisplay.parent);
-            mainBar.GetComponent<FollowPosition>().target = subBar.GetComponent<RectTransform>();
-
-            GameObject newSection = Instantiate(displaySection, bakeryDisplay);
-            thisRow = newSection.transform;
+            thisRow = CreateNewRow(bakeryDisplay);
 
             CreateShopItemUI(newShopItem, shopCard, thisRow);
             count++;
@@ -125,14 +126,7 @@ public class ShopManager : MonoBehaviour
             PlantUnlock newShopItem = CreateShopItem(item);
 
             if (count % 5 == 0)
-            {
-                GameObject subBar = Instantiate(placeholderBar, bakeryDisplay);
-                GameObject mainBar = Instantiate(displayBar, bakeryDisplay.parent);
-                mainBar.GetComponent<FollowPosition>().target = subBar.GetComponent<RectTransform>();
-
-                GameObject newSection = Instantiate(displaySection, bakeryDisplay);
-                thisRow = newSection.transform;
-            }
+                thisRow = CreateNewRow(bakeryDisplay);
 
             if (!thisRow) return;
             CreateShopItemUI(newShopItem, shopPack, thisRow);
@@ -150,14 +144,7 @@ public class ShopManager : MonoBehaviour
             PlantUnlock newShopItem = CreateShopItem(item);
 
             if (count % 5 == 0)
-            {
-                GameObject subBar = Instantiate(placeholderBar, buildDisplay);
-                GameObject mainBar = Instantiate(displayBar, buildDisplay.parent);
-                mainBar.GetComponent<FollowPosition>().target = subBar.GetComponent<RectTransform>();
-
-                GameObject newSection = Instantiate(displaySection, buildDisplay);
-                thisRow = newSection.transform;
-            }
+                thisRow = CreateNewRow(buildDisplay);
 
             if (!thisRow) return;
             CreateShopItemUI(newShopItem, shopCard, thisRow);
