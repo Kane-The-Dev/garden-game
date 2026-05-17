@@ -66,7 +66,7 @@ public class EatingManager : MonoBehaviour
         if (stonksDisplay) stonksDisplay.text = accumulatedStonks + "G";
 
         if (weightNeedle) {
-            float targetRotZ = 210f + 120f * totalWeight / maxWeight;
+            float targetRotZ = -139f + 98f * totalWeight / maxWeight;
             Quaternion targetRot = Quaternion.Euler(0f, 0f, targetRotZ);
             weightNeedle.rotation = Quaternion.Lerp(weightNeedle.rotation, targetRot, 5f * Time.deltaTime);
         }
@@ -164,10 +164,7 @@ public class EatingManager : MonoBehaviour
         float magnitude = col.attachedRigidbody.velocity.magnitude;
         if (magnitude < 5f) return;
 
-        if (col.CompareTag("Food"))
-        {
-            Debug.Log("Loaded more food!");
-        }
+        // if (col.CompareTag("Food")) Debug.Log("Loaded more food!");
 
         if (col.CompareTag("Truck"))
         {

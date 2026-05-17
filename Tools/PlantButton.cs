@@ -30,6 +30,7 @@ public class PlantButton : MonoBehaviour
     public void OnClick()
     {
         GameManager.instance.pm.ChangePlant(plantID);
+        // GameManager.instance.pm.ChangeBuilding(8);
         myGroup.OnClick(gameObject);
     }
 }

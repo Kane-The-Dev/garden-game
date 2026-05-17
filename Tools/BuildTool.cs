@@ -25,15 +25,17 @@ public class BuildTool : MonoBehaviour
     public GameObject SpawnPreview()
     {
         GameObject newPreview = Instantiate(buildings[buildID]);
+        
         foreach (Renderer r in newPreview.GetComponentsInChildren<Renderer>())
             r.sharedMaterial = previewMaterial;
+
         foreach (Collider c in newPreview.GetComponentsInChildren<Collider>())
         {
             c.enabled = true;
             c.isTrigger = true;
         }
 
-        previewCollider = newPreview.transform.GetChild(0).GetComponent<Collider>();
+        previewCollider = newPreview.GetComponentInChildren<Constructible>().GetComponent<Collider>();
         return newPreview;
     }
 
@@ -86,7 +88,7 @@ public class BuildTool : MonoBehaviour
                     other.transform.rotation,
                     out Vector3 _, out float _
                 )) {
-                    Debug.Log("blocked!");
+                    // Debug.Log("blocked!");
                     blocked = true;
                     break;
                 }
@@ -141,6 +143,9 @@ public class BuildTool : MonoBehaviour
             Quaternion.Euler(0f, rotY, 0f)
         );
 
-        newBuilding.transform.GetChild(0).GetComponent<Constructible>().isPreview = false;
+        Constructible constructible = newBuilding.GetComponentInChildren<Constructible>();
+        if (constructible)
+            constructible.isPreview = false;
+
     }
 }

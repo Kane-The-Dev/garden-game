@@ -35,7 +35,7 @@ public class PlantSelection : MonoBehaviour
 
             GameObject newItem = Instantiate(plantButton, plantSelection);
 
-            thisButton = newItem.transform.GetChild(0).GetComponent<PlantButton>();
+            thisButton = newItem.GetComponentInChildren<PlantButton>();
             plantGroup.buttons.Add(thisButton.myImage);
             thisButton.myGroup = plantGroup;
             
@@ -63,7 +63,7 @@ public class PlantSelection : MonoBehaviour
 
             GameObject newItem = Instantiate(buildButton, buildSelection);
 
-            thisButton = newItem.transform.GetChild(0).GetComponent<BuildButton>();
+            thisButton = newItem.GetComponentInChildren<BuildButton>();
             buildGroup.buttons.Add(thisButton.myImage);
             thisButton.myGroup = buildGroup;
             

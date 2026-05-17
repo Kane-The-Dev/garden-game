@@ -1,4 +1,3 @@
-using System.Linq;
 using UnityEngine;
 
 public class PlantTool : MonoBehaviour
@@ -10,6 +9,8 @@ public class PlantTool : MonoBehaviour
     Color currentColor;
     [SerializeField] Color valid, notValid;
     Renderer ringRender;
+    Collider[] overlapResults = new Collider[16];
+    Transform validOven;
      
     Inventory inventory;
 
@@ -39,6 +40,55 @@ public class PlantTool : MonoBehaviour
         return treeType;
     }
 
+    bool IsOven()
+    {
+        return plantID >= 0 && inventory.foodList[plantID].type == "Oven";
+    }
+
+    bool IsBlocked(Vector3 point, LayerMask oMask) 
+    {
+        validOven = null;
+
+        bool blocked = Physics.CheckSphere(
+            point,
+            radius,
+            oMask,
+            QueryTriggerInteraction.Collide
+        );
+
+        if (IsOven())
+        {
+            blocked = true;
+
+            int hitCount = Physics.OverlapSphereNonAlloc(
+                point,
+                radius,
+                overlapResults,
+                oMask,
+                QueryTriggerInteraction.Collide
+            );
+
+            for (int i = 0; i < hitCount; i++)
+            {
+                Collider other = overlapResults[i];
+
+                if (!other)
+                    continue;
+
+                if (
+                    other.CompareTag("Oven") 
+                    && !other.transform.parent.GetComponentInChildren<Growable>()
+                ) {
+                    blocked = false;
+                    validOven = other.transform.parent; // get root of oven
+                    break;
+                }
+            }
+        }
+
+        return blocked;
+    }
+
     public void PlantCheck(GameObject ring, Ray ray, LayerMask gMask, LayerMask oMask)
     {
         if (plantID < 0) return;
@@ -52,14 +102,7 @@ public class PlantTool : MonoBehaviour
             ring.transform.localScale = new Vector3(0.2f * radius, 1f, 0.2f * radius);
             ring.transform.position = new Vector3(hit.point.x, hit.point.y + 0.1f, hit.point.z);
 
-            bool blocked = Physics.CheckSphere(
-                hit.point,
-                radius,
-                oMask,
-                QueryTriggerInteraction.Collide
-            );
-
-            Color targetColor = blocked ? notValid : valid;
+            Color targetColor = IsBlocked(hit.point, oMask) ? notValid : valid;
 
             // Smooth transition
             currentColor = Color.Lerp(
@@ -81,7 +124,7 @@ public class PlantTool : MonoBehaviour
 
         if (Physics.Raycast(ray, out hit, maxDistance, gMask))
         {
-            if (Physics.CheckSphere(hit.point, radius, oMask, QueryTriggerInteraction.Collide)) return;
+            if (IsBlocked(hit.point, oMask)) return;
 
             string plantName = inventory.foodList[plantID].name;
             if (inventory.myInventory[plantName] <= 0)
@@ -91,6 +134,7 @@ public class PlantTool : MonoBehaviour
             }
 
             if (plantID < 0) return;
+            else if (IsOven()) Plant(hit.point, validOven);
             else Plant(hit.point);
 
             inventory.myInventory[plantName]--;
@@ -100,19 +144,37 @@ public class PlantTool : MonoBehaviour
         }
     }
 
-    void Plant(Vector3 point)
+    void Plant(Vector3 point, Transform parent = null)
     {
         int treeType = GetTreeType();
             
-        GameObject newTree = Instantiate(
-            plants[treeType], 
-            point, 
-            Quaternion.Euler(0f, Random.Range(0f, 180f), 0f)
-        );
+        GameObject newTree;
+        Growable g;
 
-        var g = newTree.transform.GetChild(0).GetComponent<Growable>();
+        if (!parent)
+        {
+            newTree = Instantiate(
+                plants[treeType], 
+                point, 
+                Quaternion.Euler(0f, Random.Range(0f, 180f), 0f)
+            );
+            g = newTree.GetComponentInChildren<Growable>();
+        }
+        else
+        {
+            newTree = Instantiate(
+                plants[treeType], 
+                parent
+            );
+            g = newTree.GetComponent<Growable>();
+            parent.GetComponentInChildren<FollowTransform>().target = newTree.transform;
+        }
+
+        if (!g) return;
+
         g.growthSpeed = inventory.foodList[plantID].growthSpeed;
-        g.maxGrowth *= Random.Range(0.85f, 1f);
+        if (!IsOven()) g.maxGrowth *= Random.Range(0.85f, 1f);
+        else g.isOven = true;
         g.product = products[plantID];
         g.wiggleOffset = Random.Range(0f, 90f);
         g.wiggleAmplitude *= Random.Range(4f, 5f);

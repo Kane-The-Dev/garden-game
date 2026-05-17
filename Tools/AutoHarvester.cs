@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+[RequireComponent(typeof(Constructible))]
 public class AutoHarvester : MonoBehaviour
 {
     [SerializeField] float scanRadius = 15f, speed = 5f, scanCooldown = 5f, harvestCooldown = 2f, harvestRange;
@@ -11,15 +12,30 @@ public class AutoHarvester : MonoBehaviour
     Collider[] overlapResults = new Collider[16];
     [SerializeField] Growable target;
     Animator animator;
+    Constructible constructible;
+    public bool CanStart => constructible && !constructible.isPreview;
+
+    void Awake()
+    {
+        animator = GetComponent<Animator>();
+        constructible = GetComponent<Constructible>();
+    }
 
     void Start()
     {
-        animator = GetComponent<Animator>();
+        if (CanStart)
+        {
+            helper.GetComponent<Rigidbody>().useGravity = true;
+            helper.GetComponent<Collider>().enabled = true;
+        }
+
         StartCoroutine(ScanPlants());
     }
 
     void Update()
     {
+        if (!CanStart) return;
+
         if (target)
         {
             if (Vector3.Distance(helper.position, target.transform.position) > harvestRange)
@@ -67,7 +83,12 @@ public class AutoHarvester : MonoBehaviour
 
     public void Harvest()
     {
-        if (!target || Vector3.Distance(helper.position, target.transform.position) > harvestRange) return;
+        if (!CanStart) return;
+        if (!target || Vector3.Distance(helper.position, target.transform.position) > harvestRange)
+        {
+            if (target) Debug.Log(Vector3.Distance(helper.position, target.transform.position));
+            return;  
+        } 
         target.HarvestFruit(2);
         target.Shake(4f);
     }
@@ -76,6 +97,8 @@ public class AutoHarvester : MonoBehaviour
     {
         while (true)
         {
+            if (!CanStart) yield break;
+            
             if (!target) animator.SetTrigger("scan");
             yield return new WaitForSeconds(scanCooldown);
 

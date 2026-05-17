@@ -22,6 +22,7 @@ public class Growable : MonoBehaviour
 
     [Header("Tree - Removal")]
     public bool chopped = false;
+    public bool isOven = false;
     public float chopIndex;
     int chopStage = 0;
     public float STAGE1 = 0.3333f;
@@ -57,7 +58,7 @@ public class Growable : MonoBehaviour
         harvestIndex = 0f;
         chopIndex = 0f;
 
-        if (!isProduct) {
+        if (!isProduct && myAAS && plant.Length > 0) {
             myAAS.PlayOneShot(plant[Random.Range(0, plant.Length)], 1f, true);
         }
     }
@@ -191,7 +192,8 @@ public class Growable : MonoBehaviour
     {
         if (isProduct) return;
 
-        myAAS.PlayOneShot(leaves[Random.Range(0, leaves.Length)], 1f, true);
+        if (myAAS && leaves.Length > 0) 
+            myAAS.PlayOneShot(leaves[Random.Range(0, leaves.Length)], 1f, true);
 
         float myGrowth = transform.localScale.x / maxGrowth;
         GameObject burst = Instantiate(leaf, 
@@ -330,7 +332,7 @@ public class Growable : MonoBehaviour
         foreach (Transform slot in slots)
         {
             if (slot.childCount > 0)
-                slot.GetChild(0).GetComponent<Growable>().chopped = true;
+                slot.GetComponentInChildren<Growable>().chopped = true;
         }
 
         chopped = true;
@@ -361,6 +363,7 @@ public class Growable : MonoBehaviour
         );
         rb.AddTorque(randomTorque);
 
+        if (isOven) Destroy(gameObject);
         Destroy(transform.parent.gameObject, 5f);
         if (myAAS & fall.Length > 0) myAAS.PlayOneShot(fall[0], 1f, true);
     }

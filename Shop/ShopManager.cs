@@ -12,7 +12,7 @@ public class ShopManager : MonoBehaviour
     [Header("Display Shelves")]
     [SerializeField] List<ShopItemUI> buttons = new();
     Dictionary<ShopItem, int> stock = new();
-    [SerializeField] Transform plantDisplay, buildDisplay;
+    [SerializeField] Transform plantDisplay, bakeryDisplay, buildDisplay;
     [SerializeField] GameObject shopPack, shopCard, displayBar, placeholderBar, displaySection;
     [SerializeField] RectTransform rootLayout;
     public RectTransform shopPanel;
@@ -40,6 +40,31 @@ public class ShopManager : MonoBehaviour
         InitializeShop();
         RefreshShop();
     }
+
+    PlantUnlock CreateShopItem(Item item)
+    {
+        PlantUnlock newShopItem = ScriptableObject.CreateInstance<PlantUnlock>();
+        newShopItem.itemName = item.name;
+        newShopItem.price = item.plantPrice;
+        newShopItem.requirement = item.levelReq;
+        newShopItem.description = item.description;
+
+        stock[newShopItem] = 9999;
+
+        return newShopItem;
+    }
+
+    void CreateShopItemUI(ShopItem myShopItem, GameObject prefab, Transform parent)
+    {
+        GameObject newItem = Instantiate(prefab, parent);
+
+        ShopItemUI itemUI = newItem.GetComponent<ShopItemUI>();
+        itemUI.isLocked = inventory.level < myShopItem.requirement;
+        itemUI.isSoldOut = false;
+        itemUI.myItem = myShopItem;
+
+        buttons.Add(itemUI);
+    }
     
     void InitializeShop()
     {
@@ -50,17 +75,13 @@ public class ShopManager : MonoBehaviour
         
         int count = 0;
         Transform thisRow = null;
-        foreach (var item in inventory.foodList.OrderBy(f => f.levelReq)) // generate dynamic shop items for plants
+
+        // generate dynamic shop items for plants
+        foreach (var item in inventory.foodList.OrderBy(f => f.levelReq)) 
         {
-            if (item.type == "Other") continue;
+            if (item.type == "Other" || item.type == "Oven") continue;
 
-            PlantUnlock newShopItem = ScriptableObject.CreateInstance<PlantUnlock>();
-            newShopItem.itemName = item.name;
-            newShopItem.price = item.plantPrice;
-            newShopItem.requirement = item.levelReq;
-            newShopItem.description = item.description;
-
-            stock[newShopItem] = 9999;
+            PlantUnlock newShopItem = CreateShopItem(item);
 
             if (count % 5 == 0)
             {
@@ -72,31 +93,61 @@ public class ShopManager : MonoBehaviour
                 thisRow = newSection.transform;
             }
 
-            if (!thisRow) continue;
-            GameObject newItem = Instantiate(shopPack, thisRow);
-
-            ShopItemUI itemUI = newItem.GetComponent<ShopItemUI>();
-            itemUI.isLocked = inventory.level < newShopItem.requirement;
-            itemUI.isSoldOut = false;
-            itemUI.myItem = newShopItem;
-
-            buttons.Add(itemUI);
+            if (!thisRow) return;
+            CreateShopItemUI(newShopItem, shopPack, thisRow);
             count++;
         }
 
         count = 0;
         thisRow = null;
-        foreach (var item in inventory.buildingList.OrderBy(f => f.levelReq)) // generate dynamic shop items for buildings
+
+        Item oven = inventory.buildingList.FirstOrDefault(item => item.name == "Oven");
+        if (oven != null)
+        {
+            PlantUnlock newShopItem = CreateShopItem(oven);
+
+            GameObject subBar = Instantiate(placeholderBar, bakeryDisplay);
+            GameObject mainBar = Instantiate(displayBar, bakeryDisplay.parent);
+            mainBar.GetComponent<FollowPosition>().target = subBar.GetComponent<RectTransform>();
+
+            GameObject newSection = Instantiate(displaySection, bakeryDisplay);
+            thisRow = newSection.transform;
+
+            CreateShopItemUI(newShopItem, shopCard, thisRow);
+            count++;
+        }
+
+        // generate dynamic shop items for baking goods
+        foreach (var item in inventory.foodList.OrderBy(f => f.levelReq)) 
+        {
+            if (item.type == "Other" || item.type != "Oven") continue;
+
+            PlantUnlock newShopItem = CreateShopItem(item);
+
+            if (count % 5 == 0)
+            {
+                GameObject subBar = Instantiate(placeholderBar, bakeryDisplay);
+                GameObject mainBar = Instantiate(displayBar, bakeryDisplay.parent);
+                mainBar.GetComponent<FollowPosition>().target = subBar.GetComponent<RectTransform>();
+
+                GameObject newSection = Instantiate(displaySection, bakeryDisplay);
+                thisRow = newSection.transform;
+            }
+
+            if (!thisRow) return;
+            CreateShopItemUI(newShopItem, shopPack, thisRow);
+            count++;
+        }
+
+        count = 0;
+        thisRow = null;
+
+        // generate dynamic shop items for buildings
+        foreach (var item in inventory.buildingList.OrderBy(f => f.levelReq)) 
         {
             if (item.type == "Other") continue;
 
-            PlantUnlock newShopItem = ScriptableObject.CreateInstance<PlantUnlock>();
-            newShopItem.itemName = item.name;
-            newShopItem.price = item.plantPrice;
-            newShopItem.requirement = item.levelReq;
-            newShopItem.description = item.description;
-
-            stock[newShopItem] = 9999;
+            PlantUnlock newShopItem = CreateShopItem(item);
 
             if (count % 5 == 0)
             {
@@ -108,15 +159,8 @@ public class ShopManager : MonoBehaviour
                 thisRow = newSection.transform;
             }
 
-            if (!thisRow) continue;
-            GameObject newItem = Instantiate(shopCard, thisRow);
-
-            ShopItemUI itemUI = newItem.GetComponent<ShopItemUI>();
-            itemUI.isLocked = inventory.level < newShopItem.requirement;
-            itemUI.isSoldOut = false;
-            itemUI.myItem = newShopItem;
-
-            buttons.Add(itemUI);
+            if (!thisRow) return;
+            CreateShopItemUI(newShopItem, shopCard, thisRow);
             count++;
         }
 
