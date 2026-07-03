@@ -7,8 +7,9 @@ public class GardenDecoration : MonoBehaviour
     [Header("Decoration")]
     [SerializeField] GameObject[] decorations, trees;
     [SerializeField] LayerMask groundMask, obstacleMask;
-    [SerializeField] Vector3 center;
-    [SerializeField] float radius;
+    [SerializeField] Vector3 gardenCenter, spawnCenter;
+    [SerializeField] float outerRadius;
+    [SerializeField] float innerRadius;
     [SerializeField] int minCount, maxCount;
 
     float maxDistance = 100f;
@@ -41,7 +42,7 @@ public class GardenDecoration : MonoBehaviour
         for (int i = 0; i < n; i++)
         {
             yield return new WaitForSeconds(0.01f);
-            Vector3 point = center + Random.insideUnitSphere * radius;
+            Vector3 point = spawnCenter + Random.insideUnitSphere * outerRadius;
 
             if (Physics.Raycast(
                 point, 
@@ -57,14 +58,14 @@ public class GardenDecoration : MonoBehaviour
                     continue;
                 }
 
-                float dist = Vector3.Distance(hit.point, center);
+                float dist = Vector3.Distance(hit.point, gardenCenter);
 
                 GameObject decor;
                 int ID;
 
-                if (dist >= radius * 0.5f)
+                if (dist >= innerRadius)
                 {
-                    // trees allowed
+                    // trees only allowed outside inner radius
                     ID = Random.Range(0, n1 + n2);
 
                     if (ID < n1)
@@ -82,7 +83,7 @@ public class GardenDecoration : MonoBehaviour
                 }
                 else
                 {
-                    // center area → decorations only
+                    // center area -> decorations only
                     ID = Random.Range(0, n1);
 
                     decor = Instantiate(

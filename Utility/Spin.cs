@@ -10,6 +10,7 @@ public class Spin : MonoBehaviour
     [Header("Settings")]
     public float speed = 90f; // rotating speed (deg/sec)
     public float acceleration = 5f;
+    public Space rotationSpace = Space.Self;
 
     private float currentSpeed = 0f;
 
@@ -25,6 +26,6 @@ public class Spin : MonoBehaviour
 
         currentSpeed = Mathf.Lerp(currentSpeed, speed, acceleration * Time.deltaTime);
 
-        transform.Rotate(axis.normalized * currentSpeed * Time.deltaTime, Space.Self);
+        transform.Rotate(axis.normalized * currentSpeed * Time.deltaTime, rotationSpace);
     }
 }

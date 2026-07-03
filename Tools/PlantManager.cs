@@ -188,10 +188,12 @@ public class PlantManager : MonoBehaviour
     {
         plantTool.plantID = newPlantID;
 
-        if (plantTool.plantID >= 0) 
-            gameTip.text = "RMB to Plant";
-        else 
+        if (newPlantID < 0) 
             gameTip.text = "Select a Plant";
+        else if (GameManager.instance.inventory.foodList[newPlantID].type == "Oven") 
+            gameTip.text = "RMB on an Oven to Start";
+        else 
+            gameTip.text = "RMB to Plant";
     }
 
     public void ChangeBuilding(int newBuildID)

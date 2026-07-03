@@ -7,6 +7,7 @@ public class Sprinkler : MonoBehaviour
     [SerializeField] float radius, bonus;
     [SerializeField] LayerMask fMask;
     [SerializeField] ParticleSystem[] waterHoses;
+    [SerializeField] Spin spin;
 
     void Start()
     {
@@ -18,7 +19,7 @@ public class Sprinkler : MonoBehaviour
         yield return new WaitForSeconds(0.1f);
         if (GetComponent<Constructible>().isPreview) yield break;
 
-        GetComponent<Spin>().speed = 90;
+        spin.speed = 90;
         foreach (ParticleSystem water in waterHoses)
             water.Play();
         

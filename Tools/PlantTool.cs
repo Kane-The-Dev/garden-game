@@ -166,8 +166,8 @@ public class PlantTool : MonoBehaviour
                 plants[treeType], 
                 parent
             );
-            g = newTree.GetComponent<Growable>();
-            parent.GetComponentInChildren<FollowTransform>().target = newTree.transform;
+            g = newTree.GetComponentInChildren<Growable>();
+            parent.GetComponentInChildren<FollowTransform>().target = g.transform;
         }
 
         if (!g) return;
