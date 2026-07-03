@@ -6,6 +6,6 @@ public abstract class ShopItem : ScriptableObject
     public string itemName, description;
 
     public abstract void OnPurchase(Inventory inventory);
-    public abstract int CanPurchase(Inventory inventory);
+    public abstract int CanPurchase(Inventory inventory, int quantity);
     // 0 = available, 1 = no exp, 2 = no money, 3 = no prev upgrade
 }

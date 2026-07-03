@@ -33,26 +33,20 @@ public class ToolUnlock : ShopItem
         Debug.Log("You unlocked " + itemName);
     }
 
-    public override int CanPurchase(Inventory inventory)
+    public override int CanPurchase(Inventory inventory, int quantity)
     {
-        if (inventory.level < requirement) 
-        {
-            // Debug.Log("Insufficient level!");
+        if (inventory.level < requirement)
             return 1;
-        }
 
-        if (inventory.coin < price)
-        {
-            // Debug.Log("Insufficient money!");
+        if (inventory.coin < price * quantity)
             return 2;
-        }
 
         if (prevUpgrade != "None")
         {
             if (!inventory.myInventory.ContainsKey(prevUpgrade) || inventory.myInventory[prevUpgrade] <= 0)
                 return 3;
         }
-            
+
         return 0;
     }
 }

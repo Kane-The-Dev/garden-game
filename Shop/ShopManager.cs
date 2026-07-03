@@ -19,11 +19,13 @@ public class ShopManager : MonoBehaviour
     [SerializeField] ShopItem[] specialItems; // items that are tools but have infinite stock
 
     [Header("Display Board")]
-    [SerializeField] TextMeshProUGUI stats;
-    [SerializeField] TextMeshProUGUI itemName, itemDescription, itemPrice;
+    public int quantity = 1;
+    [SerializeField] GameObject quantityOption, buyOption;
+    [SerializeField] TextMeshProUGUI stats, itemName, itemDescription;
+    [SerializeField] TextMeshProUGUI itemPrice, quantityDisplay;
     [SerializeField] UIParticleSystem coinBurst;
 
-    [Header("Other")]
+    [Header("Audio")]
     [SerializeField] AudioSource source;
     [SerializeField] AudioClip purchase, error;
 
@@ -158,9 +160,8 @@ public class ShopManager : MonoBehaviour
 
     public void OpenShop()
     {
-        // shopPanel.gameObject.SetActive(true);
         gm.UIAnimator.SetTrigger("openshop");
-        Invoke("RefreshLayout", 0.01f);
+        Invoke("RefreshLayout", 0.05f);
     }
 
     public void CloseShop()
@@ -172,7 +173,7 @@ public class ShopManager : MonoBehaviour
     {
         foreach (ShopItemUI button in buttons)
         {
-            int condition = button.myItem.CanPurchase(inventory);
+            int condition = button.myItem.CanPurchase(inventory, quantity);
 
             bool newLocked = condition == 1;
             bool newPrevLocked = condition == 3;
@@ -201,63 +202,88 @@ public class ShopManager : MonoBehaviour
         LayoutRebuilder.ForceRebuildLayoutImmediate(rootLayout);
     }
 
+    public void QuantityUp()
+    {
+        if (quantity < 10)
+        {
+            quantity++;
+            SetPurchase(selectedUI);
+        }
+    }
+
+    public void QuantityDown()
+    {
+        if (quantity > 1)
+        {
+            quantity--;
+            SetPurchase(selectedUI);
+        }   
+    }
+
     public void SetPurchase(ShopItemUI myUI)
     {
+        if (!myUI) return;
         selectedUI = myUI;
+
         itemName.text = myUI.myItem.itemName;
-        itemPrice.text = myUI.myItem.price.ToString();
+        itemPrice.text = (myUI.myItem.price * quantity).ToString();
         itemDescription.text = myUI.myItem.description;
+
+        buyOption.SetActive(true);
+
+        if (stock[myUI.myItem] <= 1)
+            quantityOption.SetActive(false);
+        else
+            quantityOption.SetActive(true);
+        quantityDisplay.text = quantity.ToString();
     }
 
     public void TryPurchase()
     {
         if (selectedUI == null) return;
-        ShopItem myItem = selectedUI.myItem;
 
-        if (myItem.CanPurchase(inventory) != 0)
+        ShopItem myItem = selectedUI.myItem;
+        int condition = myItem.CanPurchase(inventory, quantity);
+        int totalPrice = myItem.price * quantity;
+
+        if (condition != 0)
         {
-            Debug.Log("Cannot buy because of code " + myItem.CanPurchase(inventory));
-            if (myItem.CanPurchase(inventory) == 2) 
+            Debug.Log("Cannot buy because of code " + condition);
+            if (condition == 2)
                 gm.mouse.myEffect.Burst("Out of money!");
+
             source.PlayOneShot(error);
             return;
         }
 
-        if (stock[myItem] <= 0)
+        if (stock[myItem] < quantity)
         {
             Debug.Log("Out of stock!");
             gm.mouse.myEffect.Burst("Out of stock!");
             source.PlayOneShot(error);
-            return;   
+            return;
         }
 
-        if (myItem.price > 100f)
+        void Purchase()
         {
-            gm.AYSPanel.OpenPanel(
-                "Do you want to buy " + myItem.itemName + " for " +myItem.price + "G?", 
-                (result) => {
-                    if (result)
-                    {
-                        stock[myItem]--;
-                        gm.mouse.myEffect.Burst("+1");
-                        coinBurst.Burst();
-                        source.PlayOneShot(purchase);
-
-                        myItem.OnPurchase(inventory);
-                        RefreshShop();
-                    }
-                }
-            );
-        }
-        else
-        {
-            stock[myItem]--;
-            gm.mouse.myEffect.Burst("+1");
+            stock[myItem] -= quantity;
+            gm.mouse.myEffect.Burst("+" + quantity);
             coinBurst.Burst();
             source.PlayOneShot(purchase);
 
-            myItem.OnPurchase(inventory);
+            for (int i = 0; i < quantity; i++)
+                myItem.OnPurchase(inventory);
+
             RefreshShop();
         }
+
+        if (totalPrice >= 100)
+        {
+            gm.AYSPanel.OpenPanel(
+                "Do you want to buy " + quantity + " " + myItem.itemName + " for " + totalPrice + "G?",
+                (result) => { if (result) Purchase(); }
+            );
+        }
+        else Purchase();
     }
 }
