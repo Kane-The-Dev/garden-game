@@ -53,7 +53,6 @@ public class Growable : MonoBehaviour
         growthIndex = 0.2f;
         multiplier = 1f;
         subMultiplier = 1f;
-        transform.localScale = Vector3.one * 0.2f * maxGrowth;
         harvestIndex = 0f;
         chopIndex = 0f;
 
@@ -65,10 +64,13 @@ public class Growable : MonoBehaviour
     void Start()
     {
         gm = GameManager.instance;
+        
         if (isProduct && growthSpeed != 0) {
             col = GetComponent<Collider>();
             col.isTrigger = true;
         }
+
+        transform.localScale = Vector3.one * 0.2f * maxGrowth;
     }
 
     public IEnumerator ActivateCollider()

@@ -148,7 +148,7 @@ public class PlantManager : MonoBehaviour
         }
 
         if (mode == 1)
-            if (Input.GetKey(KeyCode.R))
+            if (Input.GetKey(KeyCode.Q))
                 buildTool.RotatePreview(buildPreview, 1);
             else if (Input.GetKey(KeyCode.E))
                 buildTool.RotatePreview(buildPreview, -1);
@@ -206,7 +206,7 @@ public class PlantManager : MonoBehaviour
         buildPreview = buildTool.SpawnPreview();
 
         if (buildTool.buildID >= 0) 
-            gameTip.text = "E/R to Rotate\nRMB to Build";
+            gameTip.text = "Q/E to Rotate\nRMB to Build";
         else
             gameTip.text = "Select a Building";
     }

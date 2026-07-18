@@ -93,7 +93,7 @@ public class GardenDecoration : MonoBehaviour
                     );
                 }
 
-                decor.transform.localScale *= Random.Range(0.8f, 1.2f);
+                decor.transform.localScale *= Random.Range(0.5f, 1.5f);
                 decor.transform.parent = this.transform;
                 decor.GetComponent<SphereCollider>().enabled = true;
                 spawned.Add(decor);
