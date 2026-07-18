@@ -7,9 +7,23 @@ public class ShopItemUI : MonoBehaviour
     [SerializeField] GameObject lockedTag, soldOutTag, prevLockedTag;
     [SerializeField] TextMeshProUGUI priceTag, requirementTag, nameTag;
     [SerializeField] Button myButton;
+    [SerializeField] Image icon;
     public ShopItem myItem;
     public bool isLocked, isSoldOut, prevLocked;
     ShopManager shop;
+
+    public void SetIcon(Sprite sprite)
+    {
+        if (sprite == null)
+            return;
+
+        if (icon != null)
+        {
+            icon.sprite = sprite;
+            icon.preserveAspect = true;
+            icon.enabled = true;
+        }
+    }
 
     void Start()
     {
