@@ -4,7 +4,8 @@ public class PlantTool : MonoBehaviour
 {
     public int plantID;
     float maxDistance = 100f, radius = 0.5f;
-    [SerializeField] GameObject[] plants, products;
+    [SerializeField] GameObject[] plants;
+    [SerializeField] string productsFolderPath = "Products";
     [SerializeField] float[] plantRadius;
     Color currentColor;
     [SerializeField] Color valid, notValid;
@@ -175,8 +176,41 @@ public class PlantTool : MonoBehaviour
         g.growthSpeed = inventory.foodList[plantID].growthSpeed;
         if (!IsOven()) g.maxGrowth *= Random.Range(0.85f, 1f);
         else g.isOven = true;
-        g.product = products[plantID];
+
+        GameObject productPrefab = LoadProductPrefab(inventory.foodList[plantID].name);
+        if (productPrefab != null)
+        {
+            g.product = productPrefab;
+        }
+        else
+        {
+            Debug.LogWarning($"No product prefab found for '{inventory.foodList[plantID].name}' in Resources/{productsFolderPath}");
+        }
+
         g.wiggleOffset = Random.Range(0f, 90f);
         g.wiggleAmplitude *= Random.Range(4f, 5f);
+    }
+
+    GameObject LoadProductPrefab(string itemName)
+    {
+        if (string.IsNullOrEmpty(itemName))
+            return null;
+
+        string resourcePath = string.IsNullOrEmpty(productsFolderPath)
+            ? itemName
+            : productsFolderPath + "/" + itemName;
+
+        GameObject prefab = Resources.Load<GameObject>(resourcePath);
+
+        if (prefab == null)
+        {
+            string fallbackPath = string.IsNullOrEmpty(productsFolderPath)
+                ? itemName.Replace(" ", string.Empty)
+                : productsFolderPath + "/" + itemName.Replace(" ", string.Empty);
+
+            prefab = Resources.Load<GameObject>(fallbackPath);
+        }
+
+        return prefab;
     }
 }
