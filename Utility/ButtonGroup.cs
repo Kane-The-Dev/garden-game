@@ -11,7 +11,6 @@ public class ButtonGroup : MonoBehaviour
 
     void Start()
     {
-        // UpdateSelected(0);
         if (buttons.Count > 0)
             OnClick(buttons[0].gameObject);
     }
@@ -28,13 +27,9 @@ public class ButtonGroup : MonoBehaviour
         foreach(Image button in buttons)
         {
             if (button.gameObject != pressed)
-            {
                 button.color = disabled;
-            }
             else
-            {
                 button.color = selected;
-            }
         }
     }
 }

@@ -55,11 +55,11 @@ public class Inventory : MonoBehaviour
         {
             string productName = GetProductName(item.name);
 
-            // Product key ("Apple") — incremented on harvest
+            // Product key ("Apple") — increment on harvest, decrement on sale
             if (!myInventory.ContainsKey(productName))
                 myInventory[productName] = 0;
 
-            // Seed/Pack key ("Apple Seed") — incremented on purchase, decremented on planting
+            // Seed/Pack key ("Apple Seed") — increment on purchase, decrement on planting
             if (item.name != productName && !myInventory.ContainsKey(item.name))
                 myInventory[item.name] = 0;
         }
@@ -100,12 +100,12 @@ public class Inventory : MonoBehaviour
         }
     }
 
+    // Food Storage
+    
     public void UpdateStorage()
     {
         foreach (Transform child in storage)
-        {
             Destroy(child.gameObject);
-        }
 
         foreach (var item in foodList.OrderBy(f => f.levelReq))
         {
