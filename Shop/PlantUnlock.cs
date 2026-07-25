@@ -1,23 +1,21 @@
+using System.Linq;
 using UnityEngine;
 
 [CreateAssetMenu(menuName = "Shop Items/Plant")]
 public class PlantUnlock : ShopItem
 {
-    // Inventory inventory;
-
-    public override void OnPurchase(Inventory inventory)
+    public override void OnPurchase(Inventory inventory, int quantity)
     {
-        if (!inventory.myInventory.ContainsKey(itemName))
-            inventory.myInventory[itemName] = 0;
+        string key = itemName;
 
-        inventory.myInventory[itemName]++;
+        inventory.AddItemQuantity(key, quantity);
 
-        inventory.coin -= price;
+        inventory.coin -= price * quantity;
 
         inventory.selection.RefreshPlants();
         inventory.selection.RefreshBuildings();
 
-        Debug.Log("You unlocked " + itemName);
+        Debug.Log("You bought " + quantity + " " + key);
     }
 
     public override int CanPurchase(Inventory inventory, int quantity)

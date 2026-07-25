@@ -128,7 +128,8 @@ public class PlantTool : MonoBehaviour
             if (IsBlocked(hit.point, oMask)) return;
 
             string plantName = inventory.foodList[plantID].name;
-            if (inventory.myInventory[plantName] <= 0)
+            string key = plantName;
+            if (!inventory.myInventory.ContainsKey(key) || inventory.myInventory[key] <= 0)
             {
                 Debug.Log("Out of seed/item!");
                 return;
@@ -138,7 +139,7 @@ public class PlantTool : MonoBehaviour
             else if (IsOven()) Plant(hit.point, validOven);
             else Plant(hit.point);
 
-            inventory.myInventory[plantName]--;
+            inventory.myInventory[key]--;
             inventory.exp += 25f;
 
             inventory.selection.RefreshPlants();
@@ -196,17 +197,19 @@ public class PlantTool : MonoBehaviour
         if (string.IsNullOrEmpty(itemName))
             return null;
 
+        string productName = Inventory.GetProductName(itemName);
+
         string resourcePath = string.IsNullOrEmpty(productsFolderPath)
-            ? itemName
-            : productsFolderPath + "/" + itemName;
+            ? productName
+            : productsFolderPath + "/" + productName;
 
         GameObject prefab = Resources.Load<GameObject>(resourcePath);
 
         if (prefab == null)
         {
             string fallbackPath = string.IsNullOrEmpty(productsFolderPath)
-                ? itemName.Replace(" ", string.Empty)
-                : productsFolderPath + "/" + itemName.Replace(" ", string.Empty);
+                ? productName.Replace(" ", string.Empty)
+                : productsFolderPath + "/" + productName.Replace(" ", string.Empty);
 
             prefab = Resources.Load<GameObject>(fallbackPath);
         }

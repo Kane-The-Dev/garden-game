@@ -23,19 +23,28 @@ public class PlantSelection : MonoBehaviour
 
     public void RefreshPlants()
     {
-        plantGroup.buttons.Clear();
-        foreach (Transform child in plantSelection)
-            Destroy(child.gameObject);
+        if (plantGroup != null)
+            plantGroup.buttons.Clear();
 
-        PlantButton thisButton = null;
+        if (plantSelection != null)
+        {
+            foreach (Transform child in plantSelection)
+                Destroy(child.gameObject);
+        }
+
+        if (inventory == null || plantButton == null || plantGroup == null)
+            return;
+
         foreach (var item in foodList.OrderBy(f => f.levelReq))
         {
             if (!inventory.myInventory.ContainsKey(item.name))
                 continue;
 
             GameObject newItem = Instantiate(plantButton, plantSelection);
+            PlantButton thisButton = newItem.GetComponentInChildren<PlantButton>();
+            if (thisButton == null)
+                continue;
 
-            thisButton = newItem.GetComponentInChildren<PlantButton>();
             plantGroup.buttons.Add(thisButton.myImage);
             thisButton.myGroup = plantGroup;
             
@@ -44,26 +53,35 @@ public class PlantSelection : MonoBehaviour
             thisButton.inventory = inventory;
             thisButton.Refresh();
 
-            if (thisButton.plantID == pm.plantTool.plantID)
-                thisButton?.OnClick();
+            if (pm != null && pm.plantTool != null && thisButton.plantID == pm.plantTool.plantID)
+                thisButton.OnClick();
         }
     }
 
     public void RefreshBuildings()
     {
-        buildGroup.buttons.Clear();
-        foreach (Transform child in buildSelection)
-            Destroy(child.gameObject);
+        if (buildGroup != null)
+            buildGroup.buttons.Clear();
 
-        BuildButton thisButton = null;
+        if (buildSelection != null)
+        {
+            foreach (Transform child in buildSelection)
+                Destroy(child.gameObject);
+        }
+
+        if (inventory == null || buildButton == null || buildGroup == null)
+            return;
+
         foreach (var item in buildingList.OrderBy(f => f.levelReq))
         {
             if (!inventory.myInventory.ContainsKey(item.name))
                 continue;
 
             GameObject newItem = Instantiate(buildButton, buildSelection);
+            BuildButton thisButton = newItem.GetComponentInChildren<BuildButton>();
+            if (thisButton == null)
+                continue;
 
-            thisButton = newItem.GetComponentInChildren<BuildButton>();
             buildGroup.buttons.Add(thisButton.myImage);
             thisButton.myGroup = buildGroup;
             
@@ -72,8 +90,8 @@ public class PlantSelection : MonoBehaviour
             thisButton.inventory = inventory;
             thisButton.Refresh();
 
-            if (thisButton.buildID == pm.buildTool.buildID)
-                thisButton?.OnClick();
+            if (pm != null && pm.buildTool != null && thisButton.buildID == pm.buildTool.buildID)
+                thisButton.OnClick();
         }
     }
 }

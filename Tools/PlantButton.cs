@@ -15,22 +15,17 @@ public class PlantButton : MonoBehaviour
 
     public void Refresh()
     {
-        if (inventory.myInventory.ContainsKey(plantName))
-        {
-            display.text = plantName;
-            count.text = inventory.myInventory[plantName].ToString();
-        }
+        string key = plantName;
+        display.text = Inventory.GetProductName(plantName);
+        if (inventory.myInventory.ContainsKey(key))
+            count.text = inventory.myInventory[key].ToString();
         else
-        {
-            display.text = plantName;
             count.text = "0";
-        }
     }
 
     public void OnClick()
     {
         GameManager.instance.pm.ChangePlant(plantID);
-        // GameManager.instance.pm.ChangeBuilding(8);
         myGroup.OnClick(gameObject);
     }
 }

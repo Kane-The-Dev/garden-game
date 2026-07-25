@@ -20,10 +20,17 @@ public class FoodButton : MonoBehaviour
 
     public void OnClick(int quantity)
     {
-        if (inventory.foodList[productID].n < quantity) 
+        string productName = Inventory.GetProductName(inventory.foodList[productID].name);
+        int productCount = 0;
+        if (inventory.myInventory.TryGetValue(productName, out int count))
+        {
+            productCount = count;
+        }
+
+        if (productCount < quantity) 
         {
             gm.mouse.myEffect.Burst("Out of stock!");
-            Debug.Log(inventory.foodList[productID].name + "out of stock" + inventory.foodList[productID].n);
+            Debug.Log(productName + " out of stock " + productCount);
             return;
         }
 
@@ -47,7 +54,7 @@ public class FoodButton : MonoBehaviour
         eater.totalWeight += quantity * inventory.foodList[productID].weight;
         eater.accumulatedStonks += quantity * inventory.foodList[productID].sellPrice;
 
-        inventory.foodList[productID].UpdateN(-1 * quantity);
+        inventory.AddItemQuantity(productName, -quantity);
         inventory.UpdateStorage();
     }
 }

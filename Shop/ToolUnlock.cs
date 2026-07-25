@@ -7,27 +7,27 @@ public class ToolUnlock : ShopItem
     [SerializeField] GameObject myTool;
     [SerializeField] string prevUpgrade;
     
-    public override void OnPurchase(Inventory inventory)
+    public override void OnPurchase(Inventory inventory, int quantity)
     {
-        if (!inventory.myInventory.ContainsKey(itemName))
-            inventory.myInventory[itemName] = 0;
+        inventory.AddItemQuantity(itemName, quantity);
 
-        inventory.myInventory[itemName]++;
+        inventory.coin -= price * quantity;
 
-        inventory.coin -= price;
-
-        var newTool = Instantiate(myTool, Vector3.zero, Quaternion.identity);
-        switch (toolType)
+        for (int i = 0; i < quantity; i++)
         {
-            case 1:
-                GameManager.instance.pm.waterTool = newTool.GetComponent<WaterTool>();
-                break;
-            case 2:
-                GameManager.instance.pm.harvestTool = newTool.GetComponent<HarvestTool>();
-                break;
-            case 3:
-                GameManager.instance.pm.chopTool = newTool.GetComponent<ChopTool>();
-                break;
+            var newTool = Instantiate(myTool, Vector3.zero, Quaternion.identity);
+            switch (toolType)
+            {
+                case 1:
+                    GameManager.instance.pm.waterTool = newTool.GetComponent<WaterTool>();
+                    break;
+                case 2:
+                    GameManager.instance.pm.harvestTool = newTool.GetComponent<HarvestTool>();
+                    break;
+                case 3:
+                    GameManager.instance.pm.chopTool = newTool.GetComponent<ChopTool>();
+                    break;
+            }
         }
 
         Debug.Log("You unlocked " + itemName);

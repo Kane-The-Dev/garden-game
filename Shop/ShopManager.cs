@@ -74,10 +74,12 @@ public class ShopManager : MonoBehaviour
         if (string.IsNullOrWhiteSpace(itemName))
             return null;
 
-        Sprite icon = Resources.Load<Sprite>("Icons/" + itemName);
+        // Shop uses the product icon (e.g. "Apple"), not the seed icon ("Apple Seed")
+        string iconName = Inventory.GetProductName(itemName);
+        Sprite icon = Resources.Load<Sprite>("Icons/" + iconName);
         if (icon == null)
         {
-            Debug.LogWarning($"Resource icon not found: Icons/{itemName}");
+            Debug.LogWarning($"Resource icon not found: Icons/{iconName}");
         }
 
         return icon;
@@ -286,8 +288,7 @@ public class ShopManager : MonoBehaviour
             coinBurst.Burst();
             source.PlayOneShot(purchase);
 
-            for (int i = 0; i < quantity; i++)
-                myItem.OnPurchase(inventory);
+            myItem.OnPurchase(inventory, quantity);
 
             RefreshShop();
         }

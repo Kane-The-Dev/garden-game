@@ -5,11 +5,14 @@ public class ExpansionUnlock : ShopItem
 {
     // Inventory inventory;
 
-    public override void OnPurchase(Inventory inventory)
+    public override void OnPurchase(Inventory inventory, int quantity)
     {
-        inventory.coin -= price;
+        inventory.coin -= price * quantity;
 
-        GameManager.instance.fence.UpgradeFence();
+        for (int i = 0; i < quantity; i++)
+        {
+            GameManager.instance.fence.UpgradeFence();
+        }
         
         Debug.Log("You unlocked " + itemName);
     }

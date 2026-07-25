@@ -55,6 +55,7 @@ public class Growable : MonoBehaviour
         subMultiplier = 1f;
         harvestIndex = 0f;
         chopIndex = 0f;
+        transform.localScale = Vector3.one * 0.2f * maxGrowth;
 
         if (!isProduct && myAAS && plant.Length > 0) {
             myAAS.PlayOneShot(plant[Random.Range(0, plant.Length)], 1f, true);
@@ -69,8 +70,6 @@ public class Growable : MonoBehaviour
             col = GetComponent<Collider>();
             col.isTrigger = true;
         }
-
-        transform.localScale = Vector3.one * 0.2f * maxGrowth;
     }
 
     public IEnumerator ActivateCollider()
@@ -266,7 +265,8 @@ public class Growable : MonoBehaviour
                     
                     // update inventory
                     inventory.exp += 3f;
-                    inventory.foodList[thisFruit.productID].UpdateN(1);
+                    string productName = Inventory.GetProductName(inventory.foodList[thisFruit.productID].name);
+                    inventory.AddItemQuantity(productName, 1);
                     inventory.UpdateStorage();
 
                     fruitCount--;
