@@ -12,8 +12,6 @@ public class Item{
 
     public string description;
 
-    public int n; // number in stock
-
     public void Set(int _ID, string _name, int _plantPrice, 
         int _sellPrice, float _growthSpeed, int _levelReq, float _weight, string _type, string _description)
     {
@@ -26,11 +24,6 @@ public class Item{
         this.weight = _weight;
         this.type = _type;
         this.description = _description;
-    }
-
-    public void UpdateN(int value)
-    {
-        this.n += value;
     }
 };
 

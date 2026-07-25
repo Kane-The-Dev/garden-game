@@ -180,6 +180,7 @@ public class Growable : MonoBehaviour
 
             var newFruit = newProduct.GetComponent<Growable>();
             newFruit.growthSpeed = growthSpeed;
+            newFruit.productID = productID;
             newFruit.wiggleOffset = Random.Range(0f, Mathf.PI * 2f);
             newFruit.wiggleAmplitude = Random.Range(4f, 5f);
 

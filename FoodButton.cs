@@ -23,9 +23,7 @@ public class FoodButton : MonoBehaviour
         string productName = Inventory.GetProductName(inventory.foodList[productID].name);
         int productCount = 0;
         if (inventory.myInventory.TryGetValue(productName, out int count))
-        {
             productCount = count;
-        }
 
         if (productCount < quantity) 
         {

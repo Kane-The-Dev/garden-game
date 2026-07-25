@@ -7,7 +7,6 @@ using TMPro;
 public class EatingManager : MonoBehaviour
 {
     [Header("Food Dropping")]
-    [SerializeField] GameObject[] food;
     List<GameObject> spawnedFood = new List<GameObject>();
     public Queue<int> q;
     [SerializeField] float delay, timer, cooldown;
@@ -140,8 +139,20 @@ public class EatingManager : MonoBehaviour
 
     void SpawnFood(int ID)
     {
-        GameObject obj = Instantiate(food[ID], drop.position + Vector3.up * 4f, Quaternion.identity);
-            
+        Inventory inventory = gm.inventory;
+        Item item = inventory.foodList.Find(f => f.ID == ID);
+        if (item == null)
+        {
+            Debug.LogWarning($"SpawnFood: no item with ID {ID} in foodList.");
+            return;
+        }
+
+        GameObject prefab = inventory.LoadProductPrefab(item.name);
+        if (prefab == null)
+            return;
+
+        GameObject obj = Instantiate(prefab, drop.position + Vector3.up * 4f, Quaternion.identity);
+
         Rigidbody rb = obj.GetComponent<Rigidbody>();
         if (rb != null)
         {
@@ -150,7 +161,7 @@ public class EatingManager : MonoBehaviour
         }
 
         Growable fruit = obj.GetComponent<Growable>();
-        if (fruit != null) 
+        if (fruit != null)
         {
             fruit.chopped = true;
             obj.transform.localScale = Vector3.one * fruit.maxGrowth * 0.75f;

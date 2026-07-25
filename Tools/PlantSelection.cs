@@ -37,7 +37,7 @@ public class PlantSelection : MonoBehaviour
 
         foreach (var item in foodList.OrderBy(f => f.levelReq))
         {
-            if (!inventory.myInventory.ContainsKey(item.name))
+            if (!inventory.myInventory.ContainsKey(item.name) || inventory.myInventory[item.name] == 0)
                 continue;
 
             GameObject newItem = Instantiate(plantButton, plantSelection);
@@ -74,7 +74,7 @@ public class PlantSelection : MonoBehaviour
 
         foreach (var item in buildingList.OrderBy(f => f.levelReq))
         {
-            if (!inventory.myInventory.ContainsKey(item.name))
+            if (!inventory.myInventory.ContainsKey(item.name) || inventory.myInventory[item.name] == 0)
                 continue;
 
             GameObject newItem = Instantiate(buildButton, buildSelection);

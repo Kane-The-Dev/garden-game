@@ -5,7 +5,6 @@ public class PlantTool : MonoBehaviour
     public int plantID;
     float maxDistance = 100f, radius = 0.5f;
     [SerializeField] GameObject[] plants;
-    [SerializeField] string productsFolderPath = "Products";
     [SerializeField] float[] plantRadius;
     Color currentColor;
     [SerializeField] Color valid, notValid;
@@ -175,45 +174,15 @@ public class PlantTool : MonoBehaviour
         if (!g) return;
 
         g.growthSpeed = inventory.foodList[plantID].growthSpeed;
+        g.productID = plantID;
         if (!IsOven()) g.maxGrowth *= Random.Range(0.85f, 1f);
         else g.isOven = true;
 
-        GameObject productPrefab = LoadProductPrefab(inventory.foodList[plantID].name);
+        GameObject productPrefab = inventory.LoadProductPrefab(inventory.foodList[plantID].name);
         if (productPrefab != null)
-        {
             g.product = productPrefab;
-        }
-        else
-        {
-            Debug.LogWarning($"No product prefab found for '{inventory.foodList[plantID].name}' in Resources/{productsFolderPath}");
-        }
 
         g.wiggleOffset = Random.Range(0f, 90f);
         g.wiggleAmplitude *= Random.Range(4f, 5f);
-    }
-
-    GameObject LoadProductPrefab(string itemName)
-    {
-        if (string.IsNullOrEmpty(itemName))
-            return null;
-
-        string productName = Inventory.GetProductName(itemName);
-
-        string resourcePath = string.IsNullOrEmpty(productsFolderPath)
-            ? productName
-            : productsFolderPath + "/" + productName;
-
-        GameObject prefab = Resources.Load<GameObject>(resourcePath);
-
-        if (prefab == null)
-        {
-            string fallbackPath = string.IsNullOrEmpty(productsFolderPath)
-                ? productName.Replace(" ", string.Empty)
-                : productsFolderPath + "/" + productName.Replace(" ", string.Empty);
-
-            prefab = Resources.Load<GameObject>(fallbackPath);
-        }
-
-        return prefab;
     }
 }

@@ -25,6 +25,9 @@ public class Inventory : MonoBehaviour
     public ShopManager shop;
     public PlantSelection selection;
 
+    [Header("Resources")]
+    [SerializeField] string productsFolderPath = "Prefabs/Food";
+
     [Header("Save and Load")]
     [SerializeField] string saveFileName = "InventorySave.txt";
     [SerializeField] bool saveToPersistentDataPath = true;
@@ -47,14 +50,18 @@ public class Inventory : MonoBehaviour
 
     void Start()
     {
-        // Sync myInventory values to foodList at start
+        // Initialize both keys in myInventory so they always exist from the start
         foreach (var item in foodList)
         {
             string productName = GetProductName(item.name);
-            if (myInventory.TryGetValue(productName, out int N))
-                item.n = N;
-            else
-                myInventory[productName] = item.n;
+
+            // Product key ("Apple") — incremented on harvest
+            if (!myInventory.ContainsKey(productName))
+                myInventory[productName] = 0;
+
+            // Seed/Pack key ("Apple Seed") — incremented on purchase, decremented on planting
+            if (item.name != productName && !myInventory.ContainsKey(item.name))
+                myInventory[item.name] = 0;
         }
 
         UpdateStorage();
@@ -66,19 +73,8 @@ public class Inventory : MonoBehaviour
 
         if (!myInventory.ContainsKey(itemName))
             myInventory[itemName] = 0;
-        
-        myInventory[itemName] += amount;
 
-        // Synchronize with foodList item.n if this is a food item
-        string productName = GetProductName(itemName);
-        var foodItem = foodList.FirstOrDefault(f => GetProductName(f.name) == productName);
-        if (foodItem != null)
-        {
-            if (myInventory.TryGetValue(productName, out int productCount))
-            {
-                foodItem.n = productCount;
-            }
-        }
+        myInventory[itemName] += amount;
     }
 
     void Update()
@@ -152,5 +148,33 @@ public class Inventory : MonoBehaviour
 
         File.WriteAllLines(path, lines);
         Debug.Log("Inventory saved to: " + path);
+    }
+
+    public GameObject LoadProductPrefab(string itemName)
+    {
+        if (string.IsNullOrEmpty(itemName))
+            return null;
+
+        string productName = GetProductName(itemName);
+
+        string resourcePath = string.IsNullOrEmpty(productsFolderPath)
+            ? productName
+            : productsFolderPath + "/" + productName;
+
+        GameObject prefab = Resources.Load<GameObject>(resourcePath);
+
+        if (prefab == null)
+        {
+            string fallbackPath = string.IsNullOrEmpty(productsFolderPath)
+                ? productName.Replace(" ", string.Empty)
+                : productsFolderPath + "/" + productName.Replace(" ", string.Empty);
+
+            prefab = Resources.Load<GameObject>(fallbackPath);
+        }
+
+        if (prefab == null)
+            Debug.LogWarning($"No product prefab found for '{itemName}' in Resources/{productsFolderPath}");
+
+        return prefab;
     }
 }

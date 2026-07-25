@@ -15,8 +15,10 @@ public class ReadFile : MonoBehaviour
             System.StringSplitOptions.RemoveEmptyEntries
         );
 
-        foreach (string line in lines)
+        for (int i = 1; i < lines.Length; i++)
         {
+            string line = lines[i];
+
             string[] parts = line.Split(
                 (char[])null,
                 9,
@@ -49,8 +51,10 @@ public class ReadFile : MonoBehaviour
             System.StringSplitOptions.RemoveEmptyEntries
         );
 
-        foreach (string line in lines)
+        for (int i = 1; i < lines.Length; i++)
         {
+            string line = lines[i];
+
             string[] parts = line.Split(
                 (char[])null,
                 6,
