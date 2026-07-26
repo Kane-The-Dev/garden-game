@@ -47,26 +47,12 @@ public class IconGenerator : MonoBehaviour
         // We'll remove it later.
         captureCamera.backgroundColor = Color.black;
 
-        foreach (GameObject prefab in prefabs)
+        foreach (GameObject obj in prefabs)
         {
-            if (prefab == null)
+            if (obj == null)
                 continue;
 
-            Debug.Log("Preparing " + prefab.name);
-
-            bool createdInstance = false;
-            GameObject obj = prefab;
-
-            // Instantiate if it's actually a prefab asset
-            if (prefab.scene == default || !prefab.scene.IsValid())
-            {
-                obj = Instantiate(
-                    prefab,
-                    spawnPoint != null ? spawnPoint.position : Vector3.zero,
-                    prefab.transform.rotation);
-
-                createdInstance = true;
-            }
+            Debug.Log("Preparing " + obj.name);
 
             obj.SetActive(true);
 
@@ -86,20 +72,14 @@ public class IconGenerator : MonoBehaviour
 
             // Wait a few frames so Outline initializes
             yield return new WaitForSeconds(0.2f);
-            yield return null;
-            yield return null;
-            yield return new WaitForEndOfFrame();
 
-            Debug.Log("Capturing " + prefab.name);
+            Debug.Log("Capturing " + obj.name);
 
-            SaveCameraView(prefab.name);
+            SaveCameraView(obj.name);
 
             yield return new WaitForSeconds(0.2f);
 
             obj.SetActive(false);
-
-            if (createdInstance)
-                Destroy(obj);
 
             yield return new WaitForSeconds(0.2f);
         }
