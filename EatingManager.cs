@@ -105,8 +105,8 @@ public class EatingManager : MonoBehaviour
         for (int i = 0; i < 4; i++)
             myTruck.transform.GetChild(i).GetComponent<Spin>().speed = 180f;
 
-        coinBurst.minCount = Mathf.Min(1 + accumulatedStonks / 10, 30);
-        coinBurst.maxCount = Mathf.Min(1 + accumulatedStonks / 10, 30);
+        coinBurst.minCount = Mathf.Min(1 + accumulatedStonks / 20, 30);
+        coinBurst.maxCount = Mathf.Min(1 + accumulatedStonks / 20, 30);
         coinBurst.Emission(0.05f);
             
         rb.constraints = RigidbodyConstraints.None;
@@ -164,7 +164,7 @@ public class EatingManager : MonoBehaviour
         if (fruit != null)
         {
             fruit.chopped = true;
-            obj.transform.localScale = Vector3.one * fruit.maxGrowth * 0.75f;
+            obj.transform.localScale = Vector3.one * fruit.maxGrowth;
         }
 
         spawnedFood.Add(obj);
@@ -174,8 +174,6 @@ public class EatingManager : MonoBehaviour
     {
         float magnitude = col.attachedRigidbody.velocity.magnitude;
         if (magnitude < 5f) return;
-
-        // if (col.CompareTag("Food")) Debug.Log("Loaded more food!");
 
         if (col.CompareTag("Truck"))
         {

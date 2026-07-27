@@ -20,10 +20,14 @@ public class FoodButton : MonoBehaviour
 
     public void OnClick(int quantity)
     {
+        if (!gm) gm = GameManager.instance;
+        if (!inventory) inventory = gm ? gm.inventory : FindObjectOfType<Inventory>();
+        if (!eater) eater = gm ? gm.em : FindObjectOfType<EatingManager>();
+
+        if (!inventory || !gm || !eater) return;
+
         string productName = Inventory.GetProductName(inventory.foodList[productID].name);
-        int productCount = 0;
-        if (inventory.myInventory.TryGetValue(productName, out int count))
-            productCount = count;
+        int productCount = inventory.GetQuantity(productName);
 
         if (productCount < quantity) 
         {
