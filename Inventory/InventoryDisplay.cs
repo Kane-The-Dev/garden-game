@@ -182,6 +182,10 @@ public class InventoryDisplay : MonoBehaviour
             itemName.text = slots[ID].itemName;
             GameManager.instance.pm.ChangeTool(slots[ID].type, slots[ID].itemName);
         }
+        else
+        {
+            GameManager.instance.pm.ChangeTool(ItemType.none, "");
+        }
     }
 
     // Drag and Drop

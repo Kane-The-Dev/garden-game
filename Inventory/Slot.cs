@@ -8,7 +8,6 @@ public class Slot : MonoBehaviour,
     IPointerEnterHandler, IPointerExitHandler
 {
     public int SlotID { get; private set; }
-
     public Button button;
     public Image iconImage;
     public ItemType type = ItemType.none;

@@ -22,14 +22,12 @@ public class PlantManager : MonoBehaviour
     
     
     [Header("Tools")]
-    public int mode; // 0 = plant, 1 = build, 2 = water, 3 = harvest, 4 = chop
+    public int mode = -1; // -1 = default, 0 = plant, 1 = build, 2 = water, 3 = harvest, 4 = chop
     public PlantTool plantTool;
     public BuildTool buildTool;
     public WaterTool waterTool;
     public HarvestTool harvestTool;
     public ChopTool chopTool;
-    public Dictionary<string, PlantButton> myPlantButtons = new();
-    public Dictionary<string, BuildButton> myBuildButtons = new();
     public Dictionary<string, GameObject> myWaterTools = new();
     public Dictionary<string, GameObject> myHarvestTools = new();
     public Dictionary<string, GameObject> myChopTools = new();
@@ -41,14 +39,13 @@ public class PlantManager : MonoBehaviour
     
     void Start()
     {
-        mode = 0;
         cam = GetComponent<Camera>();
         gm = GameManager.instance;
         plantTool = GetComponent<PlantTool>();
         buildTool = GetComponent<BuildTool>();
         ringRender = ring.GetComponent<Renderer>();
         ringRender.material.color = defaultRingColor;
-        ChangeMode(0);
+        ChangeMode(mode);
     }
 
     void Update()
@@ -91,7 +88,7 @@ public class PlantManager : MonoBehaviour
             return;
         }
 
-        gameTip.gameObject.SetActive(true);
+        gameTip.gameObject.SetActive(mode != -1);
 
         if (mode == 0 && plantTool.plantID >= 0)
         {
@@ -186,6 +183,10 @@ public class PlantManager : MonoBehaviour
 
                 if (optionsAnimator) optionsAnimator.SetTrigger("build");
                 break;
+            case -1:
+                gameTip.text = "";
+                if (optionsAnimator) optionsAnimator.SetTrigger("close");
+                break;
             default:
                 gameTip.text = "RMB + Hold to Start";
                 if (optionsAnimator) optionsAnimator.SetTrigger("close");
@@ -199,17 +200,19 @@ public class PlantManager : MonoBehaviour
         {
             case ItemType.plant:
                 ChangeMode(0);
-                if (myPlantButtons.TryGetValue(name, out var plantBtn))
-                    plantBtn?.OnClick();
+                Item foodItem = gm.inventory.foodList.Find(f => f.name == name);
+                if (foodItem != null)
+                    ChangePlant(foodItem.ID);
                 else
-                    Debug.LogWarning($"ChangeTool: no plant button registered for '{name}'");
+                    Debug.LogWarning($"ChangeTool: no plant found in foodList for '{name}'");
                 break;
             case ItemType.build:
                 ChangeMode(1);
-                if (myBuildButtons.TryGetValue(name, out var buildBtn))
-                    buildBtn?.OnClick();
+                Item buildItem = gm.inventory.buildingList.Find(b => b.name == name);
+                if (buildItem != null)
+                    ChangeBuilding(buildItem.ID);
                 else
-                    Debug.LogWarning($"ChangeTool: no build button registered for '{name}'");
+                    Debug.LogWarning($"ChangeTool: no building found in buildingList for '{name}'");
                 break;
             case ItemType.water:
                 ChangeMode(2);
@@ -225,6 +228,9 @@ public class PlantManager : MonoBehaviour
                 ChangeMode(4);
                 if (myChopTools.TryGetValue(name, out var chopObj))
                     chopTool = chopObj.GetComponent<ChopTool>();
+                break;
+            case ItemType.none:
+                ChangeMode(-1);
                 break;
         }
     }

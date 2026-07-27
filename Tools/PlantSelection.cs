@@ -35,9 +35,6 @@ public class PlantSelection : MonoBehaviour
                 Destroy(child.gameObject);
         }
 
-        if (pm != null)
-            pm.myPlantButtons.Clear();
-
         if (inventory == null || plantButton == null || plantGroup == null)
             return;
 
@@ -60,10 +57,7 @@ public class PlantSelection : MonoBehaviour
             thisButton.Refresh();
 
             if (pm != null && pm.plantTool != null && thisButton.plantID == pm.plantTool.plantID)
-                thisButton.OnClick();
-            
-            pm.myPlantButtons[item.name] = thisButton;
-            Debug.Log($"[PlantSelection] Registered plant button for '{item.name}' (ID: {item.ID})");
+                thisButton.OnClick();   
         }
     }
 
@@ -77,9 +71,6 @@ public class PlantSelection : MonoBehaviour
             foreach (Transform child in buildSelection)
                 Destroy(child.gameObject);
         }
-
-        if (pm != null)
-            pm.myBuildButtons.Clear();
 
         if (inventory == null || buildButton == null || buildGroup == null)
             return;
@@ -104,9 +95,6 @@ public class PlantSelection : MonoBehaviour
 
             if (pm != null && pm.buildTool != null && thisButton.buildID == pm.buildTool.buildID)
                 thisButton.OnClick();
-
-            pm.myBuildButtons[item.name] = thisButton;
-            Debug.Log($"[PlantSelection] Registered build button for '{item.name}' (ID: {item.ID})");
         }
     }
 }

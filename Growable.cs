@@ -34,16 +34,15 @@ public class Growable : MonoBehaviour
     public int productID;
     Collider col;
 
-    [Header("Wiggle")]
-    public float wiggleOffset;
-    public float wiggleAmplitude;
-
     [Header("Sound Effect")]
     public AdvancedAudioSource myAAS;
     [SerializeField] AudioClip[] plant, leaves, fall, hit;
     public ChopTool myChopTool;
 
     [Header("Other")]
+    [SerializeField] ParticleSystem myParticle;
+    public float wiggleOffset;
+    public float wiggleAmplitude;
     [SerializeField] float shakeAmplitude;
     Vector2 shakeDirection;
     GameManager gm;
@@ -354,6 +353,8 @@ public class Growable : MonoBehaviour
         if (isOven) Destroy(gameObject);
         Destroy(transform.parent.gameObject, 5f);
         if (myAAS & fall.Length > 0) myAAS.PlayOneShot(fall[0], 1f, true);
+
+        if (myParticle) myParticle.Stop();
     }
 
     void OnCollisionEnter(Collision col)
