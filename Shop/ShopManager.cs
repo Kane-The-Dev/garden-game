@@ -293,7 +293,7 @@ public class ShopManager : MonoBehaviour
             RefreshShop();
         }
 
-        if (totalPrice >= 100)
+        if (totalPrice >= 300)
         {
             gm.AYSPanel.OpenPanel(
                 "Do you want to buy " + quantity + " " + myItem.itemName + " for " + totalPrice + "G?",

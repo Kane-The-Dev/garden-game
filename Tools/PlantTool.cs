@@ -11,7 +11,6 @@ public class PlantTool : MonoBehaviour
     Renderer ringRender;
     Collider[] overlapResults = new Collider[16];
     Transform validOven;
-     
     Inventory inventory;
 
     void Start() 
@@ -23,27 +22,16 @@ public class PlantTool : MonoBehaviour
 
     int GetTreeType()
     {
-        int treeType;
-        if (inventory.foodList[plantID].type == "Tree")
-            treeType = Random.Range(0, 2);
-        else if (inventory.foodList[plantID].type == "Pine")
-            treeType = 2;
-        else if (inventory.foodList[plantID].type == "Bush")
-            treeType = Random.Range(3, 5);
-        else if (inventory.foodList[plantID].type == "Ground")
-            treeType = 5;
-        else if (inventory.foodList[plantID].type == "Oven")
-            treeType = 6;
-        else
-            treeType = -1;
-
-        return treeType;
+        string type = inventory.foodList[plantID].type;
+        if (type == "Tree")   return Random.Range(0, 2);
+        if (type == "Pine")   return 2;
+        if (type == "Bush")   return Random.Range(3, 5);
+        if (type == "Ground") return 5;
+        if (type == "Oven")   return 6;
+        return -1;
     }
 
-    bool IsOven()
-    {
-        return plantID >= 0 && inventory.foodList[plantID].type == "Oven";
-    }
+    bool IsOven() => plantID >= 0 && inventory.foodList[plantID].type == "Oven";
 
     bool IsBlocked(Vector3 point, LayerMask oMask) 
     {
@@ -71,9 +59,7 @@ public class PlantTool : MonoBehaviour
             for (int i = 0; i < hitCount; i++)
             {
                 Collider other = overlapResults[i];
-
-                if (!other)
-                    continue;
+                if (!other) continue;
 
                 if (
                     other.CompareTag("Oven") 
@@ -95,92 +81,62 @@ public class PlantTool : MonoBehaviour
 
         int treeType = GetTreeType();
         radius = treeType >= 0 ? plantRadius[treeType] : 0.5f;
-        RaycastHit hit;
 
-        if (Physics.Raycast(ray, out hit, maxDistance, gMask))
-        {
-            ring.transform.localScale = new Vector3(0.2f * radius, 1f, 0.2f * radius);
-            ring.transform.position = new Vector3(hit.point.x, hit.point.y + 0.1f, hit.point.z);
+        if (!Physics.Raycast(ray, out RaycastHit hit, maxDistance, gMask)) return;
 
-            Color targetColor = IsBlocked(hit.point, oMask) ? notValid : valid;
+        ring.transform.localScale = new Vector3(0.2f * radius, 1f, 0.2f * radius);
+        ring.transform.position = new Vector3(hit.point.x, hit.point.y + 0.1f, hit.point.z);
 
-            // Smooth transition
-            currentColor = Color.Lerp(
-                currentColor,
-                targetColor,
-                Time.deltaTime * 20f
-            );
-            
-            if (!ringRender) ringRender = ring.GetComponent<Renderer>();
-            ringRender.material.color = currentColor;
-        }
+        Color targetColor = IsBlocked(hit.point, oMask) ? notValid : valid;
+        currentColor = Color.Lerp(currentColor, targetColor, Time.deltaTime * 20f);
+
+        if (!ringRender) ringRender = ring.GetComponent<Renderer>();
+        ringRender.material.color = currentColor;
     }
 
     public void PlantTree(Ray ray, LayerMask gMask, LayerMask oMask)
     {
         if (plantID < 0) return;
 
-        RaycastHit hit;
+        if (!Physics.Raycast(ray, out RaycastHit hit, maxDistance, gMask)) return;
+        if (IsBlocked(hit.point, oMask)) return;
 
-        if (Physics.Raycast(ray, out hit, maxDistance, gMask))
+        string plantName = inventory.foodList[plantID].name;
+        if (inventory.GetQuantity(plantName) <= 0)
         {
-            if (IsBlocked(hit.point, oMask)) return;
-
-            string plantName = inventory.foodList[plantID].name;
-            string key = plantName;
-            if (!inventory.myInventory.ContainsKey(key) || inventory.myInventory[key] <= 0)
-            {
-                Debug.Log("Out of seed/item!");
-                return;
-            }
-
-            if (plantID < 0) return;
-            else if (IsOven()) Plant(hit.point, validOven);
-            else Plant(hit.point);
-
-            inventory.myInventory[key]--;
-            inventory.exp += 25f;
-
-            inventory.selection.RefreshPlants();
+            Debug.Log("Out of seed/item!");
+            return;
         }
+
+        if (IsOven()) Plant(hit.point, validOven);
+        else Plant(hit.point);
+
+        inventory.AddItemQuantity(plantName, -1);
+        inventory.exp += 25f;
+        inventory.selection.RefreshPlants();
     }
 
     void Plant(Vector3 point, Transform parent = null)
     {
         int treeType = GetTreeType();
-            
-        GameObject newTree;
-        Growable g;
 
-        if (!parent)
-        {
-            newTree = Instantiate(
-                plants[treeType], 
-                point, 
-                Quaternion.Euler(0f, Random.Range(0f, 180f), 0f)
-            );
-            g = newTree.GetComponentInChildren<Growable>();
-        }
-        else
-        {
-            newTree = Instantiate(
-                plants[treeType], 
-                parent
-            );
-            g = newTree.GetComponentInChildren<Growable>();
-            parent.GetComponentInChildren<FollowTransform>().target = g.transform;
-        }
+        GameObject newTree = parent
+            ? Instantiate(plants[treeType], parent)
+            : Instantiate(plants[treeType], point, Quaternion.Euler(0f, Random.Range(0f, 180f), 0f));
 
+        Growable g = newTree.GetComponentInChildren<Growable>();
         if (!g) return;
 
-        g.growthSpeed = inventory.foodList[plantID].growthSpeed;
-        g.productID = plantID;
-        if (!IsOven()) g.maxGrowth *= Random.Range(0.85f, 1f);
-        else g.isOven = true;
+        if (parent) parent.GetComponentInChildren<FollowTransform>().target = g.transform;
 
-        GameObject productPrefab = inventory.LoadProductPrefab(inventory.foodList[plantID].name);
-        if (productPrefab != null)
-            g.product = productPrefab;
+        Item item = inventory.foodList[plantID];
+        g.growthSpeed = item.growthSpeed;
+        g.productID = plantID;
+        g.isOven = IsOven();
+        if (!g.isOven) g.maxGrowth *= Random.Range(0.85f, 1f);
+
+        GameObject productPrefab = inventory.LoadProductPrefab(item.name);
+        if (productPrefab != null) g.product = productPrefab;
 
         g.wiggleOffset = Random.Range(0f, 90f);
         g.wiggleAmplitude *= Random.Range(4f, 5f);

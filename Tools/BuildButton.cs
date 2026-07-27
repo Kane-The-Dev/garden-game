@@ -15,16 +15,8 @@ public class BuildButton : MonoBehaviour
 
     public void Refresh()
     {
-        if (inventory.myInventory.ContainsKey(buildName))
-        {
-            display.text = buildName;
-            count.text = inventory.myInventory[buildName].ToString();
-        }
-        else
-        {
-            display.text = buildName;
-            count.text = "0";
-        }
+        display.text = buildName;
+        count.text = inventory.GetQuantity(buildName).ToString();
     }
 
     public void OnClick()

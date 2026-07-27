@@ -1,7 +1,10 @@
-using TMPro;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
+using TMPro;
+
+
 
 public class PlantManager : MonoBehaviour
 {
@@ -25,6 +28,11 @@ public class PlantManager : MonoBehaviour
     public WaterTool waterTool;
     public HarvestTool harvestTool;
     public ChopTool chopTool;
+    public Dictionary<string, PlantButton> myPlantButtons = new();
+    public Dictionary<string, BuildButton> myBuildButtons = new();
+    public Dictionary<string, GameObject> myWaterTools = new();
+    public Dictionary<string, GameObject> myHarvestTools = new();
+    public Dictionary<string, GameObject> myChopTools = new();
     
     [Header("UI")]
     [SerializeField] Button[] modes = new Button[5];
@@ -45,6 +53,7 @@ public class PlantManager : MonoBehaviour
 
     void Update()
     {
+        /*
         if (Input.GetKeyDown(KeyCode.Alpha1))
         {
             Debug.Log("Pressed 1");
@@ -70,6 +79,7 @@ public class PlantManager : MonoBehaviour
             Debug.Log("Pressed 5");
             modes[4].onClick.Invoke();
         }
+        */
 
         Ray ray = cam.ScreenPointToRay(Input.mousePosition);
 
@@ -180,7 +190,42 @@ public class PlantManager : MonoBehaviour
                 gameTip.text = "RMB + Hold to Start";
                 if (optionsAnimator) optionsAnimator.SetTrigger("close");
                 break;
+        }
+    }
 
+    public void ChangeTool(ItemType type, string name)
+    {
+        switch(type)
+        {
+            case ItemType.plant:
+                ChangeMode(0);
+                if (myPlantButtons.TryGetValue(name, out var plantBtn))
+                    plantBtn?.OnClick();
+                else
+                    Debug.LogWarning($"ChangeTool: no plant button registered for '{name}'");
+                break;
+            case ItemType.build:
+                ChangeMode(1);
+                if (myBuildButtons.TryGetValue(name, out var buildBtn))
+                    buildBtn?.OnClick();
+                else
+                    Debug.LogWarning($"ChangeTool: no build button registered for '{name}'");
+                break;
+            case ItemType.water:
+                ChangeMode(2);
+                if (myWaterTools.TryGetValue(name, out var waterObj))
+                    waterTool = waterObj.GetComponent<WaterTool>();
+                break;
+            case ItemType.harvest:
+                ChangeMode(3);
+                if (myHarvestTools.TryGetValue(name, out var harvestObj))
+                    harvestTool = harvestObj.GetComponent<HarvestTool>();
+                break;
+            case ItemType.chop:
+                ChangeMode(4);
+                if (myChopTools.TryGetValue(name, out var chopObj))
+                    chopTool = chopObj.GetComponent<ChopTool>();
+                break;
         }
     }
 

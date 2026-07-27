@@ -9,8 +9,16 @@ public class ToolUnlock : ShopItem
     
     public override void OnPurchase(Inventory inventory, int quantity)
     {
-        inventory.AddItemQuantity(itemName, quantity);
+        // Map toolType int → ItemType enum
+        ItemType itemType = toolType switch
+        {
+            1 => ItemType.water,
+            2 => ItemType.harvest,
+            3 => ItemType.chop,
+            _ => ItemType.none
+        };
 
+        inventory.AddItemQuantity(itemName, quantity, itemType);
         inventory.coin -= price * quantity;
 
         for (int i = 0; i < quantity; i++)
@@ -19,13 +27,13 @@ public class ToolUnlock : ShopItem
             switch (toolType)
             {
                 case 1:
-                    GameManager.instance.pm.waterTool = newTool.GetComponent<WaterTool>();
+                    GameManager.instance.pm.myWaterTools.Add(itemName, newTool);
                     break;
                 case 2:
-                    GameManager.instance.pm.harvestTool = newTool.GetComponent<HarvestTool>();
+                    GameManager.instance.pm.myHarvestTools.Add(itemName, newTool);
                     break;
                 case 3:
-                    GameManager.instance.pm.chopTool = newTool.GetComponent<ChopTool>();
+                    GameManager.instance.pm.myChopTools.Add(itemName, newTool);
                     break;
             }
         }
@@ -43,7 +51,7 @@ public class ToolUnlock : ShopItem
 
         if (prevUpgrade != "None")
         {
-            if (!inventory.myInventory.ContainsKey(prevUpgrade) || inventory.myInventory[prevUpgrade] <= 0)
+            if (inventory.GetQuantity(prevUpgrade) <= 0)
                 return 3;
         }
 

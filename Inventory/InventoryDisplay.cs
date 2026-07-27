@@ -24,8 +24,8 @@ public class InventoryDisplay : MonoBehaviour
 
     Inventory inventory;
     Slot[] slots;
-    string[] slotItems;
-    
+
+
     void Start()
     {
         GenerateSlots();
@@ -49,7 +49,6 @@ public class InventoryDisplay : MonoBehaviour
             return;
 
         slots = new Slot[slotCount];
-        slotItems = new string[slotCount];
 
         for (int i = 0; i < slotCount; i++)
         {
@@ -62,7 +61,7 @@ public class InventoryDisplay : MonoBehaviour
             slot.Initialize(i, this);
             slots[i] = slot;
 
-            slotItems[i] = string.Empty;
+            slot.ClearItem();
             slot.SetQuantity(0);
             slot.SetIcon(null);
             
@@ -70,22 +69,19 @@ public class InventoryDisplay : MonoBehaviour
         }
     }
 
-    public void Refresh(Dictionary<string, int> myInventory)
+    public void Refresh(Dictionary<string, InventoryEntry> myInventory)
     {
         if (slots == null || slots.Length == 0)
             GenerateSlots();
 
-        if (slotItems == null || slotItems.Length != slots.Length)
-            slotItems = new string[slots.Length];
-
-        // 1. Clean up slotItems: if the item in slotItems[i] is not in myInventory or has quantity <= 0, reset that slot.
-        for (int i = 0; i < slotItems.Length; i++)
+        // 1. Clean up slots: if the item in slot is not in myInventory or has quantity <= 0, reset that slot.
+        for (int i = 0; i < slots.Length; i++)
         {
-            string itemName = slotItems[i];
+            string itemName = slots[i].itemName;
             if (!string.IsNullOrEmpty(itemName))
             {
-                if (myInventory == null || !myInventory.TryGetValue(itemName, out int n) || n <= 0)
-                    slotItems[i] = string.Empty;
+                if (myInventory == null || !myInventory.TryGetValue(itemName, out InventoryEntry e) || e.quantity <= 0)
+                    slots[i].ClearItem();
             }
         }
 
@@ -94,13 +90,13 @@ public class InventoryDisplay : MonoBehaviour
         {
             foreach (var entry in myInventory)
             {
-                if (entry.Value > 0)
+                if (entry.Value.quantity > 0)
                 {
                     // Check if already assigned to a slot
                     bool alreadyAssigned = false;
-                    for (int i = 0; i < slotItems.Length; i++)
+                    for (int i = 0; i < slots.Length; i++)
                     {
-                        if (slotItems[i] == entry.Key)
+                        if (slots[i].itemName == entry.Key)
                         {
                             alreadyAssigned = true;
                             break;
@@ -111,9 +107,9 @@ public class InventoryDisplay : MonoBehaviour
                     {
                         // Find first empty slot
                         int emptyIndex = -1;
-                        for (int i = 0; i < slotItems.Length; i++)
+                        for (int i = 0; i < slots.Length; i++)
                         {
-                            if (string.IsNullOrEmpty(slotItems[i]))
+                            if (string.IsNullOrEmpty(slots[i].itemName))
                             {
                                 emptyIndex = i;
                                 break;
@@ -121,7 +117,7 @@ public class InventoryDisplay : MonoBehaviour
                         }
 
                         if (emptyIndex >= 0)
-                            slotItems[emptyIndex] = entry.Key;
+                            slots[emptyIndex].SetItem(entry.Key, inventory.GetItemType(entry.Key));
                         else
                             Debug.LogWarning($"Inventory is full, cannot display: {entry.Key}");
                     }
@@ -134,10 +130,10 @@ public class InventoryDisplay : MonoBehaviour
         {
             if (slots[i] == null) continue;
 
-            string itemName = slotItems[i];
-            if (!string.IsNullOrEmpty(itemName) && myInventory != null && myInventory.TryGetValue(itemName, out int N) && N > 0)
+            string itemName = slots[i].itemName;
+            if (!string.IsNullOrEmpty(itemName) && myInventory != null && myInventory.TryGetValue(itemName, out InventoryEntry entry) && entry.quantity > 0)
             {
-                slots[i].SetQuantity(N);
+                slots[i].SetQuantity(entry.quantity);
 
                 Sprite icon = Resources.Load<Sprite>("Icons/" + itemName);
                 if (icon == null)
@@ -155,14 +151,14 @@ public class InventoryDisplay : MonoBehaviour
         }
     }
 
-    public void RefreshSlot(int ID, Dictionary<string, int> myInventory)
+    public void RefreshSlot(int ID, Dictionary<string, InventoryEntry> myInventory)
     {
         if (slots[ID] == null) return;
 
-        string itemName = slotItems[ID];
-        if (!string.IsNullOrEmpty(itemName) && myInventory != null && myInventory.TryGetValue(itemName, out int N) && N > 0)
+        string itemName = slots[ID].itemName;
+        if (!string.IsNullOrEmpty(itemName) && myInventory != null && myInventory.TryGetValue(itemName, out InventoryEntry entry) && entry.quantity > 0)
         {
-            slots[ID].SetQuantity(N);
+            slots[ID].SetQuantity(entry.quantity);
 
             Sprite icon = Resources.Load<Sprite>("Icons/" + itemName);
             if (icon == null)
@@ -181,8 +177,11 @@ public class InventoryDisplay : MonoBehaviour
 
     public void SelectSlot(int ID)
     {
-        if (!string.IsNullOrEmpty(slotItems[ID]))
-            itemName.text = slotItems[ID];
+        if (!string.IsNullOrEmpty(slots[ID].itemName))
+        {
+            itemName.text = slots[ID].itemName;
+            GameManager.instance.pm.ChangeTool(slots[ID].type, slots[ID].itemName);
+        }
     }
 
     // Drag and Drop
@@ -236,10 +235,12 @@ public class InventoryDisplay : MonoBehaviour
 
     private void SwapSlots(int a, int b)
     {
-        if (slotItems == null || a < 0 || b < 0 || a >= slotItems.Length || b >= slotItems.Length) return;
+        if (slots == null || a < 0 || b < 0 || a >= slots.Length || b >= slots.Length) return;
 
-        (slotItems[a], slotItems[b]) = (slotItems[b], slotItems[a]);
-        
+        (string nameA, ItemType typeA) = (slots[a].itemName, slots[a].type);
+        slots[a].SetItem(slots[b].itemName, slots[b].type);
+        slots[b].SetItem(nameA, typeA);
+
         Sprite iconA = slots[a].iconImage.sprite;
         int quantityA = slots[a].n;
 

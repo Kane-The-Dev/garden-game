@@ -10,9 +10,11 @@ public class Slot : MonoBehaviour,
     public int SlotID { get; private set; }
 
     public Button button;
-    [SerializeField] TextMeshProUGUI quantityText;
-    public int n = 0; // quantity
     public Image iconImage;
+    public ItemType type = ItemType.none;
+    public int n = 0; // quantity
+    public string itemName = string.Empty;
+    [SerializeField] TextMeshProUGUI quantityText;
 
     InventoryDisplay manager;
 
@@ -28,6 +30,20 @@ public class Slot : MonoBehaviour,
         this.manager = manager;
         button.onClick.AddListener(() => manager.SelectSlot(SlotID));
         button.onClick.AddListener(() => manager.myGroup.OnClick(button.gameObject));
+    }
+
+    // Update Info
+
+    public void SetItem(string name, ItemType itemType)
+    {
+        itemName = name;
+        type = itemType;
+    }
+
+    public void ClearItem()
+    {
+        itemName = string.Empty;
+        type = ItemType.none;
     }
 
     public void SetQuantity(int quantity)

@@ -17,10 +17,7 @@ public class PlantButton : MonoBehaviour
     {
         string key = plantName;
         display.text = Inventory.GetProductName(plantName);
-        if (inventory.myInventory.ContainsKey(key))
-            count.text = inventory.myInventory[key].ToString();
-        else
-            count.text = "0";
+        count.text = inventory.GetQuantity(key).ToString();
     }
 
     public void OnClick()

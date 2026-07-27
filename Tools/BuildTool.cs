@@ -126,7 +126,7 @@ public class BuildTool : MonoBehaviour
             if (!available) return;
 
             string buildName = inventory.buildingList[buildID].name;
-            if (inventory.myInventory[buildName] <= 0)
+            if (inventory.GetQuantity(buildName) <= 0)
             {
                 Debug.Log("Out of seed/item!");
                 return;
@@ -135,7 +135,7 @@ public class BuildTool : MonoBehaviour
             if (buildID < 0) return;
             else Build(hit.point);
 
-            inventory.myInventory[buildName]--;
+            inventory.AddItemQuantity(buildName, -1, ItemType.build);
             inventory.exp += 25f;
 
             inventory.selection.RefreshBuildings();

@@ -6,10 +6,33 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 
+public enum ItemType
+{
+    plant,
+    build,
+    water,
+    harvest,
+    chop,
+    none
+}
+
+[System.Serializable]
+public struct InventoryEntry
+{
+    public int quantity;
+    public ItemType type;
+
+    public InventoryEntry(int quantity, ItemType type)
+    {
+        this.quantity = quantity;
+        this.type = type;
+    }
+}
+
 public class Inventory : MonoBehaviour
 {
     public List<Item> foodList = new List<Item>(), buildingList = new();
-    public Dictionary<string, int> myInventory = new Dictionary<string, int>();
+    public Dictionary<string, InventoryEntry> myInventory = new();
 
     [Header("Stats")]
     public int level;
@@ -32,6 +55,8 @@ public class Inventory : MonoBehaviour
     [SerializeField] string saveFileName = "InventorySave.txt";
     [SerializeField] bool saveToPersistentDataPath = true;
 
+    // Helper functions
+
     public static string GetProductName(string name)
     {
         if (string.IsNullOrEmpty(name)) return string.Empty;
@@ -40,6 +65,27 @@ public class Inventory : MonoBehaviour
         if (name.EndsWith(" Pack", System.StringComparison.OrdinalIgnoreCase))
             return name.Substring(0, name.Length - 5);
         return name;
+    }
+
+    public ItemType GetItemType(string name)
+    {
+        if (string.IsNullOrEmpty(name)) return ItemType.none;
+
+        if (myInventory.TryGetValue(name, out InventoryEntry e) && e.type != ItemType.none)
+            return e.type;
+
+        foreach (var item in foodList)
+            if (item.name == name) return ItemType.plant;
+
+        foreach (var item in buildingList)
+            if (item.name == name) return ItemType.build;
+
+        return ItemType.none;
+    }
+
+    public int GetQuantity(string name)
+    {
+        return myInventory.TryGetValue(name, out InventoryEntry e) ? e.quantity : 0;
     }
 
     void Awake()
@@ -57,24 +103,31 @@ public class Inventory : MonoBehaviour
 
             // Product key ("Apple") — increment on harvest, decrement on sale
             if (!myInventory.ContainsKey(productName))
-                myInventory[productName] = 0;
+                myInventory[productName] = new InventoryEntry(0, ItemType.none);
 
             // Seed/Pack key ("Apple Seed") — increment on purchase, decrement on planting
             if (item.name != productName && !myInventory.ContainsKey(item.name))
-                myInventory[item.name] = 0;
+                myInventory[item.name] = new InventoryEntry(0, ItemType.plant);
         }
 
         UpdateStorage();
     }
 
-    public void AddItemQuantity(string itemName, int amount)
+    public void AddItemQuantity(string itemName, int amount, ItemType type = ItemType.none)
     {
         if (string.IsNullOrEmpty(itemName)) return;
 
-        if (!myInventory.ContainsKey(itemName))
-            myInventory[itemName] = 0;
-
-        myInventory[itemName] += amount;
+        if (myInventory.TryGetValue(itemName, out InventoryEntry result))
+        {
+            myInventory[itemName] = new InventoryEntry(
+                result.quantity + amount,
+                type != ItemType.none ? type : result.type
+            );
+        }
+        else
+        {
+            myInventory[itemName] = new InventoryEntry(amount, type);
+        }
     }
 
     void Update()
@@ -120,14 +173,10 @@ public class Inventory : MonoBehaviour
             newItem.transform.GetChild(1)
                 .GetComponent<TextMeshProUGUI>().text = displayName;
 
-            int qty = 0;
-            if (myInventory.TryGetValue(displayName, out int countVal))
-            {
-                qty = countVal;
-            }
+            int n = GetQuantity(displayName);
 
             newItem.transform.GetChild(2)
-                .GetComponent<TextMeshProUGUI>().text = qty + " left";
+                .GetComponent<TextMeshProUGUI>().text = n + " left";
         }
     }
 
@@ -143,7 +192,7 @@ public class Inventory : MonoBehaviour
         List<string> lines = new List<string>();
         foreach (var entry in myInventory.OrderBy(e => e.Key))
         {
-            lines.Add(entry.Key + "=" + entry.Value);
+            lines.Add(entry.Key + "=" + entry.Value.quantity);
         }
 
         File.WriteAllLines(path, lines);
