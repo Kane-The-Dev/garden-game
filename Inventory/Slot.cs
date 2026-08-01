@@ -15,7 +15,7 @@ public class Slot : MonoBehaviour,
     public string itemName = string.Empty;
     [SerializeField] TextMeshProUGUI quantityText;
 
-    InventoryDisplay manager;
+    [SerializeField] InventoryDisplay manager;
 
     void Awake()
     {
@@ -23,12 +23,12 @@ public class Slot : MonoBehaviour,
             button = GetComponent<Button>();
     }
 
-    public void Initialize(int ID, InventoryDisplay manager)
+    public void Initialize(int ID, InventoryDisplay manager, ButtonGroup myGroup)
     {
         SlotID = ID;
         this.manager = manager;
         button.onClick.AddListener(() => manager.SelectSlot(SlotID));
-        button.onClick.AddListener(() => manager.myGroup.OnClick(button.gameObject));
+        button.onClick.AddListener(() => myGroup.OnClick(button.gameObject));
     }
 
     // Update Info

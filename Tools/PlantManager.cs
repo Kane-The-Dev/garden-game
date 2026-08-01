@@ -31,7 +31,7 @@ public class PlantManager : MonoBehaviour
     public Dictionary<string, GameObject> myWaterTools = new();
     public Dictionary<string, GameObject> myHarvestTools = new();
     public Dictionary<string, GameObject> myChopTools = new();
-    
+
     [Header("UI")]
     [SerializeField] Button[] modes = new Button[5];
     [SerializeField] Animator optionsAnimator;
@@ -41,11 +41,38 @@ public class PlantManager : MonoBehaviour
     {
         cam = GetComponent<Camera>();
         gm = GameManager.instance;
-        plantTool = GetComponent<PlantTool>();
-        buildTool = GetComponent<BuildTool>();
+    
         ringRender = ring.GetComponent<Renderer>();
         ringRender.material.color = defaultRingColor;
         ChangeMode(mode);
+
+        Invoke("InitializeBasicTools", 0.5f);
+    }
+
+    void InitializeBasicTools()
+    {
+        Inventory inventory = gm.inventory;
+
+        if (waterTool != null)
+        {
+            string name = waterTool.gameObject.name;
+            myWaterTools[name] = waterTool.gameObject;
+            inventory.AddItemQuantity(name, 1, ItemType.water);
+        }
+
+        if (harvestTool != null)
+        {
+            string name = harvestTool.gameObject.name;
+            myHarvestTools[name] = harvestTool.gameObject;
+            inventory.AddItemQuantity(name, 1, ItemType.harvest);
+        }
+
+        if (chopTool != null)
+        {
+            string name = chopTool.gameObject.name;
+            myChopTools[name] = chopTool.gameObject;
+            inventory.AddItemQuantity(name, 1, ItemType.chop);
+        }
     }
 
     void Update()

@@ -40,13 +40,14 @@ public class Inventory : MonoBehaviour
     public int coin;
 
     [Header("UI")]
-    [SerializeField] TextMeshProUGUI coinDisplay, levelDisplay;
     [SerializeField] Slider expDisplay;
+    [SerializeField] TextMeshProUGUI coinDisplay, levelDisplay;
     [SerializeField] Transform storage;
     [SerializeField] GameObject foodItemPrefab;
 
     public ShopManager shop;
     public PlantSelection selection;
+    public InventoryDisplay myDisplay;
 
     [Header("Resources")]
     [SerializeField] string productsFolderPath = "Prefabs/Food";
@@ -125,9 +126,9 @@ public class Inventory : MonoBehaviour
             );
         }
         else
-        {
             myInventory[itemName] = new InventoryEntry(amount, type);
-        }
+
+        myDisplay.Refresh(myInventory);
     }
 
     void Update()

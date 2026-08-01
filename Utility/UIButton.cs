@@ -1,8 +1,7 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
-public class UIButton : MonoBehaviour
+public class UIButton : MonoBehaviour, IPointerEnterHandler
 {
     [SerializeField] int hoverID = 1, clickID = 0;
     AudioManager am;
@@ -16,17 +15,20 @@ public class UIButton : MonoBehaviour
     void Update()
     {
         if (timer > 0f) timer -= Time.deltaTime;
-
     }
 
-    public void OnHover()
+    public void OnPointerEnter(PointerEventData eventData)
     {
-        if (timer <= 0f) 
+        OnHover();
+    }
+
+    void OnHover()
+    {
+        if (timer <= 0f)
         {
             am.PlayUISoundEffect(hoverID);
             timer = hoverCooldown;
         }
-
     }
 
     public void OnClick()

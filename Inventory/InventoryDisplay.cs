@@ -6,6 +6,8 @@ using TMPro;
 
 public class InventoryDisplay : MonoBehaviour
 {
+    public Slot[] slots;
+
     [Header("Display")]
     [SerializeField] GameObject storagePanel;
     [SerializeField] TextMeshProUGUI itemName;
@@ -13,9 +15,9 @@ public class InventoryDisplay : MonoBehaviour
 
     [Header("Setup")]
     [SerializeField] GameObject slotPrefab;
-    [SerializeField] Transform slotHolder;
+    [SerializeField] Transform slotHolder, hotbarHolder;
     [SerializeField] int slotCount = 20;
-    public ButtonGroup myGroup;
+    public ButtonGroup storageGroup, hotbarGroup;
 
     [Header("Drag And Drop")]
     [SerializeField] Image dragIcon;
@@ -23,8 +25,12 @@ public class InventoryDisplay : MonoBehaviour
     [SerializeField] int hoveredSlotID = -1;
 
     Inventory inventory;
-    Slot[] slots;
 
+    // save last selected hotbar slot
+    // upon closing the storage, if current selected slot is not in hotbar, 
+    // revert to last selected hotbar slot
+    int lastHotbarID = 0;
+    int selectedSlotID = 0;
 
     void Start()
     {
@@ -36,36 +42,83 @@ public class InventoryDisplay : MonoBehaviour
     {
         if (Input.GetKeyDown(KeyCode.I))
         {
-            Refresh(inventory.myInventory);
+            // Refresh(inventory.myInventory);
 
             if (storagePanel != null)
-                storagePanel.SetActive(!storagePanel.activeSelf);
+                if (!storagePanel.activeSelf)
+                    OpenStorage();
+                else
+                    CloseStorage();
         }
+    }
+
+    public void OpenStorage()
+    {
+        storagePanel.SetActive(true);
+    }
+
+    public void CloseStorage()
+    {
+        storagePanel.SetActive(false);
+        if (selectedSlotID >= 10 && slots[lastHotbarID] != null)
+            slots[lastHotbarID].button.onClick.Invoke();
     }
 
     void GenerateSlots()
     {
-        if (slots != null && slots.Length > 0)
+        // Only return if the slots array is fully initialized and all slots are generated/assigned
+        if (slots != null && slots.Length == slotCount && slots[slotCount - 1] != null)
             return;
 
-        slots = new Slot[slotCount];
+        System.Array.Resize(ref slots, slotCount);
 
-        for (int i = 0; i < slotCount; i++)
+        // Retrieve and initialize the first 10 hotbar slots from hotbarHolder
+        if (hotbarHolder != null)
         {
-            GameObject newSlot = Instantiate(slotPrefab, slotHolder);
-            Slot slot = newSlot.GetComponent<Slot>();
+            int existingCount = Mathf.Min(10, hotbarHolder.childCount);
+            for (int i = 0; i < existingCount; i++)
+            {
+                if (slots[i] == null)
+                    slots[i] = hotbarHolder.GetChild(i).GetComponent<Slot>();
 
-            if (slot == null)
-                continue;
+                if (slots[i] != null)
+                {
+                    slots[i].Initialize(i, this, hotbarGroup);
 
-            slot.Initialize(i, this);
-            slots[i] = slot;
+                    slots[i].ClearItem();
+                    slots[i].SetQuantity(0);
+                    slots[i].SetIcon(null);
 
-            slot.ClearItem();
-            slot.SetQuantity(0);
-            slot.SetIcon(null);
-            
-            myGroup.buttons.Add(slot.button.image);
+                    if (hotbarGroup != null && !hotbarGroup.buttons.Contains(slots[i].button.image))
+                        hotbarGroup.buttons.Add(slots[i].button.image);
+                }
+            }
+        }
+        else
+        {
+            Debug.LogWarning("InventoryDisplay: hotbarHolder is not assigned.");
+        }
+
+        // Generate new slots starting from ID = 10 (storage)
+        for (int i = 10; i < slotCount; i++)
+        {
+            if (slots[i] == null)
+            {
+                GameObject newSlot = Instantiate(slotPrefab, slotHolder);
+                slots[i] = newSlot.GetComponent<Slot>();
+            }
+
+            if (slots[i] != null)
+            {
+                slots[i].Initialize(i, this, storageGroup);
+
+                slots[i].ClearItem();
+                slots[i].SetQuantity(0);
+                slots[i].SetIcon(null);
+
+                if (storageGroup != null && !storageGroup.buttons.Contains(slots[i].button.image))
+                    storageGroup.buttons.Add(slots[i].button.image);
+            }
         }
     }
 
@@ -77,6 +130,7 @@ public class InventoryDisplay : MonoBehaviour
         // 1. Clean up slots: if the item in slot is not in myInventory or has quantity <= 0, reset that slot.
         for (int i = 0; i < slots.Length; i++)
         {
+            if (slots[i] == null) continue;
             string itemName = slots[i].itemName;
             if (!string.IsNullOrEmpty(itemName))
             {
@@ -96,6 +150,7 @@ public class InventoryDisplay : MonoBehaviour
                     bool alreadyAssigned = false;
                     for (int i = 0; i < slots.Length; i++)
                     {
+                        if (slots[i] == null) continue;
                         if (slots[i].itemName == entry.Key)
                         {
                             alreadyAssigned = true;
@@ -109,6 +164,7 @@ public class InventoryDisplay : MonoBehaviour
                         int emptyIndex = -1;
                         for (int i = 0; i < slots.Length; i++)
                         {
+                            if (slots[i] == null) continue;
                             if (string.IsNullOrEmpty(slots[i].itemName))
                             {
                                 emptyIndex = i;
@@ -153,7 +209,7 @@ public class InventoryDisplay : MonoBehaviour
 
     public void RefreshSlot(int ID, Dictionary<string, InventoryEntry> myInventory)
     {
-        if (slots[ID] == null) return;
+        if (slots == null || ID < 0 || ID >= slots.Length || slots[ID] == null) return;
 
         string itemName = slots[ID].itemName;
         if (!string.IsNullOrEmpty(itemName) && myInventory != null && myInventory.TryGetValue(itemName, out InventoryEntry entry) && entry.quantity > 0)
@@ -177,14 +233,26 @@ public class InventoryDisplay : MonoBehaviour
 
     public void SelectSlot(int ID)
     {
-        if (!string.IsNullOrEmpty(slots[ID].itemName))
+        if (slots == null || ID < 0 || ID >= slots.Length || slots[ID] == null) return;
+
+        selectedSlotID = ID;
+        if (ID < 10)
         {
-            itemName.text = slots[ID].itemName;
-            GameManager.instance.pm.ChangeTool(slots[ID].type, slots[ID].itemName);
+            lastHotbarID = ID;
+            if (!string.IsNullOrEmpty(slots[ID].itemName))
+            {
+                itemName.text = slots[ID].itemName;
+                GameManager.instance.pm.ChangeTool(slots[ID].type, slots[ID].itemName);
+            }
+            else
+                GameManager.instance.pm.ChangeTool(ItemType.none, "");
         }
         else
         {
-            GameManager.instance.pm.ChangeTool(ItemType.none, "");
+            if (!string.IsNullOrEmpty(slots[ID].itemName))
+                itemName.text = slots[ID].itemName;
+            else
+                itemName.text = "";
         }
     }
 
@@ -192,7 +260,7 @@ public class InventoryDisplay : MonoBehaviour
 
     public void BeginDrag(int slotID, PointerEventData eventData)
     {
-        if (slotID < 0 || slotID >= slots.Length) return;
+        if (slots == null || slotID < 0 || slotID >= slots.Length || slots[slotID] == null) return;
         if (slots[slotID].iconImage.sprite == null) return;
 
         currentSlotID = slotID;
@@ -219,7 +287,8 @@ public class InventoryDisplay : MonoBehaviour
         {
             SwapSlots(currentSlotID, hoveredSlotID);
             SelectSlot(hoveredSlotID);
-            slots[hoveredSlotID].button.onClick.Invoke();
+            if (slots[hoveredSlotID] != null)
+                slots[hoveredSlotID].button.onClick.Invoke();
         }
         
         currentSlotID = -1;
@@ -240,6 +309,7 @@ public class InventoryDisplay : MonoBehaviour
     private void SwapSlots(int a, int b)
     {
         if (slots == null || a < 0 || b < 0 || a >= slots.Length || b >= slots.Length) return;
+        if (slots[a] == null || slots[b] == null) return;
 
         (string nameA, ItemType typeA) = (slots[a].itemName, slots[a].type);
         slots[a].SetItem(slots[b].itemName, slots[b].type);
