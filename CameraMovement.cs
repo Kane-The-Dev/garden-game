@@ -14,6 +14,12 @@ public class CameraMovement : MonoBehaviour
     [SerializeField] float restrictedRadius;
     private Vector3 currentVelocity;
 
+    [Header("Zoom Settings")]
+    [SerializeField] float minZoomY = 5f;
+    [SerializeField] float maxZoomY = 20f;
+    [SerializeField] float zoomSpeed = 10f;
+    private Vector3 zoomVelocity;
+
     [Header("Shake Settings")]
     [SerializeField] float duration = 0.4f;
     [SerializeField] float frequency = 25f;
@@ -37,6 +43,10 @@ public class CameraMovement : MonoBehaviour
 
         if (!targetReached && target != null)
         {
+            if (rb != null) rb.velocity = Vector3.zero;
+            currentVelocity = Vector3.zero;
+            zoomVelocity = Vector3.zero;
+
             root.position = Vector3.Lerp(
                 root.position, 
                 target.position, 
@@ -57,6 +67,31 @@ public class CameraMovement : MonoBehaviour
 
         if (!movable || !targetReached) return;
 
+        // Zoom velocity logic
+        zoomVelocity = Vector3.Lerp(zoomVelocity, Vector3.zero, Time.deltaTime * deceleration);
+
+        float scrollInput = Input.GetAxis("Mouse ScrollWheel");
+        if (scrollInput != 0f && root != null)
+        {
+            zoomVelocity += transform.forward * (scrollInput * zoomSpeed * 10f);
+        }
+
+        // Clamp zoom by height limits
+        if (root != null)
+        {
+            float currentY = root.position.y;
+            if (currentY <= minZoomY && zoomVelocity.y < 0f)
+            {
+                zoomVelocity = Vector3.zero;
+                root.position = new Vector3(root.position.x, minZoomY, root.position.z);
+            }
+            else if (currentY >= maxZoomY && zoomVelocity.y > 0f)
+            {
+                zoomVelocity = Vector3.zero;
+                root.position = new Vector3(root.position.x, maxZoomY, root.position.z);
+            }
+        }
+
         movementX = Input.GetAxisRaw("Horizontal");
         movementZ = Input.GetAxisRaw("Vertical");
         Vector3 inputDirection = new Vector3(movementX, 0f, movementZ).normalized;
@@ -72,13 +107,14 @@ public class CameraMovement : MonoBehaviour
         else
             currentVelocity = Vector3.Lerp(currentVelocity, Vector3.zero, Time.deltaTime * deceleration);
 
-        rb.velocity = currentVelocity;
+        rb.velocity = currentVelocity + zoomVelocity;
     }
 
     public void ScreenShake(float amplitude)
     {
         StartCoroutine(Shake(0.2f));
     }
+    
     IEnumerator Shake(float amplitude)
     {
         float time = 0f;
