@@ -14,7 +14,6 @@ public class Slot : MonoBehaviour,
     public int n = 0; // quantity
     public string itemName = string.Empty;
     [SerializeField] TextMeshProUGUI quantityText;
-
     [SerializeField] InventoryDisplay manager;
 
     void Awake()

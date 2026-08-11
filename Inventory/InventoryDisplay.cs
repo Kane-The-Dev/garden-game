@@ -10,7 +10,8 @@ public class InventoryDisplay : MonoBehaviour
 
     [Header("Display")]
     [SerializeField] GameObject storagePanel;
-    [SerializeField] TextMeshProUGUI itemName;
+    [SerializeField] TextMeshProUGUI itemName_Board, itemName_Mouse; // separate item name displays for board and mouse follow
+    [SerializeField] Animator itemNameAnimator;
     [SerializeField] Sprite tempIcon;
 
     [Header("Setup")]
@@ -249,7 +250,7 @@ public class InventoryDisplay : MonoBehaviour
             lastHotbarID = ID;
             if (!string.IsNullOrEmpty(slots[ID].itemName))
             {
-                itemName.text = slots[ID].itemName;
+                itemName_Board.text = slots[ID].itemName;
                 GameManager.instance.pm.ChangeTool(slots[ID].type, slots[ID].itemName);
             }
             else
@@ -258,9 +259,9 @@ public class InventoryDisplay : MonoBehaviour
         else
         {
             if (!string.IsNullOrEmpty(slots[ID].itemName))
-                itemName.text = slots[ID].itemName;
+                itemName_Board.text = slots[ID].itemName;
             else
-                itemName.text = "";
+                itemName_Board.text = "";
         }
     }
 
@@ -306,12 +307,23 @@ public class InventoryDisplay : MonoBehaviour
     public void SetHoveredSlot(int slotID)
     {
         hoveredSlotID = slotID;
+
+        if (!string.IsNullOrEmpty(slots[slotID].itemName))
+        {
+            itemName_Mouse.text = slots[slotID].itemName;
+            itemNameAnimator.SetBool("hovering", true);
+        }
+        else
+            itemName_Mouse.text = "";
     }
 
     public void ClearHoveredSlot(int slotID)
     {
         if (hoveredSlotID == slotID)
+        {
             hoveredSlotID = -1;
+            itemNameAnimator.SetBool("hovering", false);
+        }
     }
 
     private void SwapSlots(int a, int b)
