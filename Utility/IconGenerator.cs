@@ -14,7 +14,7 @@ public class IconGenerator : MonoBehaviour
 
     [Header("Output")]
     public int resolution = 256;
-    public string outputFolder = "Resources/Icons";
+    public string outputFolder = "Resources/Icons", postfix = "";
     public bool transparentBackground = true;
 
     private RenderTexture renderTexture;
@@ -137,7 +137,7 @@ public class IconGenerator : MonoBehaviour
         string path = Path.Combine(
             Application.dataPath,
             outputFolder,
-            fileName + ".png");
+            fileName + postfix + ".png");
 
         File.WriteAllBytes(path, bytes);
 
