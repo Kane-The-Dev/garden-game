@@ -16,7 +16,7 @@ public class InventoryDisplay : MonoBehaviour
     [Header("Setup")]
     [SerializeField] GameObject slotPrefab;
     [SerializeField] Transform slotHolder, hotbarHolder;
-    [SerializeField] int slotCount = 20;
+    [SerializeField] int slotCount = 20, hotbarCount = 6, maxHotbarCount = 10;
     public ButtonGroup storageGroup, hotbarGroup;
 
     [Header("Drag And Drop")]
@@ -60,22 +60,28 @@ public class InventoryDisplay : MonoBehaviour
     public void CloseStorage()
     {
         storagePanel.SetActive(false);
-        if (selectedSlotID >= 10 && slots[lastHotbarID] != null)
+        if (selectedSlotID >= maxHotbarCount && slots[lastHotbarID] != null)
             slots[lastHotbarID].button.onClick.Invoke();
+    }
+
+    public void UnlockHotbarSlot()
+    {
+        if (hotbarCount >= maxHotbarCount) return;
+        hotbarHolder.GetChild(hotbarCount++).gameObject.SetActive(true);
     }
 
     void GenerateSlots()
     {
-        // Only return if the slots array is fully initialized and all slots are generated/assigned
+        // Only return if the slots array is fully initialized and all slots are generated
         if (slots != null && slots.Length == slotCount && slots[slotCount - 1] != null)
             return;
 
         System.Array.Resize(ref slots, slotCount);
 
-        // Retrieve and initialize the first 10 hotbar slots from hotbarHolder
+        // Retrieve and initialize ALL hotbar slots from hotbarHolder
         if (hotbarHolder != null)
         {
-            int existingCount = Mathf.Min(10, hotbarHolder.childCount);
+            int existingCount = Mathf.Min(maxHotbarCount, hotbarHolder.childCount);
             for (int i = 0; i < existingCount; i++)
             {
                 if (slots[i] == null)
@@ -99,8 +105,8 @@ public class InventoryDisplay : MonoBehaviour
             Debug.LogWarning("InventoryDisplay: hotbarHolder is not assigned.");
         }
 
-        // Generate new slots starting from ID = 10 (storage)
-        for (int i = 10; i < slotCount; i++)
+        // Generate new slots starting from ID = maxHotbarCount (storage)
+        for (int i = maxHotbarCount; i < slotCount; i++)
         {
             if (slots[i] == null)
             {
@@ -160,11 +166,13 @@ public class InventoryDisplay : MonoBehaviour
 
                     if (!alreadyAssigned)
                     {
-                        // Find first empty slot
+                        // Find first empty slot, skipping locked hotbar slots (index >= hotbarCount)
                         int emptyIndex = -1;
                         for (int i = 0; i < slots.Length; i++)
                         {
                             if (slots[i] == null) continue;
+                            // Skip locked hotbar slots
+                            if (i >= hotbarCount && i < maxHotbarCount) continue;
                             if (string.IsNullOrEmpty(slots[i].itemName))
                             {
                                 emptyIndex = i;
@@ -236,7 +244,7 @@ public class InventoryDisplay : MonoBehaviour
         if (slots == null || ID < 0 || ID >= slots.Length || slots[ID] == null) return;
 
         selectedSlotID = ID;
-        if (ID < 10)
+        if (ID < maxHotbarCount)
         {
             lastHotbarID = ID;
             if (!string.IsNullOrEmpty(slots[ID].itemName))
