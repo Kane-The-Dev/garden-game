@@ -1,11 +1,16 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
+using TMPro;
 
 public class FoodButton : MonoBehaviour
 {
     public int productID;
     public int sellPrice;
+
+    public TextMeshProUGUI myName, myQuantity;
+    public Image myIcon;
 
     GameManager gm;
     Inventory inventory;
@@ -57,6 +62,6 @@ public class FoodButton : MonoBehaviour
         eater.accumulatedStonks += quantity * inventory.foodList[productID].sellPrice;
 
         inventory.AddItemQuantity(productName, -quantity);
-        inventory.UpdateStorage();
+        inventory.fs.UpdateStorage();
     }
 }

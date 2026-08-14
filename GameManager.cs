@@ -64,7 +64,7 @@ public class GameManager : MonoBehaviour
 
             if (currentMode == 1) UIAnimator.SetTrigger("closestorage");
 
-            gardenTools.SetActive(true);
+            // gardenTools.SetActive(true);
             pm.ChangeMode(pm.mode);
             foodStorage.SetActive(false);
             weightDisplay.SetActive(false);
@@ -76,7 +76,7 @@ public class GameManager : MonoBehaviour
 
             UIAnimator.SetTrigger("openstorage");
 
-            gardenTools.SetActive(false);
+            // gardenTools.SetActive(false);
             foodStorage.SetActive(true);
             weightDisplay.SetActive(true);
         }
@@ -85,7 +85,7 @@ public class GameManager : MonoBehaviour
             cam.target = overview;
             cam.movable = false;
 
-            gardenTools.SetActive(false);
+            // gardenTools.SetActive(false);
             foodStorage.SetActive(false);
             weightDisplay.SetActive(false);
         }

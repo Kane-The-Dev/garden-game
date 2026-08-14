@@ -267,7 +267,7 @@ public class Growable : MonoBehaviour
                     inventory.exp += 3f;
                     string productName = Inventory.GetProductName(inventory.foodList[thisFruit.productID].name);
                     inventory.AddItemQuantity(productName, 1);
-                    inventory.UpdateStorage();
+                    inventory.fs.UpdateStorage();
 
                     fruitCount--;
                     Destroy(thisFruit.gameObject, 3f);

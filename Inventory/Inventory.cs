@@ -42,12 +42,12 @@ public class Inventory : MonoBehaviour
     [Header("UI")]
     [SerializeField] Slider expDisplay;
     [SerializeField] TextMeshProUGUI coinDisplay, levelDisplay;
-    [SerializeField] Transform storage;
-    [SerializeField] GameObject foodItemPrefab;
 
+    [Header("Dependencies")]
     public ShopManager shop;
     public PlantSelection selection;
     public InventoryDisplay myDisplay;
+    public FoodStorage fs;
     [SerializeField] LevelUpTransition levelUp;
 
     [Header("Resources")]
@@ -111,8 +111,6 @@ public class Inventory : MonoBehaviour
             if (item.name != productName && !myInventory.ContainsKey(item.name))
                 myInventory[item.name] = new InventoryEntry(0, ItemType.plant);
         }
-
-        UpdateStorage();
     }
 
     public void AddItemQuantity(string itemName, int amount, ItemType type = ItemType.none)
@@ -153,33 +151,6 @@ public class Inventory : MonoBehaviour
             level++;
             shop.RefreshShop();
             levelUp.LevelUp(level);
-        }
-    }
-
-    // Food Storage
-    
-    public void UpdateStorage()
-    {
-        foreach (Transform child in storage)
-            Destroy(child.gameObject);
-
-        foreach (var item in foodList.OrderBy(f => f.levelReq))
-        {
-            if (item.type == "Other") continue;
-            
-            GameObject newItem = Instantiate(foodItemPrefab, storage);
-            var fb = newItem.GetComponent<FoodButton>();
-            fb.productID = item.ID;
-            fb.sellPrice = item.sellPrice;
-
-            string displayName = GetProductName(item.name);
-            newItem.transform.GetChild(1)
-                .GetComponent<TextMeshProUGUI>().text = displayName;
-
-            int n = GetQuantity(displayName);
-
-            newItem.transform.GetChild(2)
-                .GetComponent<TextMeshProUGUI>().text = n + " left";
         }
     }
 
