@@ -200,10 +200,9 @@ public class InventoryDisplay : MonoBehaviour
             {
                 slots[i].SetQuantity(entry.quantity);
 
-                Sprite icon = Resources.Load<Sprite>("Icons/" + itemName);
+                Sprite icon = ReadFile.LoadIconSprite(itemName);
                 if (icon == null)
                 {
-                    Debug.LogWarning($"Resource icon not found: Icons/{itemName}");
                     icon = tempIcon;
                 }
                 slots[i].SetIcon(icon);
@@ -225,10 +224,9 @@ public class InventoryDisplay : MonoBehaviour
         {
             slots[ID].SetQuantity(entry.quantity);
 
-            Sprite icon = Resources.Load<Sprite>("Icons/" + itemName);
+            Sprite icon = ReadFile.LoadIconSprite(itemName);
             if (icon == null)
             {
-                Debug.LogWarning($"Resource icon not found: Icons/{itemName}");
                 icon = tempIcon;
             }
             slots[ID].SetIcon(icon);
@@ -304,13 +302,13 @@ public class InventoryDisplay : MonoBehaviour
         hoveredSlotID = -1;
     }
 
-    public void SetHoveredSlot(int slotID)
+    public void SetHoveredSlot(int slotID, string itemName)
     {
         hoveredSlotID = slotID;
 
-        if (!string.IsNullOrEmpty(slots[slotID].itemName))
+        if (!string.IsNullOrEmpty(itemName))
         {
-            itemName_Mouse.text = slots[slotID].itemName;
+            itemName_Mouse.text = itemName;
             itemNameAnimator.SetBool("hovering", true);
         }
         else

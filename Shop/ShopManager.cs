@@ -64,25 +64,12 @@ public class ShopManager : MonoBehaviour
         itemUI.isLocked = inventory.level < myShopItem.requirement;
         itemUI.isSoldOut = false;
         itemUI.myItem = myShopItem;
-        itemUI.SetIcon(LoadIconSprite(myShopItem.itemName));
-
-        buttons.Add(itemUI);
-    }
-
-    Sprite LoadIconSprite(string itemName)
-    {
-        if (string.IsNullOrWhiteSpace(itemName))
-            return null;
 
         // Shop uses the product icon (e.g. "Apple"), not the seed icon ("Apple Seed")
-        string iconName = Inventory.GetProductName(itemName);
-        Sprite icon = Resources.Load<Sprite>("Icons/" + iconName);
-        if (icon == null)
-        {
-            Debug.LogWarning($"Resource icon not found: Icons/{iconName}");
-        }
+        string iconName = Inventory.GetProductName(myShopItem.itemName);
+        itemUI.SetIcon(ReadFile.LoadIconSprite(iconName));
 
-        return icon;
+        buttons.Add(itemUI);
     }
 
     Transform CreateNewRow(Transform display)

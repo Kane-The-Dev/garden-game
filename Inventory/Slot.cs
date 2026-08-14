@@ -26,8 +26,8 @@ public class Slot : MonoBehaviour,
     {
         SlotID = ID;
         this.manager = manager;
-        button.onClick.AddListener(() => manager.SelectSlot(SlotID));
-        button.onClick.AddListener(() => myGroup.OnClick(button.gameObject));
+        if (manager) button.onClick.AddListener(() => manager.SelectSlot(SlotID));
+        if (myGroup) button.onClick.AddListener(() => myGroup.OnClick(button.gameObject));
     }
 
     // Update Info
@@ -86,7 +86,7 @@ public class Slot : MonoBehaviour,
     public void OnPointerEnter(PointerEventData eventData)
     {
         if (manager == null) return;
-        manager.SetHoveredSlot(SlotID);
+        manager.SetHoveredSlot(SlotID, itemName);
     }
 
     public void OnPointerExit(PointerEventData eventData)

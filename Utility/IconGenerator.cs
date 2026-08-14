@@ -62,14 +62,6 @@ public class IconGenerator : MonoBehaviour
                 growable.enabled = false;
             }
 
-            // Ensure Outline exists
-            Outline outline = obj.GetComponent<Outline>();
-            if (outline == null)
-                outline = obj.AddComponent<Outline>();
-
-            if (outline != null)
-                outline.enabled = true;
-
             // Wait a few frames so Outline initializes
             yield return new WaitForSeconds(0.2f);
 

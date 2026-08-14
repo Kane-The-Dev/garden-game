@@ -48,6 +48,7 @@ public class Inventory : MonoBehaviour
     public ShopManager shop;
     public PlantSelection selection;
     public InventoryDisplay myDisplay;
+    [SerializeField] LevelUpTransition levelUp;
 
     [Header("Resources")]
     [SerializeField] string productsFolderPath = "Prefabs/Food";
@@ -151,6 +152,7 @@ public class Inventory : MonoBehaviour
             exp = 0f;
             level++;
             shop.RefreshShop();
+            levelUp.LevelUp(level);
         }
     }
 
