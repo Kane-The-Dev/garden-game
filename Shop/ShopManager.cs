@@ -24,6 +24,10 @@ public class ShopManager : MonoBehaviour
     [SerializeField] TextMeshProUGUI stats, itemName, itemDescription;
     [SerializeField] TextMeshProUGUI itemPrice, quantityDisplay;
     [SerializeField] UIParticleSystem coinBurst;
+    [SerializeField] GameObject plantStats;
+    [SerializeField] Slider growSpeed, sellPrice, weight;
+    [SerializeField] TextMeshProUGUI growSpeedText;
+    float maxGS, maxP, maxW;
 
     [Header("Audio")]
     [SerializeField] AudioSource source;
@@ -65,10 +69,6 @@ public class ShopManager : MonoBehaviour
         itemUI.isSoldOut = false;
         itemUI.myItem = myShopItem;
 
-        // Shop uses the product icon (e.g. "Apple"), not the seed icon ("Apple Seed")
-        string iconName = Inventory.GetProductName(myShopItem.itemName);
-        itemUI.SetIcon(ReadFile.LoadIconSprite(iconName));
-
         buttons.Add(itemUI);
     }
 
@@ -87,6 +87,27 @@ public class ShopManager : MonoBehaviour
     
     void InitializeShop()
     {
+        maxGS = 0f;
+        maxP = 0f;
+        maxW = 0f;
+
+        if (inventory != null)
+        {
+            foreach (var item in inventory.foodList)
+            {
+                if (item.growthSpeed > maxGS) maxGS = item.growthSpeed;
+                if (item.sellPrice > maxP) maxP = item.sellPrice;
+                if (item.weight > maxW) maxW = item.weight;
+            }
+
+            foreach (var item in inventory.buildingList)
+            {
+                if (item.growthSpeed > maxGS) maxGS = item.growthSpeed;
+                if (item.sellPrice > maxP) maxP = item.sellPrice;
+                if (item.weight > maxW) maxW = item.weight;
+            }
+        }
+
         foreach (var upgrade in buttons) // default tools in stock = 1
         {
             stock[upgrade.myItem] = 1;
@@ -165,12 +186,14 @@ public class ShopManager : MonoBehaviour
     public void OpenShop()
     {
         gm.UIAnimator.SetTrigger("openshop");
+        gm.cam.movable = false;
         Invoke("RefreshLayout", 0.05f);
     }
 
     public void CloseShop()
     {
         gm.UIAnimator.SetTrigger("closeshop");
+        gm.cam.movable = true;
     }
 
     public void RefreshShop()
@@ -228,7 +251,7 @@ public class ShopManager : MonoBehaviour
     {
         if (!myUI) return;
         selectedUI = myUI;
-
+        
         itemName.text = myUI.myItem.itemName;
         itemPrice.text = (myUI.myItem.price * quantity).ToString();
         itemDescription.text = myUI.myItem.description;
@@ -240,6 +263,29 @@ public class ShopManager : MonoBehaviour
         else
             quantityOption.SetActive(true);
         quantityDisplay.text = quantity.ToString();
+
+        // Update stats sliders based on the product name matching inside the inventory lists
+        string productName = Inventory.GetProductName(myUI.myItem.itemName);
+        Item matchingItem = null;
+        if (inventory != null)
+        {
+            matchingItem = inventory.foodList.FirstOrDefault(item => 
+                Inventory.GetProductName(item.name).Equals(productName, StringComparison.OrdinalIgnoreCase)
+            );
+        }
+
+        if (matchingItem != null)
+        {
+            if (plantStats) plantStats.SetActive(true);
+            
+            if (growSpeed) growSpeed.value = matchingItem.growthSpeed / maxGS;
+            if (sellPrice) sellPrice.value = (float)matchingItem.sellPrice / maxP;
+            if (weight) weight.value = matchingItem.weight / maxW;
+
+            if (matchingItem.type == "Oven") growSpeedText.text = "Bake Speed";
+            else growSpeedText.text = "Grow Speed";
+        }
+        else if (plantStats) plantStats.SetActive(false);
     }
 
     public void TryPurchase()

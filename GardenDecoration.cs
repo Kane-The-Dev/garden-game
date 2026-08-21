@@ -5,7 +5,7 @@ using UnityEngine;
 public class GardenDecoration : MonoBehaviour
 {
     [Header("Decoration")]
-    [SerializeField] GameObject[] decorations, trees;
+    [SerializeField] GameObject[] decorations, immobileDecors, trees;
     [SerializeField] LayerMask groundMask, obstacleMask;
     [SerializeField] Vector3 gardenCenter, spawnCenter;
     [SerializeField] float outerRadius;
@@ -13,7 +13,7 @@ public class GardenDecoration : MonoBehaviour
     [SerializeField] int minCount, maxCount;
 
     float maxDistance = 100f;
-    int n1, n2;
+    int n1, n2, n3;
     List<GameObject> spawned = new List<GameObject>();
 
     // wind settings
@@ -27,6 +27,7 @@ public class GardenDecoration : MonoBehaviour
         gm = GameManager.instance;
         n1 = decorations.Length;
         n2 = trees.Length;
+        n3 = immobileDecors.Length;
         StartCoroutine(InitializeGarden());
     }
 
@@ -66,7 +67,37 @@ public class GardenDecoration : MonoBehaviour
                 if (dist >= innerRadius)
                 {
                     // trees only allowed outside inner radius
-                    ID = Random.Range(0, n1 + n2);
+                    ID = Random.Range(0, n1 + n2 + n3);
+
+                    if (ID < n1)
+                    {
+                        decor = Instantiate(
+                            decorations[ID],
+                            hit.point,
+                            Quaternion.Euler(0f, Random.Range(-90f, 90f), 0f)
+                        );
+                    }
+                    else if (ID < n1 + n2)
+                    {
+                        decor = Instantiate(
+                            trees[ID - n1],
+                            hit.point,
+                            Quaternion.Euler(0f, Random.Range(-90f, 90f), 0f)
+                        );
+                    }
+                    else
+                    {
+                        decor = Instantiate(
+                            immobileDecors[ID - n1 - n2],
+                            hit.point,
+                            Quaternion.Euler(0f, Random.Range(-90f, 90f), 0f)
+                        );
+                    }     
+                }
+                else
+                {
+                    // center area -> decorations only
+                    ID = Random.Range(0, n1 + n3);
 
                     if (ID < n1)
                         decor = Instantiate(
@@ -76,21 +107,10 @@ public class GardenDecoration : MonoBehaviour
                         );
                     else
                         decor = Instantiate(
-                            trees[ID - n1],
+                            immobileDecors[ID - n1],
                             hit.point,
                             Quaternion.Euler(0f, Random.Range(-90f, 90f), 0f)
                         );
-                }
-                else
-                {
-                    // center area -> decorations only
-                    ID = Random.Range(0, n1);
-
-                    decor = Instantiate(
-                        decorations[ID],
-                        hit.point,
-                        Quaternion.Euler(0f, Random.Range(-90f, 90f), 0f)
-                    );
                 }
 
                 decor.transform.localScale *= Random.Range(0.6f, 1.5f);
@@ -98,11 +118,10 @@ public class GardenDecoration : MonoBehaviour
                 decor.GetComponent<SphereCollider>().enabled = true;
                 spawned.Add(decor);
 
-                float random = Random.Range(4.5f, 5.4f);
-                if (decor.name.Contains("Tree")) random *= 0.2f;
-                else if (decor.name.Contains("Rock")) random *= 0f;
+                float newAmplitude = Random.Range(4.5f, 6f) * 0.2f;
+                if (ID >= n1) newAmplitude = 0f;
 
-                amplitude[decor] = random;
+                amplitude[decor] = newAmplitude;
                 offset[decor] = Random.Range(0f, 90f);
             }
         }

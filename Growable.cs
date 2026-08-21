@@ -254,7 +254,7 @@ public class Growable : MonoBehaviour
                     rb.constraints = RigidbodyConstraints.None;
                     rb.useGravity = true;
 
-                    Inventory inventory = GameManager.instance.inventory;
+                    Inventory inventory = gm.inventory;
 
                     // add harvest force
                     Vector3 dir = thisFruit.transform.position - harvestPoint.position;
@@ -264,7 +264,7 @@ public class Growable : MonoBehaviour
                     );
                     
                     // update inventory
-                    inventory.exp += 3f;
+                    inventory.exp += 1f;
                     string productName = Inventory.GetProductName(inventory.foodList[thisFruit.productID].name);
                     inventory.AddItemQuantity(productName, 1);
                     inventory.fs.UpdateStorage();
@@ -323,7 +323,7 @@ public class Growable : MonoBehaviour
         }
 
         chopped = true;
-        GameManager.instance.inventory.exp += 10f;
+        gm.inventory.exp += 3f;
 
         Rigidbody rb = gameObject.GetComponent<Rigidbody>();
         rb.constraints = RigidbodyConstraints.None;

@@ -112,7 +112,7 @@ public class PlantTool : MonoBehaviour
         else Plant(hit.point);
 
         inventory.AddItemQuantity(plantName, -1);
-        inventory.exp += 25f;
+        inventory.exp += 12f;
         inventory.selection.RefreshPlants();
     }
 

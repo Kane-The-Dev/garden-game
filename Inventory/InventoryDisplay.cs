@@ -26,6 +26,7 @@ public class InventoryDisplay : MonoBehaviour
     [SerializeField] int hoveredSlotID = -1;
 
     Inventory inventory;
+    GameManager gm;
 
     // save last selected hotbar slot
     // upon closing the storage, if current selected slot is not in hotbar, 
@@ -36,7 +37,8 @@ public class InventoryDisplay : MonoBehaviour
     void Start()
     {
         GenerateSlots();
-        inventory = GameManager.instance.inventory;
+        gm = GameManager.instance;
+        inventory = gm.inventory;
     }
 
     void Update()
@@ -47,20 +49,23 @@ public class InventoryDisplay : MonoBehaviour
 
             if (storagePanel != null)
                 if (!storagePanel.activeSelf)
-                    OpenStorage();
+                    OpenBackpack();
                 else
-                    CloseStorage();
+                    CloseBackpack();
         }
     }
 
-    public void OpenStorage()
+    public void OpenBackpack()
     {
-        storagePanel.SetActive(true);
+        gm.UIAnimator.SetTrigger("openbag");
+        gm.cam.movable = false;
     }
 
-    public void CloseStorage()
+    public void CloseBackpack()
     {
-        storagePanel.SetActive(false);
+        gm.UIAnimator.SetTrigger("closebag");
+        gm.cam.movable = true;
+        
         if (selectedSlotID >= maxHotbarCount && slots[lastHotbarID] != null)
             slots[lastHotbarID].button.onClick.Invoke();
     }
@@ -167,7 +172,7 @@ public class InventoryDisplay : MonoBehaviour
 
                     if (!alreadyAssigned)
                     {
-                        // Find first empty slot, skipping locked hotbar slots (index >= hotbarCount)
+                        // Find first empty slot
                         int emptyIndex = -1;
                         for (int i = 0; i < slots.Length; i++)
                         {

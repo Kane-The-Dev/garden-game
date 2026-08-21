@@ -3,7 +3,7 @@ using UnityEngine;
 
 public class ChopTool : MonoBehaviour
 {
-    float maxDistance = 100f, radius = 1f;
+    float maxDistance = 100f, radius = 0.5f;
     [SerializeField] float speed;
     [SerializeField] AudioClip[] sounds;
     public AdvancedAudioSource myAAS;

@@ -65,12 +65,12 @@ public class CameraMovement : MonoBehaviour
             }
         }
 
-        if (!movable || !targetReached) return;
+        if (!targetReached) return;
 
         // Zoom velocity logic
         zoomVelocity = Vector3.Lerp(zoomVelocity, Vector3.zero, Time.deltaTime * deceleration);
 
-        float scrollInput = Input.GetAxis("Mouse ScrollWheel");
+        float scrollInput = movable ? Input.GetAxis("Mouse ScrollWheel") : 0f;
         if (scrollInput != 0f && root != null)
         {
             zoomVelocity += transform.forward * (scrollInput * zoomSpeed * 10f);
@@ -92,8 +92,8 @@ public class CameraMovement : MonoBehaviour
             }
         }
 
-        movementX = Input.GetAxisRaw("Horizontal");
-        movementZ = Input.GetAxisRaw("Vertical");
+        movementX = movable ? Input.GetAxisRaw("Horizontal") : 0f;
+        movementZ = movable ? Input.GetAxisRaw("Vertical") : 0f;
         Vector3 inputDirection = new Vector3(movementX, 0f, movementZ).normalized;
 
         Vector3 projectedForward = Vector3.ProjectOnPlane(transform.forward, Vector3.up).normalized;

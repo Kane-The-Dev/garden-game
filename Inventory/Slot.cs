@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
@@ -16,10 +17,49 @@ public class Slot : MonoBehaviour,
     [SerializeField] TextMeshProUGUI quantityText;
     [SerializeField] InventoryDisplay manager;
 
+    CanvasGroup cg;
+    Coroutine fadeCoroutine;
+
     void Awake()
     {
         if (button == null)
             button = GetComponent<Button>();
+        if (cg == null)
+            cg = GetComponent<CanvasGroup>();
+    }
+
+    void OnEnable()
+    {
+        if (cg != null)
+            cg.alpha = 0f;
+
+        if (fadeCoroutine != null)
+            StopCoroutine(fadeCoroutine);
+        fadeCoroutine = StartCoroutine(FadeIn());
+    }
+
+    void OnDisable()
+    {
+        if (fadeCoroutine != null)
+        {
+            StopCoroutine(fadeCoroutine);
+            fadeCoroutine = null;
+        }
+    }
+
+    IEnumerator FadeIn()
+    {
+        if (cg != null)
+        {
+            float t = 0f;
+            while (t < 0.2f)
+            {
+                t += Time.deltaTime;
+                cg.alpha = Mathf.Clamp01(t / 0.2f);
+                yield return null;
+            }
+            cg.alpha = 1f;
+        }
     }
 
     public void Initialize(int ID, InventoryDisplay manager, ButtonGroup myGroup)

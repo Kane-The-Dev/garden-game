@@ -64,40 +64,43 @@ public class BuildTool : MonoBehaviour
 
             bool blocked = false;
 
-            // count the number of colliders within range
-            float checkRadius = previewCollider.bounds.extents.magnitude;
-
-            int hitCount = Physics.OverlapSphereNonAlloc(
-                previewCollider.bounds.center,
-                checkRadius,
-                overlapResults,
-                oMask,
-                QueryTriggerInteraction.Collide
-            );
-
-            // check each individual colliders if they are actually colliding
-            for (int i = 0; i < hitCount; i++)
+            if (previewCollider)
             {
-                Collider other = overlapResults[i];
+                // count the number of colliders within range
+                float checkRadius = previewCollider.bounds.extents.magnitude;
 
-                if (!other)
-                    continue;
+                int hitCount = Physics.OverlapSphereNonAlloc(
+                    previewCollider.bounds.center,
+                    checkRadius,
+                    overlapResults,
+                    oMask,
+                    QueryTriggerInteraction.Collide
+                );
 
-                if (other.transform.IsChildOf(preview.transform))
-                    continue;
+                // check each individual colliders if they are actually colliding
+                for (int i = 0; i < hitCount; i++)
+                {
+                    Collider other = overlapResults[i];
 
-                if (Physics.ComputePenetration(
-                    previewCollider,
-                    preview.transform.position,
-                    preview.transform.rotation,
-                    other,
-                    other.transform.position,
-                    other.transform.rotation,
-                    out Vector3 _, out float _
-                )) {
-                    // Debug.Log("blocked!");
-                    blocked = true;
-                    break;
+                    if (!other)
+                        continue;
+
+                    if (other.transform.IsChildOf(preview.transform))
+                        continue;
+
+                    if (Physics.ComputePenetration(
+                        previewCollider,
+                        preview.transform.position,
+                        preview.transform.rotation,
+                        other,
+                        other.transform.position,
+                        other.transform.rotation,
+                        out Vector3 _, out float _
+                    )) {
+                        // Debug.Log("blocked!");
+                        blocked = true;
+                        break;
+                    }
                 }
             }
 
@@ -136,7 +139,7 @@ public class BuildTool : MonoBehaviour
             else Build(hit.point);
 
             inventory.AddItemQuantity(buildName, -1, ItemType.build);
-            inventory.exp += 25f;
+            inventory.exp += 10f;
 
             inventory.selection.RefreshBuildings();
         }
@@ -169,7 +172,7 @@ public class BuildTool : MonoBehaviour
 
         string nameWithoutSpaces = itemName.Replace(" ", string.Empty);
 
-        // Try the direct name first, mirroring the plant tool pattern.
+        // Try the direct name first
         foreach (string path in new[] { itemName, nameWithoutSpaces })
         {
             GameObject prefab = Resources.Load<GameObject>(path);
@@ -177,7 +180,7 @@ public class BuildTool : MonoBehaviour
                 return prefab;
         }
 
-        // Then try each configured folder in order.
+        // Then try each configured folder in order
         if (searchFolders != null)
         {
             foreach (string folder in searchFolders)

@@ -36,7 +36,7 @@ public class Inventory : MonoBehaviour
 
     [Header("Stats")]
     public int level;
-    public float exp;
+    public float exp, expToNextLvl = 100f;
     public int coin;
 
     [Header("UI")]
@@ -103,11 +103,11 @@ public class Inventory : MonoBehaviour
         {
             string productName = GetProductName(item.name);
 
-            // Product key ("Apple") — increment on harvest, decrement on sale
+            // Product key ("Apple") - increment on harvest, decrement on sale
             if (!myInventory.ContainsKey(productName))
                 myInventory[productName] = new InventoryEntry(0, ItemType.none);
 
-            // Seed/Pack key ("Apple Seed") — increment on purchase, decrement on planting
+            // Seed/Pack key ("Apple Seed") - increment on purchase, decrement on planting
             if (item.name != productName && !myInventory.ContainsKey(item.name))
                 myInventory[item.name] = new InventoryEntry(0, ItemType.plant);
         }
@@ -142,13 +142,15 @@ public class Inventory : MonoBehaviour
             levelDisplay.text = level.ToString();
 
         if (expDisplay)
-            expDisplay.value = exp / 100f;
+            expDisplay.value = exp / expToNextLvl;
 
         exp += Time.deltaTime * GameManager.instance.timeControl;
-        if (exp >= 100f)
+        if (exp >= expToNextLvl)
         {
             exp = 0f;
             level++;
+            expToNextLvl = 100f + level * 10f;
+
             shop.RefreshShop();
             levelUp.LevelUp(level);
         }

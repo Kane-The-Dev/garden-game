@@ -57,7 +57,7 @@ public class LevelUpTransition : MonoBehaviour
         levelDisplay.color = badgeColors[i];
 
         claimButton.GetComponent<CanvasGroup>().alpha = 0;
-        claimButton.GetComponent<Button>().interactable = true;
+        claimButton.GetComponent<Button>().interactable = false;
         anim.SetTrigger("up");
 
         if (rewardsList != null)
@@ -67,19 +67,6 @@ public class LevelUpTransition : MonoBehaviour
         }
 
         currentRewards = ReadFile.GetLevelUpRewards(myLevel);
-        foreach (var reward in currentRewards)
-        {
-            GameObject newSlotGo = Instantiate(slot, rewardsList);
-            Slot newSlot = newSlotGo.GetComponent<Slot>();
-            if (newSlot != null)
-            {
-                newSlot.itemName = reward.name;
-                Sprite icon = ReadFile.LoadIconSprite(reward.name);
-                newSlot.SetIcon(icon);
-                newSlot.SetQuantity(reward.quantity);
-                newSlot.Initialize(-1, inventory.myDisplay, null);
-            }
-        }
 
         StartCoroutine(LevelCountUp(myLevel));
     }
@@ -94,6 +81,26 @@ public class LevelUpTransition : MonoBehaviour
         }
         levelDisplay.text = level.ToString();
 
+        yield return new WaitForSeconds(0.15f);
+
+        if (currentRewards != null)
+        {
+            foreach (var reward in currentRewards)
+            {
+                GameObject newSlotGo = Instantiate(slot, rewardsList);
+                Slot newSlot = newSlotGo.GetComponent<Slot>();
+                if (newSlot != null)
+                {
+                    newSlot.itemName = reward.name;
+                    Sprite icon = ReadFile.LoadIconSprite(reward.name);
+                    newSlot.SetIcon(icon);
+                    newSlot.SetQuantity(reward.quantity);
+                    newSlot.Initialize(-1, inventory.myDisplay, null);
+                }
+                yield return new WaitForSeconds(0.15f);
+            }
+        }
+
         CanvasGroup cg = claimButton.GetComponent<CanvasGroup>();
 
         float t = 0f;
@@ -103,6 +110,7 @@ public class LevelUpTransition : MonoBehaviour
             cg.alpha = Mathf.Clamp01(t / 0.15f);
             yield return null;
         }
+        claimButton.GetComponent<Button>().interactable = true;
     }
 
     public void ClaimRewards()
@@ -132,6 +140,6 @@ public class LevelUpTransition : MonoBehaviour
             }
         }
 
-        Debug.Log("claimed rewards for level " + myLevel);
+        Debug.Log("Claimed rewards for level " + myLevel);
     }
 }

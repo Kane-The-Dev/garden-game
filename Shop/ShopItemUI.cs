@@ -20,7 +20,6 @@ public class ShopItemUI : MonoBehaviour
         if (icon != null)
         {
             icon.sprite = sprite;
-            icon.preserveAspect = true;
             icon.enabled = true;
         }
     }
@@ -29,6 +28,12 @@ public class ShopItemUI : MonoBehaviour
     {
         shop = GameManager.instance.sm;
         Refresh();
+
+        if (!icon || !myItem) return;
+
+        // Some items use the product icon (e.g. "Apple"), not the seed icon ("Apple Seed")
+        string iconName = Inventory.GetProductName(myItem.itemName);
+        SetIcon(ReadFile.LoadIconSprite(iconName));
     }
 
     public void Refresh()
