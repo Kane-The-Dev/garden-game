@@ -6,6 +6,7 @@ using TMPro;
 public class GameManager : MonoBehaviour
 {
     public static GameManager instance;
+    public string version = "0.1";
 
     [Header("Modes")]
     public int currentMode;

@@ -96,7 +96,7 @@ public class Growable : MonoBehaviour
 
     void Update()
     {
-        timeIndex = gm.timeControl * 0.05f;
+        timeIndex = gm.timeControl * 0.05f; // static time scale
 
         Growing();
         Wiggling();
@@ -151,41 +151,52 @@ public class Growable : MonoBehaviour
     {
         while (!chopped)
         {
-            while (timeIndex <= 0.005f)
+            while (timeIndex <= 0.01f)
                 yield return null;
 
-            List<Transform> emptySlots = new List<Transform>();
-            foreach (Transform slot in slots)
+            List<int> emptySlotIDs = new List<int>();
+            for (int i = 0; i < slots.Length; i++)
             {
-                if (slot.childCount == 0) 
+                if (slots[i] != null && slots[i].childCount == 0)
                 {
-                    emptySlots.Add(slot);
+                    emptySlotIDs.Add(i);
                 }
             }
 
             float delay = Random.Range(0.15f, 0.3f) / (growthSpeed * multiplier) / timeIndex;
 
-            if (emptySlots.Count == 0)
+            if (emptySlotIDs.Count == 0)
             {
                 yield return new WaitForSeconds(delay);
                 continue;
             }
 
-            Transform toGrow = emptySlots[Random.Range(0, emptySlots.Count)];
-            
-            var newProduct = Instantiate(product, toGrow);
-            newProduct.transform.localPosition = Vector3.zero;
-            newProduct.transform.localEulerAngles = Vector3.zero;
+            int randomSlot = emptySlotIDs[Random.Range(0, emptySlotIDs.Count)];
+            GrowFruitAtSlot(randomSlot);
+            yield return new WaitForSeconds(delay);
+        }
+    }
 
-            var newFruit = newProduct.GetComponent<Growable>();
+    public Growable GrowFruitAtSlot(int slotID)
+    {
+        if (slotID < 0 || slotID >= slots.Length || slots[slotID] == null) return null;
+
+        Transform toGrow = slots[slotID];
+        var newProduct = Instantiate(product, toGrow);
+        newProduct.transform.localPosition = Vector3.zero;
+        newProduct.transform.localEulerAngles = Vector3.zero;
+
+        var newFruit = newProduct.GetComponent<Growable>();
+        if (newFruit != null)
+        {
             newFruit.growthSpeed = growthSpeed;
             newFruit.productID = productID;
             newFruit.wiggleOffset = Random.Range(0f, Mathf.PI * 2f);
             newFruit.wiggleAmplitude = Random.Range(4f, 5f);
-
-            fruitCount++;
-            yield return new WaitForSeconds(delay);
         }
+
+        fruitCount++;
+        return newFruit;
     }
 
     public void Shake(float amplitude)
@@ -195,7 +206,7 @@ public class Growable : MonoBehaviour
         if (myAAS && leaves.Length > 0) 
             myAAS.PlayOneShot(leaves[Random.Range(0, leaves.Length)], 1f, true);
 
-        float myGrowth = transform.localScale.x / maxGrowth;
+        float myGrowth = maxGrowth > 0.001f ? (transform.localScale.x / maxGrowth) : 1f;
         GameObject burst = Instantiate(leaf, 
             effectSpawnPoint.position, 
             Quaternion.identity

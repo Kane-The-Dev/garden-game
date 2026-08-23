@@ -108,24 +108,31 @@ public class PlantTool : MonoBehaviour
             return;
         }
 
-        if (IsOven()) Plant(hit.point, validOven);
-        else Plant(hit.point);
+        if (IsOven()) Plant(plantID, hit.point, Quaternion.Euler(0f, Random.Range(0f, 180f), 0f), validOven);
+        else Plant(plantID, hit.point, Quaternion.Euler(0f, Random.Range(0f, 180f), 0f));
 
         inventory.AddItemQuantity(plantName, -1);
         inventory.exp += 12f;
         inventory.selection.RefreshPlants();
     }
 
-    void Plant(Vector3 point, Transform parent = null)
+    public Growable Plant(int id, Vector3 position, Quaternion rotation, Transform parent = null)
     {
+        int oldPlantID = this.plantID;
+        this.plantID = id;
+
         int treeType = GetTreeType();
 
         GameObject newTree = parent
             ? Instantiate(plants[treeType], parent)
-            : Instantiate(plants[treeType], point, Quaternion.Euler(0f, Random.Range(0f, 180f), 0f));
+            : Instantiate(plants[treeType], position, rotation);
 
         Growable g = newTree.GetComponentInChildren<Growable>();
-        if (!g) return;
+        if (!g)
+        {
+            this.plantID = oldPlantID;
+            return null;
+        }
 
         if (parent) parent.GetComponentInChildren<FollowTransform>().target = g.transform;
 
@@ -140,5 +147,8 @@ public class PlantTool : MonoBehaviour
 
         g.wiggleOffset = Random.Range(0f, 90f);
         g.wiggleAmplitude *= Random.Range(4f, 5f);
+
+        this.plantID = oldPlantID;
+        return g;
     }
 }
