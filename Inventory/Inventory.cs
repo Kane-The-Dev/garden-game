@@ -21,11 +21,13 @@ public struct InventoryEntry
 {
     public int quantity;
     public ItemType type;
+    public int slotID;
 
-    public InventoryEntry(int quantity, ItemType type)
+    public InventoryEntry(int quantity, ItemType type, int slotID = -1)
     {
         this.quantity = quantity;
         this.type = type;
+        this.slotID = slotID;
     }
 }
 
@@ -69,6 +71,11 @@ public class Inventory : MonoBehaviour
         return name;
     }
 
+    public int GetQuantity(string name)
+    {
+        return myInventory.TryGetValue(name, out InventoryEntry e) ? e.quantity : 0;
+    }
+
     public ItemType GetItemType(string name)
     {
         if (string.IsNullOrEmpty(name)) return ItemType.none;
@@ -83,11 +90,6 @@ public class Inventory : MonoBehaviour
             if (item.name == name) return ItemType.build;
 
         return ItemType.none;
-    }
-
-    public int GetQuantity(string name)
-    {
-        return myInventory.TryGetValue(name, out InventoryEntry e) ? e.quantity : 0;
     }
 
     void Awake()
@@ -117,17 +119,35 @@ public class Inventory : MonoBehaviour
     {
         if (string.IsNullOrEmpty(itemName)) return;
 
-        if (myInventory.TryGetValue(itemName, out InventoryEntry result))
+        bool found = myInventory.TryGetValue(itemName, out InventoryEntry existing);
+        int slotID = found ? existing.slotID : -1;
+        int newQuantity = (found ? existing.quantity : 0) + amount;
+        ItemType newType = type != ItemType.none ? type : (found ? existing.type : ItemType.none);
+
+        if (slotID > -1)
         {
-            myInventory[itemName] = new InventoryEntry(
-                result.quantity + amount,
-                type != ItemType.none ? type : result.type
-            );
+            // Already assigned to a slot -> refresh that slot
+            InventoryEntry updated = new InventoryEntry(newQuantity, newType, slotID);
+            myInventory[itemName] = updated;
+            myDisplay.RefreshSlot(slotID, itemName, updated);
         }
         else
-            myInventory[itemName] = new InventoryEntry(amount, type);
-
-        myDisplay.Refresh(myInventory);
+        {
+            // No slot yet -> Find an empty slot to assign
+            int emptySlot = myDisplay.FindEmptySlot();
+            if (emptySlot >= 0)
+            {
+                myDisplay.PlaceItemAtSlot(emptySlot, itemName, newType);
+                InventoryEntry updated = new InventoryEntry(newQuantity, newType, emptySlot);
+                myInventory[itemName] = updated;
+                myDisplay.RefreshSlot(emptySlot, itemName, updated);
+            }
+            else
+            {
+                myInventory[itemName] = new InventoryEntry(newQuantity, newType, -1);
+                Debug.LogWarning($"Inventory is full, cannot display: {itemName}");
+            }
+        }
     }
 
     void Update()

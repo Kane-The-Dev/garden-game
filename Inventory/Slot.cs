@@ -9,11 +9,15 @@ public class Slot : MonoBehaviour,
     IPointerEnterHandler, IPointerExitHandler
 {
     public int SlotID { get; private set; }
+
+    [Header("Basic Info")]
+    public string itemName = string.Empty;
+    public int n = 0; // quantity
+    public ItemType type = ItemType.none;
+
+    [Header("UI")]
     public Button button;
     public Image iconImage;
-    public ItemType type = ItemType.none;
-    public int n = 0; // quantity
-    public string itemName = string.Empty;
     [SerializeField] TextMeshProUGUI quantityText;
     [SerializeField] InventoryDisplay manager;
 
@@ -66,8 +70,11 @@ public class Slot : MonoBehaviour,
     {
         SlotID = ID;
         this.manager = manager;
-        if (manager) button.onClick.AddListener(() => manager.SelectSlot(SlotID));
-        if (myGroup) button.onClick.AddListener(() => myGroup.OnClick(button.gameObject));
+        if (button == null)
+            button = GetComponent<Button>();
+
+        if (manager && button != null) button.onClick.AddListener(() => manager.SelectSlot(SlotID));
+        if (myGroup && button != null) button.onClick.AddListener(() => myGroup.OnClick(button.gameObject));
     }
 
     // Update Info

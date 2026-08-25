@@ -10,7 +10,8 @@ public class InventoryDisplay : MonoBehaviour
 
     [Header("Display")]
     [SerializeField] GameObject storagePanel;
-    [SerializeField] TextMeshProUGUI itemName_Board, itemName_Mouse; // separate item name displays for board and mouse follow
+    // separate item name displays for board and mouse follow
+    [SerializeField] TextMeshProUGUI itemName_Board, itemName_Mouse; 
     [SerializeField] Animator itemNameAnimator;
     [SerializeField] Sprite tempIcon;
 
@@ -76,12 +77,14 @@ public class InventoryDisplay : MonoBehaviour
         hotbarHolder.GetChild(hotbarCount++).gameObject.SetActive(true);
     }
 
+    // Slot management
+
     void GenerateSlots()
     {
         // Only return if the slots array is fully initialized and all slots are generated
         if (slots != null && slots.Length == slotCount && slots[slotCount - 1] != null)
             return;
-
+        
         System.Array.Resize(ref slots, slotCount);
 
         // Retrieve and initialize ALL hotbar slots from hotbarHolder
@@ -101,17 +104,15 @@ public class InventoryDisplay : MonoBehaviour
                     slots[i].SetQuantity(0);
                     slots[i].SetIcon(null);
 
-                    if (hotbarGroup != null && !hotbarGroup.buttons.Contains(slots[i].button.image))
+                    if (hotbarGroup != null && slots[i].button != null && slots[i].button.image != null && !hotbarGroup.buttons.Contains(slots[i].button.image))
                         hotbarGroup.buttons.Add(slots[i].button.image);
                 }
             }
         }
         else
-        {
             Debug.LogWarning("InventoryDisplay: hotbarHolder is not assigned.");
-        }
 
-        // Generate new slots starting from ID = maxHotbarCount (storage)
+        // Generate and initialize storage slots
         for (int i = maxHotbarCount; i < slotCount; i++)
         {
             if (slots[i] == null)
@@ -128,118 +129,72 @@ public class InventoryDisplay : MonoBehaviour
                 slots[i].SetQuantity(0);
                 slots[i].SetIcon(null);
 
-                if (storageGroup != null && !storageGroup.buttons.Contains(slots[i].button.image))
+                if (storageGroup != null && slots[i].button != null && slots[i].button.image != null && !storageGroup.buttons.Contains(slots[i].button.image))
                     storageGroup.buttons.Add(slots[i].button.image);
             }
         }
     }
 
-    public void Refresh(Dictionary<string, InventoryEntry> myInventory)
+    public void ClearAllSlots()
+    {
+        if (slots == null) return;
+        foreach (var slot in slots)
+        {
+            if (slot == null) continue;
+            slot.ClearItem();
+            slot.SetQuantity(0);
+            slot.SetIcon(null);
+        }
+    }
+
+    public int FindEmptySlot()
     {
         if (slots == null || slots.Length == 0)
             GenerateSlots();
 
-        // 1. Clean up slots: if the item in slot is not in myInventory or has quantity <= 0, reset that slot.
+        if (slots == null) return -1;
+
         for (int i = 0; i < slots.Length; i++)
         {
             if (slots[i] == null) continue;
-            string itemName = slots[i].itemName;
-            if (!string.IsNullOrEmpty(itemName))
-            {
-                if (myInventory == null || !myInventory.TryGetValue(itemName, out InventoryEntry e) || e.quantity <= 0)
-                    slots[i].ClearItem();
-            }
+            if (i >= hotbarCount && i < maxHotbarCount) continue;
+            if (string.IsNullOrEmpty(slots[i].itemName))
+                return i;
         }
-
-        // 2. Map new active items to empty slots
-        if (myInventory != null)
-        {
-            foreach (var entry in myInventory)
-            {
-                if (entry.Value.quantity > 0)
-                {
-                    // Check if already assigned to a slot
-                    bool alreadyAssigned = false;
-                    for (int i = 0; i < slots.Length; i++)
-                    {
-                        if (slots[i] == null) continue;
-                        if (slots[i].itemName == entry.Key)
-                        {
-                            alreadyAssigned = true;
-                            break;
-                        }
-                    }
-
-                    if (!alreadyAssigned)
-                    {
-                        // Find first empty slot
-                        int emptyIndex = -1;
-                        for (int i = 0; i < slots.Length; i++)
-                        {
-                            if (slots[i] == null) continue;
-                            // Skip locked hotbar slots
-                            if (i >= hotbarCount && i < maxHotbarCount) continue;
-                            if (string.IsNullOrEmpty(slots[i].itemName))
-                            {
-                                emptyIndex = i;
-                                break;
-                            }
-                        }
-
-                        if (emptyIndex >= 0)
-                            slots[emptyIndex].SetItem(entry.Key, inventory.GetItemType(entry.Key));
-                        else
-                            Debug.LogWarning($"Inventory is full, cannot display: {entry.Key}");
-                    }
-                }
-            }
-        }
-
-        // 3. Update the slots in UI
-        for (int i = 0; i < slots.Length; i++)
-        {
-            if (slots[i] == null) continue;
-
-            string itemName = slots[i].itemName;
-            if (!string.IsNullOrEmpty(itemName) && myInventory != null && myInventory.TryGetValue(itemName, out InventoryEntry entry) && entry.quantity > 0)
-            {
-                slots[i].SetQuantity(entry.quantity);
-
-                Sprite icon = ReadFile.LoadIconSprite(itemName);
-                if (icon == null)
-                {
-                    icon = tempIcon;
-                }
-                slots[i].SetIcon(icon);
-            }
-            else
-            {
-                slots[i].SetQuantity(0);
-                slots[i].SetIcon(null);
-            }
-        }
+        return -1;
     }
 
-    public void RefreshSlot(int ID, Dictionary<string, InventoryEntry> myInventory)
+    public void PlaceItemAtSlot(int slotID, string itemName, ItemType type)
     {
-        if (slots == null || ID < 0 || ID >= slots.Length || slots[ID] == null) return;
+        if (slots == null || slotID < 0 || slotID >= slots.Length) return;
+        if (slots[slotID] == null) return;
 
-        string itemName = slots[ID].itemName;
-        if (!string.IsNullOrEmpty(itemName) && myInventory != null && myInventory.TryGetValue(itemName, out InventoryEntry entry) && entry.quantity > 0)
+        slots[slotID].SetItem(itemName, type);
+
+        // Keep the inventory entry's slotID value in sync
+        if (inventory != null && inventory.myInventory.TryGetValue(itemName, out InventoryEntry e))
+            inventory.myInventory[itemName] = new InventoryEntry(e.quantity, e.type, slotID);
+    }
+
+    public void RefreshSlot(int slotID, string itemName, InventoryEntry entry)
+    {
+        if (slots == null || slotID < 0 || slotID >= slots.Length || slots[slotID] == null) return;
+
+        if (entry.quantity > 0)
         {
-            slots[ID].SetQuantity(entry.quantity);
+            slots[slotID].SetItem(itemName, entry.type);
+            slots[slotID].SetQuantity(entry.quantity);
 
             Sprite icon = ReadFile.LoadIconSprite(itemName);
-            if (icon == null)
-            {
-                icon = tempIcon;
-            }
-            slots[ID].SetIcon(icon);
+            if (icon == null) icon = tempIcon;
+            slots[slotID].SetIcon(icon);
         }
         else
         {
-            slots[ID].SetQuantity(0);
-            slots[ID].SetIcon(null);
+            // quantity dropped to 0 -> free the slot
+            slots[slotID].ClearItem();
+            slots[slotID].SetQuantity(0);
+            slots[slotID].SetIcon(null);
         }
     }
 
@@ -265,6 +220,37 @@ public class InventoryDisplay : MonoBehaviour
                 itemName_Board.text = slots[ID].itemName;
             else
                 itemName_Board.text = "";
+        }
+    }
+
+    private void SwapSlots(int a, int b)
+    {
+        if (slots == null || a < 0 || b < 0 || a >= slots.Length || b >= slots.Length) return;
+        if (slots[a] == null || slots[b] == null) return;
+
+        (string nameA, ItemType typeA) = (slots[a].itemName, slots[a].type);
+        (string nameB, ItemType typeB) = (slots[b].itemName, slots[b].type);
+
+        slots[a].SetItem(nameB, typeB);
+        slots[b].SetItem(nameA, typeA);
+
+        Sprite iconA = slots[a].iconImage.sprite;
+        int quantityA = slots[a].n;
+
+        slots[a].SetIcon(slots[b].iconImage.sprite);
+        slots[a].SetQuantity(slots[b].n);
+
+        slots[b].SetIcon(iconA);
+        slots[b].SetQuantity(quantityA);
+
+        // Keep myInventory's slotID values in sync after the swap
+        if (inventory != null)
+        {
+            if (!string.IsNullOrEmpty(nameA) && inventory.myInventory.TryGetValue(nameA, out InventoryEntry eA))
+                inventory.myInventory[nameA] = new InventoryEntry(eA.quantity, eA.type, b);
+
+            if (!string.IsNullOrEmpty(nameB) && inventory.myInventory.TryGetValue(nameB, out InventoryEntry eB))
+                inventory.myInventory[nameB] = new InventoryEntry(eB.quantity, eB.type, a);
         }
     }
 
@@ -327,24 +313,5 @@ public class InventoryDisplay : MonoBehaviour
             hoveredSlotID = -1;
             itemNameAnimator.SetBool("hovering", false);
         }
-    }
-
-    private void SwapSlots(int a, int b)
-    {
-        if (slots == null || a < 0 || b < 0 || a >= slots.Length || b >= slots.Length) return;
-        if (slots[a] == null || slots[b] == null) return;
-
-        (string nameA, ItemType typeA) = (slots[a].itemName, slots[a].type);
-        slots[a].SetItem(slots[b].itemName, slots[b].type);
-        slots[b].SetItem(nameA, typeA);
-
-        Sprite iconA = slots[a].iconImage.sprite;
-        int quantityA = slots[a].n;
-
-        slots[a].SetIcon(slots[b].iconImage.sprite);
-        slots[a].SetQuantity(slots[b].n);
-
-        slots[b].SetIcon(iconA);
-        slots[b].SetQuantity(quantityA);
     }
 }
