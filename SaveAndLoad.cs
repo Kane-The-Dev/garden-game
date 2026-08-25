@@ -6,8 +6,19 @@ using UnityEngine;
 [System.Serializable]
 public class GardenSaveData
 {
+    public string version;
+    public string savedAt;
     public InventorySaveData inventory;
     public List<GrowableSaveData> growables;
+    public List<ConstructibleSaveData> constructibles;
+}
+
+[System.Serializable]
+public class ConstructibleSaveData
+{
+    public int buildID;
+    public Vector3 position;
+    public Quaternion rotation;
 }
 
 [System.Serializable]
@@ -25,6 +36,7 @@ public class InventoryItemSaveData
     public string name;
     public int quantity;
     public ItemType type;
+    public int slotID;
 }
 
 [System.Serializable]
@@ -64,7 +76,11 @@ public class SaveAndLoad : MonoBehaviour
             return;
         }
 
-        GardenSaveData saveData = new GardenSaveData();
+        GardenSaveData saveData = new GardenSaveData
+        {
+            version = gm.version,
+            savedAt = System.DateTime.Now.ToString("yyyy-MM-dd HH-mm-ss")
+        };
 
         // 1. Save inventory info
         Inventory inv = gm.inventory;
@@ -76,20 +92,44 @@ public class SaveAndLoad : MonoBehaviour
             inventoryList = new List<InventoryItemSaveData>()
         };
 
-        if (inv.myInventory != null)
+        foreach (var kvp in inv.myInventory)
         {
-            foreach (var entry in inv.myInventory)
+            if (kvp.Value.quantity <= 0) continue;
+
+            saveData.inventory.inventoryList.Add(new InventoryItemSaveData
             {
-                saveData.inventory.inventoryList.Add(new InventoryItemSaveData
-                {
-                    name = entry.Key,
-                    quantity = entry.Value.quantity,
-                    type = entry.Value.type
-                });
-            }
+                name = kvp.Key,
+                quantity = kvp.Value.quantity,
+                type = kvp.Value.type,
+                slotID = kvp.Value.slotID // may be -1 if the item never got a slot (inventory was full)
+            });
         }
 
-        // 2. Save Growables info
+        // 2. Save Constructibles info
+        saveData.constructibles = new List<ConstructibleSaveData>();
+        Constructible[] allConstructibles = FindObjectsOfType<Constructible>();
+        foreach (Constructible c in allConstructibles)
+        {
+            // Ignore previews and chopped buildings
+            if (c.isPreview || c.chopped)
+                continue;
+
+            Transform target = c.transform.parent != null ? c.transform.parent : c.transform;
+            Vector3 position = target.position;
+            Quaternion rotation = Quaternion.Euler(0f, target.eulerAngles.y, 0f);
+
+            int buildID = c.buildID;
+            if (buildID < 0) continue;
+
+            saveData.constructibles.Add(new ConstructibleSaveData
+            {
+                buildID = buildID,
+                position = position,
+                rotation = rotation
+            });
+        }
+
+        // 3. Save Growables info
         saveData.growables = new List<GrowableSaveData>();
         Growable[] allGrowables = FindObjectsOfType<Growable>();
         foreach (Growable g in allGrowables)
@@ -128,7 +168,7 @@ public class SaveAndLoad : MonoBehaviour
             });
         }
 
-        // 3. Serialize and write to file
+        // 4. Serialize and write to file
         try
         {
             string json = JsonUtility.ToJson(saveData, true);
@@ -171,18 +211,39 @@ public class SaveAndLoad : MonoBehaviour
         inv.exp = saveData.inventory.exp;
         inv.coin = saveData.inventory.coin;
 
+        // Clear current inventory dict and display before loading saved data
+        inv.myInventory.Clear();
+        inv.myDisplay.ClearAllSlots();
+
         if (saveData.inventory.inventoryList != null)
         {
             foreach (var savedItem in saveData.inventory.inventoryList)
             {
-                inv.myInventory[savedItem.name] = new InventoryEntry(savedItem.quantity, savedItem.type);
+                int slotID = savedItem.slotID;
+
+                // if item wasn't assigned to any slot when saved -> find a new slot during load
+                if (slotID < 0)
+                    slotID = inv.myDisplay.FindEmptySlot();
+
+                InventoryEntry entry = new InventoryEntry(savedItem.quantity, savedItem.type, slotID);
+                inv.myInventory[savedItem.name] = entry;
+
+                if (slotID >= 0)
+                {
+                    inv.myDisplay.PlaceItemAtSlot(slotID, savedItem.name, savedItem.type);
+                    inv.myDisplay.RefreshSlot(slotID, savedItem.name, entry);
+                }
+                else
+                {
+                    Debug.LogWarning($"No available slot to display loaded item: {savedItem.name}");
+                }
             }
         }
-        inv.myDisplay.Refresh(inv.myInventory);
+
         inv.shop.RefreshShop();
         inv.selection.RefreshPlants();
 
-        // 2. Clear existing active growables by deleting their parent objects (or themselves if no parent)
+        // 2. Clear existing active growables and constructibles
         Growable[] activeGrowables = FindObjectsOfType<Growable>();
         foreach (var g in activeGrowables)
         {
@@ -198,7 +259,32 @@ public class SaveAndLoad : MonoBehaviour
             }
         }
 
-        // 3. Respawn saved growables
+        Constructible[] activeConstructibles = FindObjectsOfType<Constructible>();
+        foreach (var c in activeConstructibles)
+        {
+            if (c.isPreview) continue;
+            GameObject root = c.transform.parent != null ? c.transform.parent.gameObject : c.gameObject;
+            root.SetActive(false);
+            Destroy(root);
+        }
+
+        // 3. Respawn saved constructibles
+        BuildTool buildTool = FindObjectOfType<BuildTool>();
+        if (buildTool == null)
+        {
+            Debug.LogError("BuildTool not found in scene, cannot spawn buildings!");
+        }
+        else if (saveData.constructibles != null)
+        {
+            foreach (var savedBuilding in saveData.constructibles)
+            {
+                buildTool.Build(savedBuilding.buildID, savedBuilding.position, savedBuilding.rotation);
+            }
+        }
+
+        Debug.Log($"Garden loaded successfully from {path}");
+
+        // 4. Respawn saved growables
         PlantTool plantTool = FindObjectOfType<PlantTool>();
         if (plantTool == null)
         {
@@ -255,8 +341,6 @@ public class SaveAndLoad : MonoBehaviour
                 }
             }
         }
-
-        Debug.Log($"Garden loaded successfully from {path}");
     }
 
 #if UNITY_EDITOR

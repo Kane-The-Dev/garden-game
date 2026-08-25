@@ -2,6 +2,8 @@ using UnityEngine;
 
 public class Constructible : MonoBehaviour
 {
+    public int buildID = -1;
+    
     [Header("Removal")]
     public ChopTool myChopTool;
     public bool chopped;

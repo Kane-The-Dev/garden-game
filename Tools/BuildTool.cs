@@ -136,7 +136,7 @@ public class BuildTool : MonoBehaviour
             }
 
             if (buildID < 0) return;
-            else Build(hit.point);
+            else Build(buildID, hit.point, Quaternion.Euler(0f, rotY, 0f));
 
             inventory.AddItemQuantity(buildName, -1, ItemType.build);
             inventory.exp += 10f;
@@ -145,24 +145,26 @@ public class BuildTool : MonoBehaviour
         }
     }
 
-    void Build(Vector3 point)
+    public Constructible Build(int ID, Vector3 position, Quaternion rotation)
     {
-        GameObject prefab = LoadBuildingPrefab(inventory.buildingList[buildID].name);
+        string buildName = inventory.buildingList[ID].name;
+        GameObject prefab = LoadBuildingPrefab(buildName);
         if (prefab == null)
         {
-            Debug.LogWarning($"No building prefab found for '{inventory.buildingList[buildID].name}' in Resources/{searchFolders}");
-            return;
+            Debug.LogWarning($"No building prefab found for '{buildName}' in Resources/{searchFolders}");
+            return null;
         }
 
-        GameObject newBuilding = Instantiate(
-            prefab,
-            point, 
-            Quaternion.Euler(0f, rotY, 0f)
-        );
+        GameObject newBuilding = Instantiate(prefab, position, rotation);
 
         Constructible constructible = newBuilding.GetComponentInChildren<Constructible>();
         if (constructible)
+        {
             constructible.isPreview = false;
+            constructible.buildID = ID;
+        }
+
+        return constructible;
     }
 
     GameObject LoadBuildingPrefab(string itemName)

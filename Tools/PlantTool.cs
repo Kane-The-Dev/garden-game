@@ -20,9 +20,10 @@ public class PlantTool : MonoBehaviour
         plantID = -1;
     }
 
-    int GetTreeType()
+    int GetTreeType(int ID = -1)
     {
-        string type = inventory.foodList[plantID].type;
+        if (ID < 0) ID = plantID;
+        string type = inventory.foodList[ID].type;
         if (type == "Tree")   return Random.Range(0, 2);
         if (type == "Pine")   return 2;
         if (type == "Bush")   return Random.Range(3, 5);
@@ -31,9 +32,9 @@ public class PlantTool : MonoBehaviour
         return -1;
     }
 
-    bool IsOven() => plantID >= 0 && inventory.foodList[plantID].type == "Oven";
+    bool IsOven(int ID = -1) { if (ID < 0) ID = plantID; return ID >= 0 && inventory.foodList[ID].type == "Oven"; }
 
-    bool IsBlocked(Vector3 point, LayerMask oMask) 
+    bool IsBlocked(Vector3 point, LayerMask oMask)
     {
         validOven = null;
 
@@ -116,30 +117,23 @@ public class PlantTool : MonoBehaviour
         inventory.selection.RefreshPlants();
     }
 
-    public Growable Plant(int id, Vector3 position, Quaternion rotation, Transform parent = null)
+    public Growable Plant(int ID, Vector3 position, Quaternion rotation, Transform parent = null)
     {
-        int oldPlantID = this.plantID;
-        this.plantID = id;
-
-        int treeType = GetTreeType();
+        int treeType = GetTreeType(ID);
 
         GameObject newTree = parent
             ? Instantiate(plants[treeType], parent)
             : Instantiate(plants[treeType], position, rotation);
 
         Growable g = newTree.GetComponentInChildren<Growable>();
-        if (!g)
-        {
-            this.plantID = oldPlantID;
-            return null;
-        }
+        if (!g) return null;
 
         if (parent) parent.GetComponentInChildren<FollowTransform>().target = g.transform;
 
-        Item item = inventory.foodList[plantID];
+        Item item = inventory.foodList[ID];
         g.growthSpeed = item.growthSpeed;
-        g.productID = plantID;
-        g.isOven = IsOven();
+        g.productID = ID;
+        g.isOven = IsOven(ID);
         if (!g.isOven) g.maxGrowth *= Random.Range(0.85f, 1f);
 
         GameObject productPrefab = inventory.LoadProductPrefab(item.name);
@@ -148,7 +142,6 @@ public class PlantTool : MonoBehaviour
         g.wiggleOffset = Random.Range(0f, 90f);
         g.wiggleAmplitude *= Random.Range(4f, 5f);
 
-        this.plantID = oldPlantID;
         return g;
     }
 }

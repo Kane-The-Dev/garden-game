@@ -4,11 +4,13 @@ using UnityEngine;
 [CreateAssetMenu(menuName = "Shop Items/Plant")]
 public class PlantUnlock : ShopItem
 {
+    public ItemType type;
+
     public override void OnPurchase(Inventory inventory, int quantity)
     {
         string key = itemName;
 
-        inventory.AddItemQuantity(key, quantity);
+        inventory.AddItemQuantity(key, quantity, type);
 
         inventory.coin -= price * quantity;
 

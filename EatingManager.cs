@@ -164,7 +164,7 @@ public class EatingManager : MonoBehaviour
         if (fruit != null)
         {
             fruit.chopped = true;
-            obj.transform.localScale = Vector3.one * fruit.maxGrowth;
+            obj.transform.localScale = 0.8f * Vector3.one * fruit.maxGrowth;
         }
 
         spawnedFood.Add(obj);

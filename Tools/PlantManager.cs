@@ -52,6 +52,7 @@ public class PlantManager : MonoBehaviour
     void InitializeBasicTools()
     {
         Inventory inventory = gm.inventory;
+        Debug.Log($"InitializeBasicTools running. water={waterTool}, harvest={harvestTool}, chop={chopTool}, inv={inventory}");
 
         if (waterTool != null)
         {

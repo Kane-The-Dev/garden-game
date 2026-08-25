@@ -113,12 +113,12 @@ public class GardenDecoration : MonoBehaviour
                         );
                 }
 
-                decor.transform.localScale *= Random.Range(0.6f, 1.5f);
+                decor.transform.localScale *= Random.Range(0.75f, 1.5f);
                 decor.transform.parent = this.transform;
                 decor.GetComponent<SphereCollider>().enabled = true;
                 spawned.Add(decor);
 
-                float newAmplitude = Random.Range(4.5f, 6f) * 0.2f;
+                float newAmplitude = Random.Range(0.9f, 1.2f);
                 if (ID >= n1) newAmplitude = 0f;
 
                 amplitude[decor] = newAmplitude;

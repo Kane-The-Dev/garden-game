@@ -122,6 +122,7 @@ public class ShopManager : MonoBehaviour
             if (item.type == "Other" || item.type == "Oven") continue;
 
             PlantUnlock newShopItem = CreateShopItem(item);
+            newShopItem.type = ItemType.plant;
 
             if (count % 5 == 0)
                 thisRow = CreateNewRow(plantDisplay);
@@ -133,11 +134,13 @@ public class ShopManager : MonoBehaviour
 
         count = 0;
         thisRow = null;
-
+        
+        // generate shop item for Oven
         Item oven = inventory.buildingList.FirstOrDefault(item => item.name == "Oven");
         if (oven != null)
         {
             PlantUnlock newShopItem = CreateShopItem(oven);
+            newShopItem.type = ItemType.build;
 
             thisRow = CreateNewRow(bakeryDisplay);
 
@@ -151,6 +154,7 @@ public class ShopManager : MonoBehaviour
             if (item.type == "Other" || item.type != "Oven") continue;
 
             PlantUnlock newShopItem = CreateShopItem(item);
+            newShopItem.type = ItemType.plant;
 
             if (count % 5 == 0)
                 thisRow = CreateNewRow(bakeryDisplay);
@@ -169,6 +173,7 @@ public class ShopManager : MonoBehaviour
             if (item.type == "Other") continue;
 
             PlantUnlock newShopItem = CreateShopItem(item);
+            newShopItem.type = ItemType.build;
 
             if (count % 5 == 0)
                 thisRow = CreateNewRow(buildDisplay);
