@@ -14,14 +14,6 @@ public class GardenSaveData
 }
 
 [System.Serializable]
-public class ConstructibleSaveData
-{
-    public int buildID;
-    public Vector3 position;
-    public Quaternion rotation;
-}
-
-[System.Serializable]
 public class InventorySaveData
 {
     public float exp;
@@ -40,10 +32,19 @@ public class InventoryItemSaveData
 }
 
 [System.Serializable]
+public class ConstructibleSaveData
+{
+    public int buildID;
+    public Vector3 position;
+    public Quaternion rotation;
+}
+
+[System.Serializable]
 public class GrowableSaveData
 {
     public int plantID;
-    public List<int> slotIDs;
+    public int treeID;
+    public List<float> slotGrowthIndices; // 0 means empty slot
     public Vector3 position;
     public Quaternion rotation;
     public float growthIndex;
@@ -55,6 +56,7 @@ public class GrowableSaveData
 public class SaveAndLoad : MonoBehaviour
 {
     GameManager gm;
+    [SerializeField] List<ToolUnlock> toolUnlocks = new();
 
     void Start()
     {
@@ -101,7 +103,7 @@ public class SaveAndLoad : MonoBehaviour
                 name = kvp.Key,
                 quantity = kvp.Value.quantity,
                 type = kvp.Value.type,
-                slotID = kvp.Value.slotID // may be -1 if the item never got a slot (inventory was full)
+                slotID = kvp.Value.slotID // value = -1 if the item never got a slot (inventory was full)
             });
         }
 
@@ -138,16 +140,19 @@ public class SaveAndLoad : MonoBehaviour
             if (g.isProduct || g.chopped)
                 continue;
 
-            // Get slot IDs that have children (products)
-            List<int> slotIDs = new List<int>();
+            // Save per-slot fruit growthIndex; 0 means the slot is empty.
+            List<float> slotGrowthIndices = new List<float>();
             if (g.slots != null)
             {
                 for (int i = 0; i < g.slots.Length; i++)
                 {
                     if (g.slots[i] != null && g.slots[i].childCount > 0)
                     {
-                        slotIDs.Add(i);
+                        Growable fruit = g.slots[i].GetChild(0).GetComponent<Growable>();
+                        slotGrowthIndices.Add(fruit != null ? fruit.growthIndex : 0f);
                     }
+                    else
+                        slotGrowthIndices.Add(0f);
                 }
             }
 
@@ -158,7 +163,8 @@ public class SaveAndLoad : MonoBehaviour
             saveData.growables.Add(new GrowableSaveData
             {
                 plantID = g.productID,
-                slotIDs = slotIDs,
+                treeID = g.treeID,
+                slotGrowthIndices = slotGrowthIndices,
                 position = position,
                 rotation = rotation,
                 growthIndex = g.growthIndex,
@@ -240,6 +246,23 @@ public class SaveAndLoad : MonoBehaviour
             }
         }
 
+        // Restore purchased tools (basic tools are handled by PlantManager)
+        foreach (var savedItem in saveData.inventory.inventoryList)
+        {
+            if (savedItem.type != ItemType.water &&
+                savedItem.type != ItemType.harvest &&
+                savedItem.type != ItemType.chop) continue;
+
+            ToolUnlock match = toolUnlocks.Find(t => t.itemName == savedItem.name);
+            if (match != null)
+            {
+                match.RestoreTool(savedItem.quantity);
+                inv.shop.stock[match] = 0;
+            }
+            else
+                Debug.LogWarning($"SaveAndLoad: no ToolUnlock asset found for saved tool '{savedItem.name}'");
+        }
+
         inv.shop.RefreshShop();
         inv.selection.RefreshPlants();
 
@@ -315,7 +338,13 @@ public class SaveAndLoad : MonoBehaviour
                 }
 
                 // Instantiate plant using PlantTool
-                Growable g = plantTool.Plant(savedTree.plantID, savedTree.position, savedTree.rotation, ovenParent);
+                Growable g = plantTool.Plant(
+                    savedTree.plantID, 
+                    savedTree.position, 
+                    savedTree.rotation, 
+                    ovenParent, 
+                    savedTree.treeID
+                );
                 if (g != null)
                 {
                     // Restore stats
@@ -325,16 +354,19 @@ public class SaveAndLoad : MonoBehaviour
                     g.wiggleOffset = savedTree.wiggleOffset;
                     g.wiggleAmplitude = savedTree.wiggleAmplitude;
 
-                    // Respawn products in slots
-                    if (savedTree.slotIDs != null)
+                    // Respawn products in slots, restoring growthIndex per fruit
+                    if (savedTree.slotGrowthIndices != null)
                     {
-                        foreach (int slotID in savedTree.slotIDs)
+                        for (int i = 0; i < savedTree.slotGrowthIndices.Count; i++)
                         {
-                            Growable newFruit = g.GrowFruitAtSlot(slotID);
+                            float savedGrowth = savedTree.slotGrowthIndices[i];
+                            if (savedGrowth <= 0f) continue; // empty slot
+
+                            Growable newFruit = g.GrowFruitAtSlot(i);
                             if (newFruit != null)
                             {
-                                newFruit.growthIndex = 0.3f * newFruit.maxGrowth;
-                                newFruit.transform.localScale = Vector3.one * newFruit.growthIndex;
+                                newFruit.growthIndex = savedGrowth;
+                                newFruit.transform.localScale = Vector3.one * savedGrowth;
                             }
                         }
                     }

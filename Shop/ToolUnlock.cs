@@ -21,24 +21,36 @@ public class ToolUnlock : ShopItem
         inventory.AddItemQuantity(itemName, quantity, itemType);
         inventory.coin -= price * quantity;
 
+        SpawnToolObjects(quantity);
+
+        Debug.Log("You unlocked " + itemName);
+    }
+
+    // Restores tools after a save load without affecting inventory
+    public void RestoreTool(int quantity)
+    {
+        SpawnToolObjects(quantity);
+        Debug.Log($"Restored tool: {itemName}");
+    }
+
+    void SpawnToolObjects(int quantity)
+    {
         for (int i = 0; i < quantity; i++)
         {
             var newTool = Instantiate(myTool, Vector3.zero, Quaternion.identity);
             switch (toolType)
             {
                 case 1:
-                    GameManager.instance.pm.myWaterTools.Add(itemName, newTool);
+                    GameManager.instance.pm.myWaterTools[itemName] = newTool;
                     break;
                 case 2:
-                    GameManager.instance.pm.myHarvestTools.Add(itemName, newTool);
+                    GameManager.instance.pm.myHarvestTools[itemName] = newTool;
                     break;
                 case 3:
-                    GameManager.instance.pm.myChopTools.Add(itemName, newTool);
+                    GameManager.instance.pm.myChopTools[itemName] = newTool;
                     break;
             }
         }
-
-        Debug.Log("You unlocked " + itemName);
     }
 
     public override int CanPurchase(Inventory inventory, int quantity)
@@ -46,14 +58,14 @@ public class ToolUnlock : ShopItem
         if (inventory.level < requirement)
             return 1;
 
-        if (inventory.coin < price * quantity)
-            return 2;
-
         if (prevUpgrade != "None")
         {
             if (inventory.GetQuantity(prevUpgrade) <= 0)
                 return 3;
         }
+
+        if (inventory.coin < price * quantity)
+            return 2;
 
         return 0;
     }
