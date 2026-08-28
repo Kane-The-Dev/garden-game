@@ -36,8 +36,8 @@ public class DayNightController : MonoBehaviour
 
     Material skyboxInstance;
 
-    float time;
-    int dayCount;
+    public float time;
+    public int dayCount;
     bool lightsOut = true;
 
     void Start()
