@@ -195,6 +195,7 @@ public class InventoryDisplay : MonoBehaviour
             slots[slotID].ClearItem();
             slots[slotID].SetQuantity(0);
             slots[slotID].SetIcon(null);
+            gm.pm.ChangeTool(ItemType.none, "");
         }
     }
 
@@ -209,10 +210,10 @@ public class InventoryDisplay : MonoBehaviour
             if (!string.IsNullOrEmpty(slots[ID].itemName))
             {
                 itemName_Board.text = slots[ID].itemName;
-                GameManager.instance.pm.ChangeTool(slots[ID].type, slots[ID].itemName);
+                gm.pm.ChangeTool(slots[ID].type, slots[ID].itemName);
             }
             else
-                GameManager.instance.pm.ChangeTool(ItemType.none, "");
+                gm.pm.ChangeTool(ItemType.none, "");
         }
         else
         {

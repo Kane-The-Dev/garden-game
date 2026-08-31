@@ -5,6 +5,8 @@ using UnityEngine;
 public class FenceManager : MonoBehaviour
 {
     GameManager gm;
+    public int myLevel;
+    public GameObject[] fences;
     public Animator animator;
     [SerializeField] AdvancedAudioSource myAAS;
     [SerializeField] AudioClip[] woodBursts;
@@ -13,16 +15,31 @@ public class FenceManager : MonoBehaviour
     void Start()
     {
         gm = GameManager.instance;
+        myLevel = 1;
+    }
+
+    public void SetFence(int level)
+    {
+        if (level == 0) return;
+
+        for(int i = 0; i < fences.Length; i++)
+        {
+            fences[i].SetActive(level > 0 && i == level - 1);
+        }
+        myLevel = level;
     }
 
     public void UpgradeFence()
     {
-        animator.SetTrigger("Upgrade!");
-        // gm.sm.shopPanel.gameObject.SetActive(false);
+        myLevel++;
+
         gm.UIAnimator.SetTrigger("closeshop");
         gm.ChangeMode(2);
+
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
+        
+        animator.SetTrigger("Upgrade!");
         Invoke("FinishUpgrade", 8f);
     }
 

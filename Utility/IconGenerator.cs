@@ -56,10 +56,15 @@ public class IconGenerator : MonoBehaviour
 
             obj.SetActive(true);
 
-            // Disable Growable scripts
+            // Disable leftover scripts
             foreach (Growable growable in obj.GetComponentsInChildren<Growable>(true))
             {
                 growable.enabled = false;
+            }
+
+            foreach (Constructible constructible in obj.GetComponentsInChildren<Constructible>(true))
+            {
+                constructible.enabled = false;
             }
 
             // Wait a few frames so Outline initializes

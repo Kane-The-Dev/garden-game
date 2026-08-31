@@ -20,6 +20,7 @@ public class AudioManager : MonoBehaviour
     [SerializeField] AdvancedAudioSource music, UISource;
     
     [SerializeField] AudioMixer musicMixer, SFXMixer, UIMixer;
+    public AudioMixerGroup SFXMaster;
 
     [Header("Clips")]
     [SerializeField] Clip[] UISounds;

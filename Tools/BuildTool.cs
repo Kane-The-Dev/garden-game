@@ -139,7 +139,7 @@ public class BuildTool : MonoBehaviour
             else Build(buildID, hit.point, Quaternion.Euler(0f, rotY, 0f));
 
             inventory.AddItemQuantity(buildName, -1, ItemType.build);
-            inventory.exp += 10f;
+            inventory.exp += 15f;
 
             inventory.selection.RefreshBuildings();
         }

@@ -78,41 +78,22 @@ public class PlantManager : MonoBehaviour
 
     void Update()
     {
-        /*
-        if (Input.GetKeyDown(KeyCode.Alpha1))
-        {
-            Debug.Log("Pressed 1");
-            modes[0].onClick.Invoke();
-        }
-        else if (Input.GetKeyDown(KeyCode.Alpha2))
-        {
-            Debug.Log("Pressed 2");
-            modes[1].onClick.Invoke();
-        }
-        else if (Input.GetKeyDown(KeyCode.Alpha3))
-        {
-            Debug.Log("Pressed 3");
-            modes[2].onClick.Invoke();
-        }
-        else if (Input.GetKeyDown(KeyCode.Alpha4))
-        {
-            Debug.Log("Pressed 4");
-            modes[3].onClick.Invoke();
-        }
-        else if (Input.GetKeyDown(KeyCode.Alpha5))
-        {
-            Debug.Log("Pressed 5");
-            modes[4].onClick.Invoke();
-        }
-        */
-
         Ray ray = cam.ScreenPointToRay(Input.mousePosition);
 
         if (EventSystem.current.IsPointerOverGameObject() || gm.currentMode != 0)
         {
             gameTip.gameObject.SetActive(false);
             if (buildPreview) buildPreview.SetActive(false);
+
             ring.SetActive(false);
+            switch (mode) {
+                case 2:
+                    waterTool.StopWater();
+                    break;
+                case 3:
+                    harvestTool.StopHarvest();
+                    break;
+            }
             return;
         }
 
@@ -234,6 +215,7 @@ public class PlantManager : MonoBehaviour
                 else
                     Debug.LogWarning($"ChangeTool: no plant found in foodList for '{name}'");
                 break;
+                
             case ItemType.build:
                 ChangeMode(1);
                 Item buildItem = gm.inventory.buildingList.Find(b => b.name == name);
@@ -242,23 +224,29 @@ public class PlantManager : MonoBehaviour
                 else
                     Debug.LogWarning($"ChangeTool: no building found in buildingList for '{name}'");
                 break;
+
             case ItemType.water:
                 ChangeMode(2);
                 if (myWaterTools.TryGetValue(name, out var waterObj))
                     waterTool = waterObj.GetComponent<WaterTool>();
                 break;
+
             case ItemType.harvest:
                 ChangeMode(3);
                 if (myHarvestTools.TryGetValue(name, out var harvestObj))
                     harvestTool = harvestObj.GetComponent<HarvestTool>();
                 break;
+
             case ItemType.chop:
                 ChangeMode(4);
                 if (myChopTools.TryGetValue(name, out var chopObj))
                     chopTool = chopObj.GetComponent<ChopTool>();
                 break;
+
             case ItemType.none:
                 ChangeMode(-1);
+                if (buildPreview) 
+                    buildPreview.SetActive(false);
                 break;
         }
     }

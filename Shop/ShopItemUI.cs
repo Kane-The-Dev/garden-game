@@ -59,6 +59,7 @@ public class ShopItemUI : MonoBehaviour
 
     public void OnClick()
     {
+        if (myItem is not PlantUnlock) shop.quantity = 1;
         shop.SetPurchase(this);
     }
 }

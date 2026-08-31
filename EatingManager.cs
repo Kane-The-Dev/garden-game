@@ -11,7 +11,7 @@ public class EatingManager : MonoBehaviour
     public Queue<int> q;
     [SerializeField] float delay, timer, cooldown;
     public float totalWeight, maxWeight, cooldownTimer;
-    public int accumulatedStonks;
+    public int accumulatedStonks, accumulatedExp;
 
     [Header("Truck")]
     [SerializeField] GameObject truck_kun;
@@ -71,6 +71,50 @@ public class EatingManager : MonoBehaviour
         }
     }
 
+    void SpawnTruck()
+    {
+        GameObject thisTruck = Instantiate(truck_kun, transform.position, transform.rotation);
+        myTruck = thisTruck;
+        drop = myTruck.transform.GetChild(5);
+        rb = myTruck.GetComponent<Rigidbody>();
+        engine = thisTruck.GetComponent<AudioSource>();
+    }
+    
+    void SpawnFood(int ID)
+    {
+        Inventory inventory = gm.inventory;
+        Item item = inventory.foodList.Find(f => f.ID == ID);
+        if (item == null)
+        {
+            Debug.LogWarning($"SpawnFood: no item with ID {ID} in foodList.");
+            return;
+        }
+
+        GameObject prefab = inventory.LoadProductPrefab(item.name);
+        if (prefab == null)
+            return;
+
+        GameObject obj = Instantiate(prefab, drop.position + Vector3.up * 4f, Quaternion.identity);
+
+        Rigidbody rb = obj.GetComponent<Rigidbody>();
+        if (rb != null)
+        {
+            rb.constraints = RigidbodyConstraints.None;
+            rb.useGravity = true;
+        }
+
+        Growable fruit = obj.GetComponent<Growable>();
+        if (fruit != null)
+        {
+            fruit.chopped = true;
+            obj.transform.localScale = 0.8f * Vector3.one * fruit.maxGrowth;
+        }
+
+        spawnedFood.Add(obj);
+
+        accumulatedExp += 2;
+    }
+
     public void ConfirmSale()
     {
         if (q.Count > 0) {
@@ -110,7 +154,8 @@ public class EatingManager : MonoBehaviour
         coinBurst.Emission(0.05f);
             
         rb.constraints = RigidbodyConstraints.None;
-        GameManager.instance.inventory.coin += accumulatedStonks;
+        gm.inventory.coin += accumulatedStonks;
+        gm.inventory.exp += accumulatedExp;
         totalWeight = 0;
         accumulatedStonks = 0;
 
@@ -126,48 +171,6 @@ public class EatingManager : MonoBehaviour
         spawnedFood.Clear();
         Destroy(myTruck, 10f);
         myTruck = null;
-    }
-
-    void SpawnTruck()
-    {
-        GameObject thisTruck = Instantiate(truck_kun, transform.position, transform.rotation);
-        myTruck = thisTruck;
-        drop = myTruck.transform.GetChild(5);
-        rb = myTruck.GetComponent<Rigidbody>();
-        engine = thisTruck.GetComponent<AudioSource>();
-    }
-
-    void SpawnFood(int ID)
-    {
-        Inventory inventory = gm.inventory;
-        Item item = inventory.foodList.Find(f => f.ID == ID);
-        if (item == null)
-        {
-            Debug.LogWarning($"SpawnFood: no item with ID {ID} in foodList.");
-            return;
-        }
-
-        GameObject prefab = inventory.LoadProductPrefab(item.name);
-        if (prefab == null)
-            return;
-
-        GameObject obj = Instantiate(prefab, drop.position + Vector3.up * 4f, Quaternion.identity);
-
-        Rigidbody rb = obj.GetComponent<Rigidbody>();
-        if (rb != null)
-        {
-            rb.constraints = RigidbodyConstraints.None;
-            rb.useGravity = true;
-        }
-
-        Growable fruit = obj.GetComponent<Growable>();
-        if (fruit != null)
-        {
-            fruit.chopped = true;
-            obj.transform.localScale = 0.8f * Vector3.one * fruit.maxGrowth;
-        }
-
-        spawnedFood.Add(obj);
     }
 
     void OnTriggerEnter(Collider col)

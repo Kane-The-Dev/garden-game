@@ -4,8 +4,11 @@ using UnityEngine;
 
 public class GardenDecoration : MonoBehaviour
 {
-    [Header("Decoration")]
-    [SerializeField] GameObject[] decorations, immobileDecors, trees;
+    [Header("Prefabs")]
+    [SerializeField] GameObject[] decorations;
+    [SerializeField] GameObject[] immobileDecors, trees;
+
+    [Header("Settings")]
     [SerializeField] LayerMask groundMask, obstacleMask;
     [SerializeField] Vector3 gardenCenter, spawnCenter;
     [SerializeField] float outerRadius;
@@ -114,7 +117,6 @@ public class GardenDecoration : MonoBehaviour
                 }
 
                 decor.transform.localScale *= Random.Range(0.75f, 1.5f);
-                decor.transform.parent = this.transform;
                 decor.GetComponent<SphereCollider>().enabled = true;
                 spawned.Add(decor);
 

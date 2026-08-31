@@ -22,6 +22,7 @@ public class GameManager : MonoBehaviour
     public AudioManager am;
     public FollowMouse mouse;
     public AreYouSure AYSPanel;
+    public DayNightController clock;
 
     [Header("UI Elements")]
     [SerializeField] GameObject gardenTools;
@@ -49,6 +50,7 @@ public class GameManager : MonoBehaviour
         if (!fence) fence = FindObjectOfType<FenceManager>();
         if (!am) am = FindObjectOfType<AudioManager>();
         if (!mouse) mouse = FindObjectOfType<FollowMouse>();
+        if (!clock) clock = FindObjectOfType<DayNightController>();
     }
 
     void Start()

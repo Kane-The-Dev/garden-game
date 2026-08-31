@@ -127,7 +127,8 @@ public class Inventory : MonoBehaviour
         if (slotID > -1)
         {
             // Already assigned to a slot -> refresh that slot
-            InventoryEntry updated = new InventoryEntry(newQuantity, newType, slotID);
+            int newSlotID = newQuantity > 0 ? slotID : -1;
+            InventoryEntry updated = new InventoryEntry(newQuantity, newType, newSlotID);
             myInventory[itemName] = updated;
             myDisplay.RefreshSlot(slotID, itemName, updated);
         }

@@ -29,7 +29,48 @@ public class Constructible : MonoBehaviour
     void Start()
     {
         gm = GameManager.instance;
+
+        myAAS.source.outputAudioMixerGroup = AudioManager.instance.SFXMaster;
+
+        if (buildID == -1) AssignBuildID();
+
         if (!isPreview && myAAS && construct.Length > 0) myAAS.PlayOneShot(construct[0], 1f, true);
+    }
+
+    void AssignBuildID()
+    {
+        if (gm == null || gm.inventory == null || gm.inventory.buildingList == null)
+            return;
+
+        string myName = transform.parent ? 
+            GetCleanName(transform.parent.name) 
+            : GetCleanName(gameObject.name);
+
+        for (int i = 0; i < gm.inventory.buildingList.Count; i++)
+        {
+            Item item = gm.inventory.buildingList[i];
+            if (item == null) continue;
+
+            string itemName = GetCleanName(item.name);
+
+            if (!string.IsNullOrEmpty(myName) 
+                && string.Equals(myName, itemName, System.StringComparison.OrdinalIgnoreCase))
+            {
+                buildID = i;
+                break;
+            }
+        }
+    }
+
+    string GetCleanName(string raw)
+    {
+        if (string.IsNullOrEmpty(raw)) return "";
+
+        string clean = raw;
+        if (clean.EndsWith("(Clone)"))
+            clean = clean.Substring(0, clean.Length - 7);
+
+        return clean.Replace('_', ' ').Trim();
     }
 
     void Update()
@@ -79,15 +120,21 @@ public class Constructible : MonoBehaviour
         chopped = true;
         Shake(3f, 3);
 
-        GameObject model = transform.GetChild(0).gameObject;
+        foreach (Transform child in transform)
+            Destroy(child.gameObject);
+        
+        // destroy root later so VFX can dissolve first
         GameObject root = transform.parent?.gameObject;
-        Destroy(model);
-        if (root != null) Destroy(root, 5f);
+        if (root != null) Destroy(root, 3f);
 
         if (myAAS && demolish.Length > 0) {
             int i = Random.Range(0, demolish.Length);
             myAAS.PlayOneShot(demolish[i], 0.3f, true);
         }
+
+        Inventory inv = gm.inventory;
+        inv.coin += inv.buildingList[buildID].plantPrice / 2;
+        inv.exp += 5f;
     }
 
     void Shaking()

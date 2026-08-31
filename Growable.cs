@@ -10,6 +10,7 @@ public class Growable : MonoBehaviour
     public float timeIndex;
 
     [Header("Tree - Reproduction")]
+    public int treeID = -1;
     public GameObject product;
     public GameObject leaf;
     public Transform[] slots;
@@ -55,15 +56,17 @@ public class Growable : MonoBehaviour
         harvestIndex = 0f;
         chopIndex = 0f;
         transform.localScale = Vector3.one * 0.2f * maxGrowth;
-
-        if (!isProduct && myAAS && plant.Length > 0) {
-            myAAS.PlayOneShot(plant[Random.Range(0, plant.Length)], 1f, true);
-        }
     }
 
     void Start()
     {
         gm = GameManager.instance;
+
+        myAAS.source.outputAudioMixerGroup = AudioManager.instance.SFXMaster;
+
+        if (!isProduct && myAAS && plant.Length > 0) {
+            myAAS.PlayOneShot(plant[Random.Range(0, plant.Length)], 1f, true);
+        }
         
         if (isProduct && growthSpeed != 0) {
             col = GetComponent<Collider>();
@@ -163,7 +166,7 @@ public class Growable : MonoBehaviour
                 }
             }
 
-            float delay = Random.Range(0.15f, 0.3f) / (growthSpeed * multiplier) / timeIndex;
+            float delay = Random.Range(0.5f, 1f) / (growthSpeed * multiplier) / timeIndex;
 
             if (emptySlotIDs.Count == 0)
             {
@@ -205,13 +208,13 @@ public class Growable : MonoBehaviour
 
         if (myAAS && leaves.Length > 0) 
             myAAS.PlayOneShot(leaves[Random.Range(0, leaves.Length)], 1f, true);
-
+        
         float myGrowth = maxGrowth > 0.001f ? (transform.localScale.x / maxGrowth) : 1f;
         GameObject burst = Instantiate(leaf, 
             effectSpawnPoint.position, 
             Quaternion.identity
         );
-        burst.transform.localScale = new Vector3(myGrowth, myGrowth, myGrowth);
+        if (!isOven) burst.transform.localScale = new Vector3(myGrowth, myGrowth, myGrowth);
         
         shakeAmplitude = amplitude;
         shakeDirection = Random.insideUnitCircle.normalized;
@@ -255,7 +258,7 @@ public class Growable : MonoBehaviour
             if (slot.childCount > 0)
             {
                 Growable thisFruit = slot.GetChild(0).GetComponent<Growable>();
-                if (thisFruit && thisFruit.growthIndex >= 0.9 * thisFruit.maxGrowth)
+                if (thisFruit && thisFruit.growthIndex >= 0.95f * thisFruit.maxGrowth)
                 {
                     thisFruit.chopped = true;
                     thisFruit.StartCoroutine(thisFruit.ActivateCollider());
@@ -275,7 +278,7 @@ public class Growable : MonoBehaviour
                     );
                     
                     // update inventory
-                    inventory.exp += 1f;
+                    inventory.exp += 3f;
                     string productName = Inventory.GetProductName(inventory.foodList[thisFruit.productID].name);
                     inventory.AddItemQuantity(productName, 1);
                     inventory.fs.UpdateStorage();
@@ -334,7 +337,7 @@ public class Growable : MonoBehaviour
         }
 
         chopped = true;
-        gm.inventory.exp += 3f;
+        gm.inventory.exp += 10f;
 
         Rigidbody rb = gameObject.GetComponent<Rigidbody>();
         rb.constraints = RigidbodyConstraints.None;

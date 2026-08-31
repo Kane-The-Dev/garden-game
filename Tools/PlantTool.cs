@@ -113,13 +113,13 @@ public class PlantTool : MonoBehaviour
         else Plant(plantID, hit.point, Quaternion.Euler(0f, Random.Range(0f, 180f), 0f));
 
         inventory.AddItemQuantity(plantName, -1);
-        inventory.exp += 12f;
+        inventory.exp += 20f;
         inventory.selection.RefreshPlants();
     }
 
-    public Growable Plant(int ID, Vector3 position, Quaternion rotation, Transform parent = null)
+    public Growable Plant(int ID, Vector3 position, Quaternion rotation, Transform parent = null, int treeType = -1)
     {
-        int treeType = GetTreeType(ID);
+        if (treeType < 0) treeType = GetTreeType(ID);
 
         GameObject newTree = parent
             ? Instantiate(plants[treeType], parent)

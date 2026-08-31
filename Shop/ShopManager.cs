@@ -11,12 +11,11 @@ public class ShopManager : MonoBehaviour
 
     [Header("Display Shelves")]
     [SerializeField] List<ShopItemUI> buttons = new();
-    Dictionary<ShopItem, int> stock = new();
+    public Dictionary<ShopItem, int> stock = new();
     [SerializeField] Transform plantDisplay, bakeryDisplay, buildDisplay;
     [SerializeField] GameObject shopPack, shopCard, displayBar, placeholderBar, displaySection;
     [SerializeField] RectTransform rootLayout;
     public RectTransform shopPanel;
-    [SerializeField] ShopItem[] specialItems; // items that are tools but have infinite stock
 
     [Header("Display Board")]
     public int quantity = 1;
@@ -43,6 +42,8 @@ public class ShopManager : MonoBehaviour
         inventory = gm.inventory;
         inventory.shop = this;
 
+        buttons.AddRange(rootLayout.GetComponentsInChildren<ShopItemUI>());
+
         InitializeShop();
         RefreshShop();
     }
@@ -54,8 +55,6 @@ public class ShopManager : MonoBehaviour
         newShopItem.price = item.plantPrice;
         newShopItem.requirement = item.levelReq;
         newShopItem.description = item.description;
-
-        stock[newShopItem] = 9999;
 
         return newShopItem;
     }
@@ -106,11 +105,6 @@ public class ShopManager : MonoBehaviour
                 if (item.sellPrice > maxP) maxP = item.sellPrice;
                 if (item.weight > maxW) maxW = item.weight;
             }
-        }
-
-        foreach (var upgrade in buttons) // default tools in stock = 1
-        {
-            stock[upgrade.myItem] = 1;
         }
         
         int count = 0;
@@ -183,7 +177,11 @@ public class ShopManager : MonoBehaviour
             count++;
         }
 
-        foreach (var item in specialItems) stock[item] = 9999;
+        foreach (var upgrade in buttons) // default tools in stock = 1
+        {
+            if (upgrade.myItem is not PlantUnlock) stock[upgrade.myItem] = 1;
+            else stock[upgrade.myItem] = 99999;
+        }
 
         RefreshShop();
     }
