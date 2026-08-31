@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using UnityEngine;
 
 [System.Serializable]
@@ -8,6 +9,9 @@ public class GardenSaveData
 {
     public string version;
     public string savedAt;
+    public int daysPassed;
+    public float ingameTime;
+    public int fenceLevel;
     public InventorySaveData inventory;
     public List<GrowableSaveData> growables;
     public List<ConstructibleSaveData> constructibles;
@@ -57,12 +61,40 @@ public class SaveAndLoad : MonoBehaviour
 {
     GameManager gm;
     [SerializeField] List<ToolUnlock> toolUnlocks = new();
+    public string saveFolder = "Saves";
+    public string SaveFolderPath => Path.IsPathRooted(saveFolder) ?
+        saveFolder : Path.Combine(Application.persistentDataPath, saveFolder);
+
+    [Header("Autosave settings")]
+    public string autosavePrefix = "autosave_";
+    public bool autosaveEnabled = true;
+    public float autosaveInterval = 300f;
+    public int maxAutosaves = 10;
+    float autosaveTimer;
+    
+    void Awake()
+    {
+        saveFolder = Path.GetFullPath(Path.Combine(Application.dataPath, "../Saves"));
+    }
 
     void Start()
     {
         gm = GameManager.instance;
+        Directory.CreateDirectory(SaveFolderPath); // make sure the folder exists on first run
     }
 
+    void Update()
+    {
+        if (!autosaveEnabled) return;
+        autosaveTimer += Time.deltaTime;
+        if (autosaveTimer >= autosaveInterval)
+        {
+            autosaveTimer = 0f;
+            Autosave();
+        }
+    }
+
+    // SAVE
     public void SaveGarden(string path)
     {
         if (string.IsNullOrEmpty(path))
@@ -81,7 +113,10 @@ public class SaveAndLoad : MonoBehaviour
         GardenSaveData saveData = new GardenSaveData
         {
             version = gm.version,
-            savedAt = System.DateTime.Now.ToString("yyyy-MM-dd HH-mm-ss")
+            savedAt = System.DateTime.Now.ToString("yyyy-MM-dd HH-mm-ss"),
+            daysPassed = gm.clock.dayCount,
+            ingameTime = gm.clock.time,
+            fenceLevel = gm.fence.myLevel
         };
 
         // 1. Save inventory info
@@ -174,11 +209,19 @@ public class SaveAndLoad : MonoBehaviour
             });
         }
 
-        // 4. Serialize and write to file
+        // 4. Serialize and write to file (atomic: write to temp, then swap in)
         try
         {
             string json = JsonUtility.ToJson(saveData, true);
-            File.WriteAllText(path, json);
+            string tempPath = path + ".tmp";
+
+            File.WriteAllText(tempPath, json);
+
+            if (File.Exists(path))
+                File.Replace(tempPath, path, null);
+            else
+                File.Move(tempPath, path);
+
             Debug.Log($"Garden saved successfully to {path}");
         }
         catch (System.Exception ex)
@@ -187,6 +230,25 @@ public class SaveAndLoad : MonoBehaviour
         }
     }
 
+    IEnumerator MuteTemporarily(float duration)
+    {
+        Settings settings = FindObjectOfType<Settings>();
+        if (settings == null) yield break;
+
+        float originalSFX = settings.SFXVolume;
+        settings.SFXVolume = 0f;
+        settings.ApplyVolumes();
+
+        yield return new WaitForSecondsRealtime(duration);
+
+        if (settings != null)
+        {
+            settings.SFXVolume = originalSFX;
+            settings.ApplyVolumes();
+        }
+    }
+
+    // LOAD
     public void LoadGarden(string path)
     {
         if (string.IsNullOrEmpty(path) || !File.Exists(path))
@@ -194,6 +256,8 @@ public class SaveAndLoad : MonoBehaviour
             Debug.LogError($"Save path '{path}' does not exist!");
             return;
         }
+
+        StartCoroutine(MuteTemporarily(2f));
 
         if (gm == null) gm = GameManager.instance;
         if (gm == null || gm.inventory == null)
@@ -209,6 +273,10 @@ public class SaveAndLoad : MonoBehaviour
             Debug.LogError("Failed to deserialize garden save data!");
             return;
         }
+
+        gm.clock.dayCount = saveData.daysPassed;
+        gm.clock.time = saveData.ingameTime;
+        gm.fence.SetFence(saveData.fenceLevel);
 
         // 1. Restore Inventory
         Inventory inv = gm.inventory;
@@ -240,9 +308,7 @@ public class SaveAndLoad : MonoBehaviour
                     inv.myDisplay.RefreshSlot(slotID, savedItem.name, entry);
                 }
                 else
-                {
                     Debug.LogWarning($"No available slot to display loaded item: {savedItem.name}");
-                }
             }
         }
 
@@ -339,10 +405,10 @@ public class SaveAndLoad : MonoBehaviour
 
                 // Instantiate plant using PlantTool
                 Growable g = plantTool.Plant(
-                    savedTree.plantID, 
-                    savedTree.position, 
-                    savedTree.rotation, 
-                    ovenParent, 
+                    savedTree.plantID,
+                    savedTree.position,
+                    savedTree.rotation,
+                    ovenParent,
                     savedTree.treeID
                 );
                 if (g != null)
@@ -373,6 +439,82 @@ public class SaveAndLoad : MonoBehaviour
                 }
             }
         }
+    }
+
+    // READ, RENAME, DELETE
+    public Dictionary<string, GardenSaveData> GetAllSaves()
+    {
+        var result = new Dictionary<string, GardenSaveData>();
+
+        if (!Directory.Exists(SaveFolderPath))
+            return result;
+
+        foreach (string path in Directory.GetFiles(SaveFolderPath, "*.json"))
+        {
+            try
+            {
+                string json = File.ReadAllText(path);
+                GardenSaveData data = JsonUtility.FromJson<GardenSaveData>(json);
+                if (data != null)
+                    result[path] = data;
+            }
+            catch (System.Exception ex)
+            {
+                Debug.LogWarning($"Skipping corrupt save file {path}: {ex.Message}");
+            }
+        }
+
+        return result;
+    }
+
+    public bool DeleteSave(string path)
+    {
+        try
+        {
+            File.Delete(path);
+            return true;
+        }
+        catch (System.Exception ex)
+        {
+            Debug.LogError($"Failed to delete {path}: {ex.Message}");
+            return false;
+        }
+    }
+
+    public bool RenameSave(string oldPath, string newName)
+    {
+        string dir = Path.GetDirectoryName(oldPath);
+        string newPath = Path.Combine(dir, newName + ".json");
+
+        if (File.Exists(newPath))
+        {
+            Debug.LogWarning($"A save named '{newName}' already exists.");
+            return false;
+        }
+
+        try
+        {
+            File.Move(oldPath, newPath);
+            return true;
+        }
+        catch (System.Exception ex)
+        {
+            Debug.LogError($"Failed to rename {oldPath}: {ex.Message}");
+            return false;
+        }
+    }
+
+    // AUTOSAVE
+    public void Autosave()
+    {
+        var autosaves = Directory.GetFiles(SaveFolderPath, autosavePrefix + "*.json")
+            .OrderBy(File.GetLastWriteTime).ToList();
+
+        string path = autosaves.Count >= maxAutosaves
+            ? autosaves[0] // reuse the oldest slot
+            : Path.Combine(SaveFolderPath, autosavePrefix + System.DateTime.Now.ToString("yyyyMMdd_HHmmss") + ".json");
+
+        SaveGarden(path);
     }
 
 #if UNITY_EDITOR
