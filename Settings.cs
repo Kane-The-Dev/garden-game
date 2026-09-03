@@ -208,6 +208,29 @@ public class Settings : MonoBehaviour
         }
     }
 
+    public void CreateSaveVersion()
+    {
+        if (sal == null) sal = FindObjectOfType<SaveAndLoad>();
+        if (sal == null) return;
+
+        string newSaveName = "My Garden";
+        string path = System.IO.Path.Combine(sal.SaveFolderPath, newSaveName + ".json");
+        sal.SaveGarden(path);
+
+        currentPage = 1;
+        RefreshSaves();
+
+        SaveVersion[] allSaves = holder.GetComponentsInChildren<SaveVersion>();
+        foreach (var sv in allSaves)
+        {
+            if (sv.gardenName != null && sv.gardenName.text == newSaveName)
+            {
+                sv.RenameThisVersion();
+                break;
+            }
+        }
+    }
+
     public void RefreshSaves()
     {
         if (sal == null) sal = FindObjectOfType<SaveAndLoad>();

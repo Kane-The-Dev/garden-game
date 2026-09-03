@@ -10,7 +10,14 @@ public class SaveVersion : MonoBehaviour
     // in-game days passed
 
     string filePath;
+    string currentName => gardenName != null ? gardenName.text : Path.GetFileNameWithoutExtension(filePath);
     SaveAndLoad manager;
+    GameManager gm;
+
+    void Start()
+    {
+        gm = GameManager.instance;
+    }
 
     public void Init(string path, GardenSaveData data, SaveAndLoad saveManager)
     {
@@ -37,12 +44,21 @@ public class SaveVersion : MonoBehaviour
             return;
         }
 
-        manager.SaveGarden(filePath);
+        gm.AYSPanel.OpenPanel(
+            "Do you want to save garden to '" + currentName + "'?",
+            (confirmed, _) =>
+            {
+                if (confirmed)
+                {
+                    manager.SaveGarden(filePath);
 
-        string json = File.ReadAllText(filePath);
-        GardenSaveData refreshedData = JsonUtility.FromJson<GardenSaveData>(json);
-        if (refreshedData != null)
-            Refresh(Path.GetFileNameWithoutExtension(filePath), refreshedData);
+                    string json = File.ReadAllText(filePath);
+                    GardenSaveData refreshedData = JsonUtility.FromJson<GardenSaveData>(json);
+                    if (refreshedData != null)
+                        Refresh(Path.GetFileNameWithoutExtension(filePath), refreshedData);
+                }
+            }
+        );
     }
 
     public void LoadThisVersion()
@@ -53,7 +69,14 @@ public class SaveVersion : MonoBehaviour
             return;
         }
 
-        manager.LoadGarden(filePath);
+        gm.AYSPanel.OpenPanel(
+            "Do you want to load garden from '" + currentName + "'?",
+            (confirmed, _) =>
+            {
+                if (confirmed)
+                    manager.LoadGarden(filePath);
+            }
+        );
     }
 
     public void DeleteThisVersion()
@@ -64,11 +87,17 @@ public class SaveVersion : MonoBehaviour
             return;
         }
 
-        if (manager.DeleteSave(filePath))
-            Destroy(gameObject);
+        gm.AYSPanel.OpenPanel(
+            "Do you want to delete '" + currentName + "'?",
+            (confirmed, _) =>
+            {
+                if (confirmed && manager.DeleteSave(filePath))
+                    gm.settings.RefreshSaves();
+            }
+        );
     }
 
-    public void RenameThisVersion(string newName)
+    public void RenameThisVersion()
     {
         if (manager == null || string.IsNullOrEmpty(filePath))
         {
@@ -76,19 +105,49 @@ public class SaveVersion : MonoBehaviour
             return;
         }
 
-        if (string.IsNullOrWhiteSpace(newName))
-        {
-            Debug.LogWarning("Save name can't be empty.");
-            return;
-        }
+        TryRename(currentName, "Rename '" + currentName + "' to:\n'\n'");
+    }
 
-        string dir = Path.GetDirectoryName(filePath);
-        string oldPath = filePath;
+    void TryRename(string currentName, string message)
+    {
+        gm.AYSPanel.OpenPanel(
+            message,
+            (confirmed, newName) =>
+            {
+                if (!confirmed || string.IsNullOrWhiteSpace(newName))
+                    return;
 
-        if (manager.RenameSave(oldPath, newName))
-        {
-            filePath = Path.Combine(dir, newName + ".json");
-            gardenName.text = newName;
-        }
+                // Check for duplicate name among existing saves
+                var allSaves = manager.GetAllSaves();
+                bool nameExists = false;
+                foreach (var path in allSaves.Keys)
+                {
+                    if (Path.GetFileNameWithoutExtension(path).Equals(newName, System.StringComparison.OrdinalIgnoreCase) 
+                        && path != filePath)
+                    {
+                        nameExists = true;
+                        break;
+                    }
+                }
+
+                if (nameExists)
+                {
+                    TryRename(currentName, "Name already exists!\n'\n'");
+                    return;
+                }
+
+                string dir = Path.GetDirectoryName(filePath);
+                string oldPath = filePath;
+
+                if (manager.RenameSave(oldPath, newName))
+                {
+                    filePath = Path.Combine(dir, newName + ".json");
+                    if (gardenName != null) gardenName.text = newName;
+                    gm.settings.RefreshSaves();
+                }
+            },
+            true,
+            currentName
+        );
     }
 }
