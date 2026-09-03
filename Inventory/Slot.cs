@@ -12,6 +12,7 @@ public class Slot : MonoBehaviour,
 
     [Header("Basic Info")]
     public string itemName = string.Empty;
+    public string description = string.Empty;
     public int n = 0; // quantity
     public ItemType type = ItemType.none;
 
@@ -70,11 +71,8 @@ public class Slot : MonoBehaviour,
     {
         SlotID = ID;
         this.manager = manager;
-        if (button == null)
-            button = GetComponent<Button>();
-
-        if (manager && button != null) button.onClick.AddListener(() => manager.SelectSlot(SlotID));
-        if (myGroup && button != null) button.onClick.AddListener(() => myGroup.OnClick(button.gameObject));
+        if (manager) button.onClick.AddListener(() => manager.SelectSlot(SlotID));
+        if (myGroup) button.onClick.AddListener(() => myGroup.OnClick(button.gameObject));
     }
 
     // Update Info
@@ -89,6 +87,7 @@ public class Slot : MonoBehaviour,
     {
         itemName = string.Empty;
         type = ItemType.none;
+        description = string.Empty;
     }
 
     public void SetQuantity(int quantity)

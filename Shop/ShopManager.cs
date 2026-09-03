@@ -98,15 +98,31 @@ public class ShopManager : MonoBehaviour
                 if (item.sellPrice > maxP) maxP = item.sellPrice;
                 if (item.weight > maxW) maxW = item.weight;
             }
-
-            foreach (var item in inventory.buildingList)
-            {
-                if (item.growthSpeed > maxGS) maxGS = item.growthSpeed;
-                if (item.sellPrice > maxP) maxP = item.sellPrice;
-                if (item.weight > maxW) maxW = item.weight;
-            }
         }
         
+        // Update current shop items before spawning new ones using buildingList
+        if (inventory != null && inventory.buildingList != null)
+        {
+            foreach (var button in buttons)
+            {
+                if (button == null || button.myItem == null) continue;
+
+                string buttonItemName = button.myItem.itemName != null ? button.myItem.itemName.Replace('_', ' ').Trim() : "";
+
+                Item matchingBuilding = inventory.buildingList.FirstOrDefault(b =>
+                    b.name != null && b.name.Replace('_', ' ').Trim().Equals(buttonItemName, StringComparison.OrdinalIgnoreCase)
+                );
+
+                if (matchingBuilding != null)
+                {
+                    button.myItem.price = matchingBuilding.plantPrice;
+                    button.myItem.requirement = matchingBuilding.levelReq;
+                    button.myItem.description = matchingBuilding.description;
+                    button.Refresh();
+                }
+            }
+        }
+
         int count = 0;
         Transform thisRow = null;
 
@@ -164,7 +180,7 @@ public class ShopManager : MonoBehaviour
         // generate dynamic shop items for buildings
         foreach (var item in inventory.buildingList.OrderBy(f => f.levelReq)) 
         {
-            if (item.type == "Other") continue;
+            if (item.type != "Decor") continue;
 
             PlantUnlock newShopItem = CreateShopItem(item);
             newShopItem.type = ItemType.build;
@@ -333,7 +349,7 @@ public class ShopManager : MonoBehaviour
         {
             gm.AYSPanel.OpenPanel(
                 "Do you want to buy " + quantity + " " + myItem.itemName + " for " + totalPrice + "G?",
-                (result) => { if (result) Purchase(); }
+                (confirmed, _) => { if (confirmed) Purchase(); }
             );
         }
         else Purchase();

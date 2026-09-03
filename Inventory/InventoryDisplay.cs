@@ -11,7 +11,7 @@ public class InventoryDisplay : MonoBehaviour
     [Header("Display")]
     [SerializeField] GameObject storagePanel;
     // separate item name displays for board and mouse follow
-    [SerializeField] TextMeshProUGUI itemName_Board, itemName_Mouse; 
+    [SerializeField] TextMeshProUGUI itemName_Board, itemName_Mouse, itemDescription; 
     [SerializeField] Animator itemNameAnimator;
     [SerializeField] Sprite tempIcon;
 
@@ -204,24 +204,35 @@ public class InventoryDisplay : MonoBehaviour
         if (slots == null || ID < 0 || ID >= slots.Length || slots[ID] == null) return;
 
         selectedSlotID = ID;
+
+        // Update board and assign item to PlantManager
+        Slot slot = slots[ID];
+        bool hasItem = !string.IsNullOrEmpty(slot.itemName);
+
+        itemName_Board.text = hasItem ? slot.itemName : "";
+
         if (ID < maxHotbarCount)
         {
             lastHotbarID = ID;
-            if (!string.IsNullOrEmpty(slots[ID].itemName))
-            {
-                itemName_Board.text = slots[ID].itemName;
-                gm.pm.ChangeTool(slots[ID].type, slots[ID].itemName);
-            }
-            else
-                gm.pm.ChangeTool(ItemType.none, "");
+            gm.pm.ChangeTool(hasItem ? slot.type : ItemType.none, hasItem ? slot.itemName : "");
         }
-        else
+
+        if (!hasItem) return;
+
+        // Fetch and cache description on first selection
+        if (!string.IsNullOrEmpty(slot.description))
         {
-            if (!string.IsNullOrEmpty(slots[ID].itemName))
-                itemName_Board.text = slots[ID].itemName;
-            else
-                itemName_Board.text = "";
+            itemDescription.text = slot.description;
+            return;
         }
+
+        string lookupName = slot.itemName.Replace('_', ' ');
+        Item item = inventory.foodList.Find(x => x.name == lookupName)
+                 ?? inventory.buildingList.Find(x => x.name == lookupName)
+                 ?? inventory.foodList.Find(x => Inventory.GetProductName(x.name) == lookupName);
+
+        slot.description = item?.description ?? "";
+        itemDescription.text = slot.description;
     }
 
     private void SwapSlots(int a, int b)
@@ -237,12 +248,15 @@ public class InventoryDisplay : MonoBehaviour
 
         Sprite iconA = slots[a].iconImage.sprite;
         int quantityA = slots[a].n;
+        string descriptionA = slots[a].description;
 
         slots[a].SetIcon(slots[b].iconImage.sprite);
         slots[a].SetQuantity(slots[b].n);
+        slots[a].description = slots[b].description;
 
         slots[b].SetIcon(iconA);
         slots[b].SetQuantity(quantityA);
+        slots[b].description = descriptionA;
 
         // Keep myInventory's slotID values in sync after the swap
         if (inventory != null)

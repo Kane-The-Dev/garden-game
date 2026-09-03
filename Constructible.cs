@@ -30,7 +30,7 @@ public class Constructible : MonoBehaviour
     {
         gm = GameManager.instance;
 
-        myAAS.source.outputAudioMixerGroup = AudioManager.instance.SFXMaster;
+        if (myAAS) myAAS.source.outputAudioMixerGroup = AudioManager.instance.SFXMaster;
 
         if (buildID == -1) AssignBuildID();
 

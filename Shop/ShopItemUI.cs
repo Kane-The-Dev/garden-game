@@ -31,7 +31,7 @@ public class ShopItemUI : MonoBehaviour
 
         if (!icon || !myItem) return;
 
-        // Some items use the product icon (e.g. "Apple"), not the seed icon ("Apple Seed")
+        // Some items use the product icon ("Apple"), not the seed icon ("Apple Seed")
         string iconName = Inventory.GetProductName(myItem.itemName);
         SetIcon(ReadFile.LoadIconSprite(iconName));
     }
