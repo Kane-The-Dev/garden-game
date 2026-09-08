@@ -331,6 +331,7 @@ public class SaveAndLoad : MonoBehaviour
 
         inv.shop.RefreshShop();
         inv.selection.RefreshPlants();
+        inv.fs.UpdateStorage();
 
         // 2. Clear existing active growables and constructibles
         Growable[] activeGrowables = FindObjectsOfType<Growable>();

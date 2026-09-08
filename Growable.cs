@@ -14,15 +14,19 @@ public class Growable : MonoBehaviour
     [Header("Tree - Reproduction")]
     public int treeID = -1;
     public GameObject product;
-    public GameObject leaf;
     public Transform[] slots;
     public bool reproductive = false;
     public int fruitCount;
+    public Stat blockedSlotCount = new Stat(2);
+    [SerializeField] int maxFruitCount => slots.Length - Mathf.RoundToInt(blockedSlotCount.Value);
+
+    [Header("Harvest")]
+    public GameObject leaf;
     public float harvestIndex;
     [SerializeField] float harvestForce;
     [SerializeField] Transform harvestPoint;
     public float harvestRange; // for auto-harvester use
-    int maxFruitCount => slots.Length;
+    
 
     [Header("Tree - Removal")]
     public bool chopped = false;

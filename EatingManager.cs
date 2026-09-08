@@ -9,14 +9,17 @@ public class EatingManager : MonoBehaviour
     [Header("Food Dropping")]
     List<GameObject> spawnedFood = new List<GameObject>();
     public Queue<int> q;
-    [SerializeField] float delay, timer, cooldown;
-    public float totalWeight, maxWeight, cooldownTimer;
+    [SerializeField] float delay, timer;
+    public float totalWeight, cooldownTimer;
+    public Stat maxWeight = new Stat(30f), cooldown = new Stat(120f);
     public int accumulatedStonks, accumulatedExp;
 
     [Header("Truck")]
     [SerializeField] GameObject truck_kun;
     public GameObject myTruck;
     public Transform drop;
+    public Stat truckCount = new Stat(1);
+    public int truckLeft;
     
     [Header("Audio")]
     [SerializeField] AudioSource cashier;
@@ -32,11 +35,16 @@ public class EatingManager : MonoBehaviour
     Rigidbody rb;
     GameManager gm;
 
-    void Start()
+    void Awake()
     {
         timer = 0f; 
         delay = 0.2f;
         q = new Queue<int>();
+        truckLeft = Mathf.RoundToInt(truckCount.Value);
+    }
+
+    void Start()
+    {
         rb = GetComponent<Rigidbody>();
         gm = GameManager.instance;
         SpawnTruck();
@@ -44,28 +52,35 @@ public class EatingManager : MonoBehaviour
 
     void Update()
     {
-        if (timer > 0f) timer -= Time.deltaTime;
-        else
+        if (q.Count > 0)
         {
-            timer = delay;
-            if (q.Count > 0) 
+            if (timer > 0f) 
+                timer -= Time.deltaTime;
+            else
             {
+                timer = delay;
                 SpawnFood(q.Dequeue());
             }
         }
 
         if (cooldownTimer > 0) {
-            if (infoBoard) infoBoard.text = "Truck will be back after " + cooldownTimer.ToString("F0");
+            if (infoBoard) 
+                infoBoard.text = "Truck will be back after " + cooldownTimer.ToString("F0");
+
             cooldownTimer -= Time.deltaTime * GameManager.instance.timeControl;
         }
+
         if (myTruck == null && cooldownTimer <= 0) {
-            if (infoBoard) infoBoard.text = "Sell your stock here!";
+            if (infoBoard) 
+                infoBoard.text = "Sell your stock here!";
+            
             SpawnTruck();
         }
+
         if (stonksDisplay) stonksDisplay.text = accumulatedStonks + "G";
 
         if (weightNeedle) {
-            float targetRotZ = -139f + 98f * totalWeight / maxWeight;
+            float targetRotZ = -140f + 100f * totalWeight / maxWeight.Value;
             Quaternion targetRot = Quaternion.Euler(0f, 0f, targetRotZ);
             weightNeedle.rotation = Quaternion.Lerp(weightNeedle.rotation, targetRot, 5f * Time.deltaTime);
         }
@@ -73,6 +88,7 @@ public class EatingManager : MonoBehaviour
 
     void SpawnTruck()
     {
+        truckLeft--;
         GameObject thisTruck = Instantiate(truck_kun, transform.position, transform.rotation);
         myTruck = thisTruck;
         drop = myTruck.transform.GetChild(5);
@@ -135,8 +151,6 @@ public class EatingManager : MonoBehaviour
             return;
         }
 
-        cooldownTimer = cooldown;
-
         cashier.PlayOneShot(cashIn);
         engine.PlayOneShot(starting);
         foreach(GameObject obj in spawnedFood)
@@ -166,9 +180,19 @@ public class EatingManager : MonoBehaviour
     {
         Vector3 moveDir = transform.forward * 2000f + Vector3.up * 500f;
         rb.AddForce(moveDir * (1 + totalWeight * 0.2f), ForceMode.Impulse);
-        Debug.Log("Your force is " + (moveDir * (1 + totalWeight * 0.5f)));
+
         foreach(GameObject obj in spawnedFood) Destroy(obj, 10f);
         spawnedFood.Clear();
+
+        if (truckLeft > 1) {
+            truckLeft--;
+            cooldownTimer = 15f; // quick cooldown if substitute available
+        }
+        else {
+            truckLeft = Mathf.RoundToInt(truckCount.Value);
+            cooldownTimer = cooldown.Value;
+        }
+        
         Destroy(myTruck, 10f);
         myTruck = null;
     }

@@ -151,9 +151,15 @@ public class PlantTool : MonoBehaviour
 
         List<Modifier> specificMods = g.isOven ? research.ovenGrowthMods : research.plantGrowthMods;
         foreach (Modifier mod in specificMods)
-            g.growthSpeed.AddModifier(mod);
+            g.growthSpeed.AddModifier(mod);  
 
-        if (!g.isOven) g.maxGrowth *= Random.Range(0.85f, 1f);
+        if (!g.isOven) {
+            g.maxGrowth *= Random.Range(0.85f, 1f);
+
+            foreach (Modifier mod in research.fruitCountMods)
+                g.blockedSlotCount.AddModifier(mod);
+        }
+        else g.blockedSlotCount.baseValue = 0;
 
         GameObject productPrefab = inventory.LoadProductPrefab(item.name);
         if (productPrefab != null) g.product = productPrefab;

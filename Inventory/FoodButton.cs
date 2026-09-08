@@ -48,7 +48,7 @@ public class FoodButton : MonoBehaviour
             return;
         }
 
-        if (eater.totalWeight + quantity * inventory.foodList[productID].weight > eater.maxWeight) 
+        if (eater.totalWeight + quantity * inventory.foodList[productID].weight > eater.maxWeight.Value) 
         {
             gm.mouse.myEffect.Burst("Overloaded!");
             Debug.Log("Truck is overloaded!");

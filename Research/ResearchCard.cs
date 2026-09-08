@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using TMPro;
 
 public class ResearchCard : MonoBehaviour
 {
@@ -12,7 +13,18 @@ public class ResearchCard : MonoBehaviour
     public bool isUnlocked = false, isPurchased = false;
     [SerializeField] int price;
     [SerializeField] GameObject connector, lockIcon, purchaseIcon, details;
+    [SerializeField] TextMeshProUGUI myText;
     ResearchCenter manager;
+
+    // for editor
+    void OnValidate()
+    {
+        gameObject.name = myType.ToString();
+        string sign = buffAmount > 0 ? "+" : "";
+        if (myText == null) return;
+        if (modType == ModType.Flat) myText.text = $"{myType} {sign}{Mathf.RoundToInt(buffAmount)}";
+        else if (modType == ModType.PercentAdd) myText.text = $"{myType} {sign}{Mathf.RoundToInt(buffAmount * 100)}%";
+    }
 
     void Awake() 
     {
@@ -60,7 +72,18 @@ public class ResearchCard : MonoBehaviour
 
     public void OpenDetails()
     {
-        details.SetActive(!details.activeSelf);
+        if (!details.activeSelf) 
+        {
+            details.SetActive(true);
+            details.transform.SetParent(transform.parent);
+            details.transform.SetAsLastSibling();
+        }
+        else 
+        {
+            details.SetActive(false);
+            details.transform.SetParent(transform);
+            details.transform.SetAsLastSibling();
+        }
     }
 
     public void OnUnlock()
@@ -74,17 +97,45 @@ public class ResearchCard : MonoBehaviour
         
         isPurchased = true;
         purchaseIcon.SetActive(true);
+        OpenDetails();
 
         switch (myType)
         {
             case ResearchType.growth_G:
-                manager.ApplyGeneralGrowth(new Modifier(manager, ModType.PercentAdd, buffAmount, -1f));
+                manager.ApplyGeneralGrowth(new Modifier(manager, modType, buffAmount, -1f));
                 break;
             case ResearchType.growth_P:
-                manager.ApplyPlantGrowth(new Modifier(manager, ModType.PercentAdd, buffAmount, -1f));
+                manager.ApplyPlantGrowth(new Modifier(manager, modType, buffAmount, -1f));
                 break;
             case ResearchType.growth_O:
-                manager.ApplyOvenGrowth(new Modifier(manager, ModType.PercentAdd, buffAmount, -1f));
+                manager.ApplyOvenGrowth(new Modifier(manager, modType, buffAmount, -1f));
+                break;
+            case ResearchType.profit_G:
+                manager.ApplyGeneralProfit(new Modifier(manager, modType, buffAmount, -1f));
+                break;
+            case ResearchType.profit_P:
+                manager.ApplyPlantProfit(new Modifier(manager, modType, buffAmount, -1f));
+                break;
+            case ResearchType.profit_O:
+                manager.ApplyOvenProfit(new Modifier(manager, modType, buffAmount, -1f));
+                break;
+            case ResearchType.goldFruit:
+                manager.ApplyGoldenFruit(new Modifier(manager, modType, buffAmount, -1f));
+                break;
+            case ResearchType.windChance:
+                manager.ApplyWindChance(new Modifier(manager, modType, buffAmount, -1f));
+                break;
+            case ResearchType.fruitCount:
+                manager.ApplyFruitCount(new Modifier(manager, modType, -buffAmount, -1f));
+                break;
+            case ResearchType.truckWeight:
+                manager.ApplyTruckWeight(new Modifier(manager, modType, buffAmount, -1f));
+                break;
+            case ResearchType.truckCooldown:
+                manager.ApplyTruckCooldown(new Modifier(manager, modType, buffAmount, -1f));
+                break;
+            case ResearchType.truckCount:
+                manager.ApplyTruckCount(new Modifier(manager, modType, buffAmount, -1f));
                 break;
         }
     }
