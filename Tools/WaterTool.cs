@@ -4,7 +4,7 @@ public class WaterTool : MonoBehaviour
 {
     float maxDistance = 100f;
     [SerializeField] ParticleSystem waterVFX;
-    [SerializeField] float radius, multiplier;
+    [SerializeField] float radius, multiplier, timer;
     [SerializeField] AdvancedAudioSource myAAS;
 
     public void StartWater()
@@ -45,14 +45,21 @@ public class WaterTool : MonoBehaviour
                 QueryTriggerInteraction.Collide
             );
 
+            if (timer < 0.5f)
+            {
+                timer += Time.deltaTime;
+                return;
+            }
+            
             foreach (Collider p in hits)
             {
                 Growable tree = p.GetComponent<Growable>();
                 if (tree != null)
                 {
-                    tree.multiplier = multiplier;
+                    tree.growthSpeed.AddModifier(new Modifier(this, ModType.PercentAdd, multiplier - 1f, 0.5f));
                 }
             }
+            timer = 0f;
         }
         else
         {

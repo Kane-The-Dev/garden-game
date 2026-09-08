@@ -4,10 +4,12 @@ using UnityEngine;
 
 public class Growable : MonoBehaviour
 {
+    public float timeIndex;
+
     [Header("Growth")]
     public float maxGrowth;
-    public float growthIndex, growthSpeed = 1f, multiplier, subMultiplier;
-    public float timeIndex;
+    public float growthIndex;
+    public Stat growthSpeed = new Stat(1f);
 
     [Header("Tree - Reproduction")]
     public int treeID = -1;
@@ -20,6 +22,7 @@ public class Growable : MonoBehaviour
     [SerializeField] float harvestForce;
     [SerializeField] Transform harvestPoint;
     public float harvestRange; // for auto-harvester use
+    int maxFruitCount => slots.Length;
 
     [Header("Tree - Removal")]
     public bool chopped = false;
@@ -51,8 +54,6 @@ public class Growable : MonoBehaviour
     void Awake()
     {
         growthIndex = 0.2f;
-        multiplier = 1f;
-        subMultiplier = 1f;
         harvestIndex = 0f;
         chopIndex = 0f;
         transform.localScale = Vector3.one * 0.2f * maxGrowth;
@@ -68,7 +69,7 @@ public class Growable : MonoBehaviour
             myAAS.PlayOneShot(plant[Random.Range(0, plant.Length)], 1f, true);
         }
         
-        if (isProduct && growthSpeed != 0) {
+        if (isProduct && growthSpeed.Value != 0) {
             col = GetComponent<Collider>();
             col.isTrigger = true;
         }
@@ -132,15 +133,9 @@ public class Growable : MonoBehaviour
 
     void Growing()
     {
-        if (multiplier > 1f)
-        multiplier -= Time.deltaTime * timeIndex;
-
-        if (subMultiplier > 1f)
-        subMultiplier -= Time.deltaTime * timeIndex;
-
         if (growthIndex < maxGrowth && !chopped)
         {  
-            growthIndex += Time.deltaTime * timeIndex * maxGrowth * growthSpeed * multiplier * subMultiplier;
+            growthIndex += Time.deltaTime * timeIndex * maxGrowth * growthSpeed.Value;
             transform.localScale = Vector3.one * growthIndex;
         }
         else if (!isProduct && !reproductive)
@@ -166,9 +161,9 @@ public class Growable : MonoBehaviour
                 }
             }
 
-            float delay = Random.Range(0.5f, 1f) / (growthSpeed * multiplier) / timeIndex;
+            float delay = Random.Range(0.5f, 1f) / growthSpeed.Value / timeIndex;
 
-            if (emptySlotIDs.Count == 0)
+            if (emptySlotIDs.Count == 0 || fruitCount >= maxFruitCount)
             {
                 yield return new WaitForSeconds(delay);
                 continue;
@@ -192,7 +187,7 @@ public class Growable : MonoBehaviour
         var newFruit = newProduct.GetComponent<Growable>();
         if (newFruit != null)
         {
-            newFruit.growthSpeed = growthSpeed;
+            newFruit.growthSpeed.baseValue = growthSpeed.Value;
             newFruit.productID = productID;
             newFruit.wiggleOffset = Random.Range(0f, Mathf.PI * 2f);
             newFruit.wiggleAmplitude = Random.Range(4f, 5f);

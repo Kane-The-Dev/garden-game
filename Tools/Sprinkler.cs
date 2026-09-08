@@ -41,7 +41,7 @@ public class Sprinkler : MonoBehaviour
             {
                 Growable tree = p.GetComponent<Growable>();
                 if (tree != null) {
-                    tree.subMultiplier = 1 + bonus;
+                    tree.growthSpeed.AddModifier(new Modifier(this, ModType.PercentAdd, bonus, 0.5f));
                 }
             }
         }

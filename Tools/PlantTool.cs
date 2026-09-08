@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public class PlantTool : MonoBehaviour
@@ -8,6 +9,7 @@ public class PlantTool : MonoBehaviour
     [SerializeField] float[] plantRadius;
     Color currentColor;
     [SerializeField] Color valid, notValid;
+    [SerializeField] Material gold;
     Renderer ringRender;
     Collider[] overlapResults = new Collider[16];
     Transform validOven;
@@ -23,12 +25,18 @@ public class PlantTool : MonoBehaviour
     int GetTreeType(int ID = -1)
     {
         if (ID < 0) ID = plantID;
+
         string type = inventory.foodList[ID].type;
-        if (type == "Tree")   return Random.Range(0, 2);
-        if (type == "Pine")   return 2;
-        if (type == "Bush")   return Random.Range(3, 5);
-        if (type == "Ground") return 5;
-        if (type == "Oven")   return 6;
+        if (type == "Tree")
+            return Random.Range(0, 2);
+        if (type == "Pine")   
+            return 2;
+        if (type == "Bush")   
+            return Random.Range(3, 5);
+        if (type == "Ground") 
+            return 5;
+        if (type == "Oven")   
+            return 6;
         return -1;
     }
 
@@ -131,16 +139,24 @@ public class PlantTool : MonoBehaviour
         if (parent) parent.GetComponentInChildren<FollowTransform>().target = g.transform;
 
         Item item = inventory.foodList[ID];
-        g.growthSpeed = item.growthSpeed;
+        g.growthSpeed.baseValue = item.growthSpeed;
         g.productID = ID;
         g.isOven = IsOven(ID);
+        g.wiggleOffset = Random.Range(0f, 90f);
+        g.wiggleAmplitude *= Random.Range(4f, 5f);
+
+        ResearchCenter research = GameManager.instance.research;
+        foreach (Modifier mod in research.generalGrowthMods)
+            g.growthSpeed.AddModifier(mod);
+
+        List<Modifier> specificMods = g.isOven ? research.ovenGrowthMods : research.plantGrowthMods;
+        foreach (Modifier mod in specificMods)
+            g.growthSpeed.AddModifier(mod);
+
         if (!g.isOven) g.maxGrowth *= Random.Range(0.85f, 1f);
 
         GameObject productPrefab = inventory.LoadProductPrefab(item.name);
         if (productPrefab != null) g.product = productPrefab;
-
-        g.wiggleOffset = Random.Range(0f, 90f);
-        g.wiggleAmplitude *= Random.Range(4f, 5f);
 
         return g;
     }
