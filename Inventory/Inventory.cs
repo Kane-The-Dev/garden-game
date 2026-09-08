@@ -60,7 +60,6 @@ public class Inventory : MonoBehaviour
     [SerializeField] bool saveToPersistentDataPath = true;
 
     // Helper functions
-
     public static string GetProductName(string name)
     {
         if (string.IsNullOrEmpty(name)) return string.Empty;

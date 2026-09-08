@@ -3,6 +3,10 @@ using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
+
 public class IconGenerator : MonoBehaviour
 {
     [Header("Prefabs")]
@@ -43,8 +47,7 @@ public class IconGenerator : MonoBehaviour
         captureCamera.targetTexture = renderTexture;
         captureCamera.clearFlags = CameraClearFlags.SolidColor;
 
-        // Always render with an opaque black background.
-        // We'll remove it later.
+        // Pre-render with an opaque black background and remove it later.
         captureCamera.backgroundColor = Color.black;
 
         foreach (GameObject obj in prefabs)
@@ -55,17 +58,6 @@ public class IconGenerator : MonoBehaviour
             Debug.Log("Preparing " + obj.name);
 
             obj.SetActive(true);
-
-            // Disable leftover scripts
-            foreach (Growable growable in obj.GetComponentsInChildren<Growable>(true))
-            {
-                growable.enabled = false;
-            }
-
-            foreach (Constructible constructible in obj.GetComponentsInChildren<Constructible>(true))
-            {
-                constructible.enabled = false;
-            }
 
             // Wait a few frames so Outline initializes
             yield return new WaitForSeconds(0.2f);
@@ -144,4 +136,64 @@ public class IconGenerator : MonoBehaviour
 
         Debug.Log($"Saved icon: {path}");
     }
+
+    // Toggle Read/Write on off to prepare the model for capture
+#if UNITY_EDITOR
+    [ContextMenu("Toggle Readable On")]
+    public void ToggleReadableOn()
+    {
+        SetModelsReadable(true);
+    }
+
+    [ContextMenu("Toggle Readable Off")]
+    public void ToggleReadableOff()
+    {
+        SetModelsReadable(false);
+    }
+
+    void SetModelsReadable(bool readable)
+    {
+        HashSet<string> paths = new HashSet<string>();
+
+        foreach (GameObject obj in prefabs)
+        {
+            if (obj == null)
+                continue;
+
+            foreach (MeshFilter mf in obj.GetComponentsInChildren<MeshFilter>(true))
+            {
+                if (mf.sharedMesh != null)
+                {
+                    string p = AssetDatabase.GetAssetPath(mf.sharedMesh);
+                    if (!string.IsNullOrEmpty(p))
+                        paths.Add(p);
+                }
+            }
+
+            foreach (SkinnedMeshRenderer smr in obj.GetComponentsInChildren<SkinnedMeshRenderer>(true))
+            {
+                if (smr.sharedMesh != null)
+                {
+                    string p = AssetDatabase.GetAssetPath(smr.sharedMesh);
+                    if (!string.IsNullOrEmpty(p))
+                        paths.Add(p);
+                }
+            }
+        }
+
+        foreach (string path in paths)
+        {
+            ModelImporter importer = AssetImporter.GetAtPath(path) as ModelImporter;
+            if (importer == null)
+                continue;
+
+            importer.isReadable = readable;
+            importer.SaveAndReimport();
+
+            Debug.Log($"Set Read/Write = {readable} on model: {path}");
+        }
+
+        AssetDatabase.Refresh();
+    }
+#endif
 }

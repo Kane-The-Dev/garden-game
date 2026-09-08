@@ -99,7 +99,7 @@ public class CameraMovement : MonoBehaviour
         Vector3 projectedForward = Vector3.ProjectOnPlane(transform.forward, Vector3.up).normalized;
         Vector3 projectedRight = Vector3.ProjectOnPlane(transform.right, Vector3.up).normalized;
 
-        Vector3 moveDirection = (projectedForward * inputDirection.z + projectedRight * inputDirection.x);
+        Vector3 moveDirection = projectedForward * inputDirection.z + projectedRight * inputDirection.x;
         Vector3 targetVelocity = moveDirection * speed * factor;
 
         if (inputDirection.sqrMagnitude > 0.001f)

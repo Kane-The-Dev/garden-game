@@ -87,11 +87,13 @@ public class Settings : MonoBehaviour
         currentPage = 1;
         RefreshSaves();
         gm.UIAnimator.SetTrigger("opensettings");
+        gm.cam.movable = false;
     }
 
     public void CloseSettings()
     {
         gm.UIAnimator.SetTrigger("closesettings");
+        gm.cam.movable = true;
     }
 
     public void ChangeMainVolume(float value)
