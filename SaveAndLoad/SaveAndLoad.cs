@@ -184,7 +184,15 @@ public class SaveAndLoad : MonoBehaviour
                     if (g.slots[i] != null && g.slots[i].childCount > 0)
                     {
                         Growable fruit = g.slots[i].GetChild(0).GetComponent<Growable>();
-                        slotGrowthIndices.Add(fruit != null ? fruit.growthIndex : 0f);
+                        if (fruit != null)
+                        {
+                            float index = fruit.growthIndex;
+                            if (fruit.isGolden) index = -index;
+                            // Debug.Log("New index is " + index + ", golden is " + fruit.isGolden);
+                            slotGrowthIndices.Add(index);
+                        }
+                        else
+                            slotGrowthIndices.Add(0f);
                     }
                     else
                         slotGrowthIndices.Add(0f);
@@ -427,13 +435,16 @@ public class SaveAndLoad : MonoBehaviour
                         for (int i = 0; i < savedTree.slotGrowthIndices.Count; i++)
                         {
                             float savedGrowth = savedTree.slotGrowthIndices[i];
-                            if (savedGrowth <= 0f) continue; // empty slot
+                            if (Mathf.Approximately(savedGrowth, 0f)) continue; // empty slot
 
-                            Growable newFruit = g.GrowFruitAtSlot(i);
+                            bool isGolden = savedGrowth < 0f;
+                            float actualGrowth = Mathf.Abs(savedGrowth);
+
+                            Growable newFruit = g.GrowFruitAtSlot(i, isGolden);
                             if (newFruit != null)
                             {
-                                newFruit.growthIndex = savedGrowth;
-                                newFruit.transform.localScale = Vector3.one * savedGrowth;
+                                newFruit.growthIndex = actualGrowth;
+                                newFruit.transform.localScale = Vector3.one * actualGrowth;
                             }
                         }
                     }

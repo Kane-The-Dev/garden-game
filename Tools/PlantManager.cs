@@ -3,6 +3,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using TMPro;
+using Unity.VisualScripting;
 
 
 
@@ -18,7 +19,8 @@ public class PlantManager : MonoBehaviour
     [SerializeField] Color defaultRingColor;
 
     [Header("Layer Masks")]
-    [SerializeField] LayerMask plantMask, groundMask, fruitMask, obstacleMask;
+    [SerializeField] LayerMask plantMask;
+    [SerializeField] LayerMask groundMask, fruitMask, obstacleMask;
     
     
     [Header("Tools")]
@@ -32,10 +34,11 @@ public class PlantManager : MonoBehaviour
     public Dictionary<string, GameObject> myHarvestTools = new();
     public Dictionary<string, GameObject> myChopTools = new();
 
-    [Header("UI")]
-    [SerializeField] Button[] modes = new Button[5];
-    [SerializeField] Animator optionsAnimator;
+    [Header("Other")]
+    // [SerializeField] Button[] modes = new Button[5];
+    // [SerializeField] Animator optionsAnimator;
     [SerializeField] TextMeshProUGUI gameTip;
+    public Material gold;
     
     void Start()
     {
@@ -181,24 +184,22 @@ public class PlantManager : MonoBehaviour
                     gameTip.text = "RMB to Plant";
                 else 
                     gameTip.text = "Select a Plant";
-
-                if (optionsAnimator) optionsAnimator.SetTrigger("plant");
+                // if (optionsAnimator) optionsAnimator.SetTrigger("plant");
                 break;
             case 1:
                 if (buildTool.buildID >= 0) 
                     gameTip.text = "E/R to Rotate\nRMB to Build";
                 else
                     gameTip.text = "Select a Building";
-
-                if (optionsAnimator) optionsAnimator.SetTrigger("build");
+                // if (optionsAnimator) optionsAnimator.SetTrigger("build");
                 break;
             case -1:
                 gameTip.text = "";
-                if (optionsAnimator) optionsAnimator.SetTrigger("close");
+                // if (optionsAnimator) optionsAnimator.SetTrigger("close");
                 break;
             default:
                 gameTip.text = "RMB + Hold to Start";
-                if (optionsAnimator) optionsAnimator.SetTrigger("close");
+                // if (optionsAnimator) optionsAnimator.SetTrigger("close");
                 break;
         }
     }

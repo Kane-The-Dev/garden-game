@@ -141,6 +141,7 @@ public class PlantTool : MonoBehaviour
         Item item = inventory.foodList[ID];
         g.growthSpeed.baseValue = item.growthSpeed;
         g.productID = ID;
+        g.treeID = treeType;
         g.isOven = IsOven(ID);
         g.wiggleOffset = Random.Range(0f, 90f);
         g.wiggleAmplitude *= Random.Range(4f, 5f);
@@ -155,6 +156,9 @@ public class PlantTool : MonoBehaviour
 
         if (!g.isOven) {
             g.maxGrowth *= Random.Range(0.85f, 1f);
+
+            foreach (Modifier mod in research.goldenFruitMods)
+                g.goldenChance.AddModifier(mod);
 
             foreach (Modifier mod in research.fruitCountMods)
                 g.blockedSlotCount.AddModifier(mod);

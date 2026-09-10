@@ -63,6 +63,8 @@ public class Inventory : MonoBehaviour
             return name.Substring(0, name.Length - 5);
         if (name.EndsWith(" Pack", System.StringComparison.OrdinalIgnoreCase))
             return name.Substring(0, name.Length - 5);
+        if (name.StartsWith("Golden ", System.StringComparison.OrdinalIgnoreCase))
+            name = name.Substring(7);
         return name;
     }
 

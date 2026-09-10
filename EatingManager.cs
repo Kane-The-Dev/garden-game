@@ -4,11 +4,24 @@ using System.Linq;
 using UnityEngine;
 using TMPro;
 
+[System.Serializable]
+public struct FoodDropRequest
+{
+    public int ID;
+    public bool isGolden;
+
+    public FoodDropRequest(int ID, bool isGolden = false)
+    {
+        this.ID = ID;
+        this.isGolden = isGolden;
+    }
+}
+
 public class EatingManager : MonoBehaviour
 {
     [Header("Food Dropping")]
     List<GameObject> spawnedFood = new List<GameObject>();
-    public Queue<int> q;
+    public Queue<FoodDropRequest> q;
     [SerializeField] float delay, timer;
     public float totalWeight, cooldownTimer;
     public Stat maxWeight = new Stat(30f), cooldown = new Stat(120f);
@@ -39,7 +52,7 @@ public class EatingManager : MonoBehaviour
     {
         timer = 0f; 
         delay = 0.2f;
-        q = new Queue<int>();
+        q = new Queue<FoodDropRequest>();
         truckLeft = Mathf.RoundToInt(truckCount.Value);
     }
 
@@ -96,13 +109,13 @@ public class EatingManager : MonoBehaviour
         engine = thisTruck.GetComponent<AudioSource>();
     }
     
-    void SpawnFood(int ID)
+    void SpawnFood(FoodDropRequest request)
     {
         Inventory inventory = gm.inventory;
-        Item item = inventory.foodList.Find(f => f.ID == ID);
+        Item item = inventory.foodList.Find(f => f.ID == request.ID);
         if (item == null)
         {
-            Debug.LogWarning($"SpawnFood: no item with ID {ID} in foodList.");
+            Debug.LogWarning($"SpawnFood: no item with ID {request.ID} in foodList.");
             return;
         }
 
@@ -119,15 +132,26 @@ public class EatingManager : MonoBehaviour
             rb.useGravity = true;
         }
 
+        Collider col = obj.GetComponent<Collider>();
+        col.isTrigger = false;
+
         Growable fruit = obj.GetComponent<Growable>();
         if (fruit != null)
         {
             fruit.chopped = true;
             obj.transform.localScale = 0.8f * Vector3.one * fruit.maxGrowth;
+            if (request.isGolden)
+            {
+                fruit.isGolden = true;
+                if (gm.pm.gold != null)
+                {
+                    MeshRenderer mr = obj.GetComponentInChildren<MeshRenderer>();
+                    if (mr != null) mr.material = gm.pm.gold;
+                }
+            }
         }
 
         spawnedFood.Add(obj);
-
         accumulatedExp += 2;
     }
 

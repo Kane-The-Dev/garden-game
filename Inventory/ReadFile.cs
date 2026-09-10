@@ -43,7 +43,8 @@ public class Upgrade {
     public int cost;
     public string description;
 
-    public void Set(string _ID, string _name, ResearchType _typeR, float _amount, ModType _typeM, int _cost, string _description)
+    public void Set(string _ID, string _name, ResearchType _typeR, 
+        float _amount, ModType _typeM, int _cost, string _description)
     {
         this.ID = _ID;
         this.name = _name;

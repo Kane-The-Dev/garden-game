@@ -145,6 +145,12 @@ public class ResearchCenter : MonoBehaviour
     public void ApplyGoldenFruit(Modifier mod)
     {
         goldenFruitMods.Add(mod);
+        Growable[] trees = FindObjectsOfType<Growable>();
+        foreach (Growable tree in trees)
+        {
+            if (!tree.isProduct && !tree.isOven)
+                tree.goldenChance.AddModifier(mod);
+        }
     }
 
     public void ApplyFruitCount(Modifier mod)
@@ -201,8 +207,12 @@ public class ResearchCenter : MonoBehaviour
     public void ApplyTruckCooldown(Modifier mod)
     {
         truckCooldownMods.Add(mod);
-        if (gm.em != null)
-            gm.em.cooldown.AddModifier(mod);
+        EatingManager eater = gm.em;
+        if (eater != null) 
+        {
+            eater.cooldown.AddModifier(mod);
+            eater.cooldownTimer += mod.value;
+        }
     }
 
     public void ApplyTruckCount(Modifier mod)

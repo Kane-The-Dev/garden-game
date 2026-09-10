@@ -8,6 +8,7 @@ public class FoodButton : MonoBehaviour
 {
     public int productID;
     public int sellPrice;
+    public bool isGolden;
 
     public TextMeshProUGUI myName, myQuantity;
     public Image myIcon;
@@ -32,6 +33,7 @@ public class FoodButton : MonoBehaviour
         if (!inventory || !gm || !eater) return;
 
         string productName = Inventory.GetProductName(inventory.foodList[productID].name);
+        if (isGolden) productName = "Golden " + productName;
         int productCount = inventory.GetQuantity(productName);
 
         if (productCount < quantity) 
@@ -55,11 +57,13 @@ public class FoodButton : MonoBehaviour
             return;
         }
 
+        int finalSellPrice = isGolden ? inventory.foodList[productID].sellPrice * 2 : inventory.foodList[productID].sellPrice;
+
         for (int i = 0; i < quantity; i++)
-            eater.q.Enqueue(productID);
+            eater.q.Enqueue(new FoodDropRequest(productID, isGolden));
 
         eater.totalWeight += quantity * inventory.foodList[productID].weight;
-        eater.accumulatedStonks += quantity * inventory.foodList[productID].sellPrice;
+        eater.accumulatedStonks += quantity * finalSellPrice;
 
         inventory.AddItemQuantity(productName, -quantity);
         inventory.fs.UpdateStorage();

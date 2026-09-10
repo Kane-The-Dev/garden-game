@@ -19,6 +19,8 @@ public class Growable : MonoBehaviour
     public int fruitCount;
     public Stat blockedSlotCount = new Stat(2);
     [SerializeField] int maxFruitCount => slots.Length - Mathf.RoundToInt(blockedSlotCount.Value);
+    public Stat goldenChance = new Stat(0f);
+    Material gold;
 
     [Header("Harvest")]
     public GameObject leaf;
@@ -26,7 +28,6 @@ public class Growable : MonoBehaviour
     [SerializeField] float harvestForce;
     [SerializeField] Transform harvestPoint;
     public float harvestRange; // for auto-harvester use
-    
 
     [Header("Tree - Removal")]
     public bool chopped = false;
@@ -40,6 +41,7 @@ public class Growable : MonoBehaviour
     [Header("Product")]
     public bool isProduct;
     public int productID;
+    public bool isGolden  = false;
     Collider col;
 
     [Header("Sound Effect")]
@@ -61,6 +63,11 @@ public class Growable : MonoBehaviour
         harvestIndex = 0f;
         chopIndex = 0f;
         transform.localScale = Vector3.one * 0.2f * maxGrowth;
+
+        if (isProduct && growthSpeed.Value != 0) {
+            col = GetComponent<Collider>();
+            col.isTrigger = true;
+        }
     }
 
     void Start()
@@ -72,11 +79,8 @@ public class Growable : MonoBehaviour
         if (!isProduct && myAAS && plant.Length > 0) {
             myAAS.PlayOneShot(plant[Random.Range(0, plant.Length)], 1f, true);
         }
-        
-        if (isProduct && growthSpeed.Value != 0) {
-            col = GetComponent<Collider>();
-            col.isTrigger = true;
-        }
+
+        gold = gm.pm.gold; // for golden fruits
     }
 
     public IEnumerator ActivateCollider()
@@ -174,12 +178,12 @@ public class Growable : MonoBehaviour
             }
 
             int randomSlot = emptySlotIDs[Random.Range(0, emptySlotIDs.Count)];
-            GrowFruitAtSlot(randomSlot);
+            GrowFruitAtSlot(randomSlot, Random.Range(0f, 1f) < goldenChance.Value);
             yield return new WaitForSeconds(delay);
         }
     }
 
-    public Growable GrowFruitAtSlot(int slotID)
+    public Growable GrowFruitAtSlot(int slotID, bool isGold = false)
     {
         if (slotID < 0 || slotID >= slots.Length || slots[slotID] == null) return null;
 
@@ -195,6 +199,15 @@ public class Growable : MonoBehaviour
             newFruit.productID = productID;
             newFruit.wiggleOffset = Random.Range(0f, Mathf.PI * 2f);
             newFruit.wiggleAmplitude = Random.Range(4f, 5f);
+
+            if (isGold)
+            {
+                newFruit.isGolden = true;
+                if (gold == null) gold = GameManager.instance.pm.gold;
+                
+                MeshRenderer mr = newProduct.GetComponentInChildren<MeshRenderer>();
+                if (mr != null) mr.material = gold;
+            }
         }
 
         fruitCount++;
@@ -279,6 +292,7 @@ public class Growable : MonoBehaviour
                     // update inventory
                     inventory.exp += 3f;
                     string productName = Inventory.GetProductName(inventory.foodList[thisFruit.productID].name);
+                    if (thisFruit.isGolden) productName = "Golden " + productName;
                     inventory.AddItemQuantity(productName, 1);
                     inventory.fs.UpdateStorage();
 
