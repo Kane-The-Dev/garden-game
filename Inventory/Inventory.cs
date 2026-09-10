@@ -55,10 +55,6 @@ public class Inventory : MonoBehaviour
     [Header("Resources")]
     [SerializeField] string productsFolderPath = "Prefabs/Food";
 
-    [Header("Save and Load")]
-    [SerializeField] string saveFileName = "InventorySave.txt";
-    [SerializeField] bool saveToPersistentDataPath = true;
-
     // Helper functions
     public static string GetProductName(string name)
     {
@@ -93,8 +89,8 @@ public class Inventory : MonoBehaviour
 
     void Awake()
     {
-        FindObjectOfType<ReadFile>().LoadItems(foodList);
-        FindObjectOfType<ReadFile>().LoadBuildings(buildingList);
+        ReadFile.LoadItems(foodList);
+        ReadFile.LoadBuildings(buildingList);
     }
 
     void Start()
@@ -152,9 +148,6 @@ public class Inventory : MonoBehaviour
 
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.I))
-            SaveInventoryToFile();
-
         if (coinDisplay)
             coinDisplay.text = coin.ToString() + "G";
 
@@ -176,50 +169,9 @@ public class Inventory : MonoBehaviour
         }
     }
 
-    public void SaveInventoryToFile()
-    {
-        if (myInventory == null)
-            return;
-
-        string path = saveToPersistentDataPath
-            ? Path.Combine(Application.persistentDataPath, saveFileName)
-            : Path.Combine(Application.dataPath, saveFileName);
-
-        List<string> lines = new List<string>();
-        foreach (var entry in myInventory.OrderBy(e => e.Key))
-        {
-            lines.Add(entry.Key + "=" + entry.Value.quantity);
-        }
-
-        File.WriteAllLines(path, lines);
-        Debug.Log("Inventory saved to: " + path);
-    }
-
     public GameObject LoadProductPrefab(string itemName)
     {
-        if (string.IsNullOrEmpty(itemName))
-            return null;
-
         string productName = GetProductName(itemName);
-
-        string resourcePath = string.IsNullOrEmpty(productsFolderPath)
-            ? productName
-            : productsFolderPath + "/" + productName;
-
-        GameObject prefab = Resources.Load<GameObject>(resourcePath);
-
-        if (prefab == null)
-        {
-            string fallbackPath = string.IsNullOrEmpty(productsFolderPath)
-                ? productName.Replace(" ", string.Empty)
-                : productsFolderPath + "/" + productName.Replace(" ", string.Empty);
-
-            prefab = Resources.Load<GameObject>(fallbackPath);
-        }
-
-        if (prefab == null)
-            Debug.LogWarning($"No product prefab found for '{itemName}' in Resources/{productsFolderPath}");
-
-        return prefab;
+        return ReadFile.LoadPrefab(productName, productsFolderPath);
     }
 }

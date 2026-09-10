@@ -1,10 +1,10 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public enum ResearchType
 {
-    growth_G, // general
     growth_P, // plant
     growth_O, // oven
 
@@ -13,8 +13,15 @@ public enum ResearchType
     profit_O,
 
     goldFruit,
-    windChance,
     fruitCount,
+
+    windChance,
+    overtime,
+    betterTool,
+
+    saleCount,
+    decorSale,
+    shopDiscount,
 
     truckWeight,
     truckCooldown,
@@ -24,6 +31,8 @@ public enum ResearchType
 public class ResearchCenter : MonoBehaviour
 {
     [SerializeField] GameObject panel;
+    List<Upgrade> myUpgrades = new List<Upgrade>();
+    List<ResearchCard> cards;
 
     public List<Modifier> generalGrowthMods = new List<Modifier>();
     public List<Modifier> plantGrowthMods = new List<Modifier>();
@@ -34,14 +43,31 @@ public class ResearchCenter : MonoBehaviour
     public List<Modifier> ovenProfitMods = new List<Modifier>();
 
     public List<Modifier> goldenFruitMods = new List<Modifier>();
-    public List<Modifier> windChanceMods = new List<Modifier>();
     public List<Modifier> fruitCountMods = new List<Modifier>();
+
+    public List<Modifier> windChanceMods = new List<Modifier>();
+    public List<Modifier> overtimeMods = new List<Modifier>();
+    public List<Modifier> betterToolMods = new List<Modifier>();
+
+    public List<Modifier> saleCountMods = new List<Modifier>();
+    public List<Modifier> decorSaleMods = new List<Modifier>();
+    public List<Modifier> shopDiscountMods = new List<Modifier>();
 
     public List<Modifier> truckWeightMods = new List<Modifier>();
     public List<Modifier> truckCooldownMods = new List<Modifier>();
     public List<Modifier> truckCountMods = new List<Modifier>();
 
     GameManager gm;
+
+    public Upgrade GetUpgrade(string ID)
+    {
+        return myUpgrades.FirstOrDefault(x => x.ID == ID);
+    }
+
+    void Awake()
+    {
+        ReadFile.LoadUpgrades(myUpgrades);
+    }
 
     void Start()
     {
@@ -121,14 +147,6 @@ public class ResearchCenter : MonoBehaviour
         goldenFruitMods.Add(mod);
     }
 
-    public void ApplyWindChance(Modifier mod)
-    {
-        windChanceMods.Add(mod);
-        WindGenerator wind = FindObjectOfType<WindGenerator>();
-        if (wind != null)
-            wind.harvestChance.AddModifier(mod);
-    }
-
     public void ApplyFruitCount(Modifier mod)
     {
         fruitCountMods.Add(mod);
@@ -138,6 +156,39 @@ public class ResearchCenter : MonoBehaviour
             if (!tree.isProduct && !tree.isOven)
                 tree.blockedSlotCount.AddModifier(mod);
         }
+    }
+
+    public void ApplyWindChance(Modifier mod)
+    {
+        windChanceMods.Add(mod);
+        WindGenerator wind = FindObjectOfType<WindGenerator>();
+        if (wind != null)
+            wind.harvestChance.AddModifier(mod);
+    }
+
+    public void ApplyOvertime(Modifier mod)
+    {
+        overtimeMods.Add(mod);
+    }
+
+    public void ApplyBetterTool(Modifier mod)
+    {
+        betterToolMods.Add(mod);
+    }
+
+    public void ApplySaleCount(Modifier mod)
+    {
+        saleCountMods.Add(mod);
+    }
+
+    public void ApplyDecorSale(Modifier mod)
+    {
+        decorSaleMods.Add(mod);
+    }
+
+    public void ApplyShopDiscount(Modifier mod)
+    {
+        shopDiscountMods.Add(mod);
     }
 
     public void ApplyTruckWeight(Modifier mod)

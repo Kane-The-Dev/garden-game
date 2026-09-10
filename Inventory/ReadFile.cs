@@ -3,12 +3,69 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+[System.Serializable]
+public class Item {
+
+    public int ID;
+    public string name;
+    public int plantPrice;
+    public int sellPrice;
+    public float growthSpeed;
+    public int levelReq;
+    public float weight;
+    public string type;
+    public string description;
+
+    public void Set(int _ID, string _name, int _plantPrice, 
+        int _sellPrice, float _growthSpeed, int _levelReq,
+        float _weight, string _type, string _description)
+    {
+        this.ID = _ID;
+        this.name = _name;
+        this.plantPrice = _plantPrice;
+        this.sellPrice = _sellPrice;
+        this.growthSpeed = _growthSpeed;
+        this.levelReq = _levelReq;
+        this.weight = _weight;
+        this.type = _type;
+        this.description = _description;
+    }
+};
+
+[System.Serializable]
+public class Upgrade {
+
+    public string ID;
+    public string name;
+    public ResearchType typeR;
+    public float amount;
+    public ModType typeM;
+    public int cost;
+    public string description;
+
+    public void Set(string _ID, string _name, ResearchType _typeR, float _amount, ModType _typeM, int _cost, string _description)
+    {
+        this.ID = _ID;
+        this.name = _name;
+        this.typeR = _typeR;
+        this.amount = _amount;
+        this.typeM = _typeM;
+        this.cost = _cost;
+        this.description = _description;
+    }
+};
+
 public class ReadFile : MonoBehaviour
 {
-    [SerializeField] TextAsset listFile, buildingListFile;
-
-    public void LoadItems(List<Item> list)
+    public static void LoadItems(List<Item> list)
     {
+        TextAsset listFile = Resources.Load<TextAsset>("Items");
+        if (listFile == null)
+        {
+            Debug.LogError("Items.txt not found in Resources.");
+            return;
+        }
+
         string text = listFile.text;
 
         string[] lines = text.Split(
@@ -43,8 +100,15 @@ public class ReadFile : MonoBehaviour
         }
     }
 
-    public void LoadBuildings(List<Item> list)
+    public static void LoadBuildings(List<Item> list)
     {
+        TextAsset buildingListFile = Resources.Load<TextAsset>("Builds");
+        if (buildingListFile == null)
+        {
+            Debug.LogError("Builds.txt not found in Resources.");
+            return;
+        }
+
         string text = buildingListFile.text;
 
         string[] lines = text.Split(
@@ -90,6 +154,46 @@ public class ReadFile : MonoBehaviour
         return icon;
     }
 
+    public static GameObject LoadPrefab(string itemName, params string[] searchFolders)
+    {
+        if (string.IsNullOrWhiteSpace(itemName))
+            return null;
+
+        string noSpaceName = itemName.Replace(" ", string.Empty);
+
+        string[] nameVariants = new[] { itemName, noSpaceName };
+
+        if (searchFolders != null)
+        {
+            foreach (string folder in searchFolders)
+            {
+                if (string.IsNullOrWhiteSpace(folder))
+                    continue;
+
+                string normalizedFolder = folder.Trim().Trim('/');
+                if (normalizedFolder.StartsWith("Resources/", System.StringComparison.OrdinalIgnoreCase))
+                    normalizedFolder = normalizedFolder.Substring("Resources/".Length);
+
+                foreach (string name in nameVariants)
+                {
+                    GameObject prefab = Resources.Load<GameObject>($"{normalizedFolder}/{name}");
+                    if (prefab != null)
+                        return prefab;
+                }
+            }
+        }
+
+        foreach (string name in nameVariants)
+        {
+            GameObject prefab = Resources.Load<GameObject>(name);
+            if (prefab != null)
+                return prefab;
+        }
+
+        Debug.LogWarning($"[ReadFile] No prefab found for '{itemName}'");
+        return null;
+    }
+
     public static List<(string name, int quantity)> GetLevelUpRewards(int level)
     {
         List<(string name, int quantity)> rewards = new List<(string name, int quantity)>();
@@ -129,5 +233,46 @@ public class ReadFile : MonoBehaviour
         }
 
         return rewards;
+    }
+
+    public static void LoadUpgrades(List<Upgrade> list)
+    {
+        TextAsset upgradesFile = Resources.Load<TextAsset>("Upgrades");
+        if (upgradesFile == null)
+        {
+            Debug.LogError("Upgrades.txt not found in Resources.");
+            return;
+        }
+
+        string text = upgradesFile.text;
+        string[] lines = text.Split(
+            new[] { '\r', '\n' },
+            System.StringSplitOptions.RemoveEmptyEntries
+        );
+
+        for (int i = 1; i < lines.Length; i++)
+        {
+            string line = lines[i];
+
+            string[] parts = line.Split(
+                (char[])null,
+                7,
+                System.StringSplitOptions.RemoveEmptyEntries
+            );
+            if (parts.Length < 7) continue;
+
+            string id = parts[0];
+            string name = parts[1].Replace('_', ' ');
+            Enum.TryParse(parts[2], true, out ResearchType typeR);
+            float.TryParse(parts[3], out float amount);
+            int.TryParse(parts[4], out int mod);
+            ModType typeM = (mod == 1) ? ModType.PercentAdd : ModType.Flat;
+            int.TryParse(parts[5], out int cost);
+            string description = parts[6];
+
+            Upgrade newUpgrade = new Upgrade();
+            newUpgrade.Set(id, name, typeR, amount, typeM, cost, description);
+            list.Add(newUpgrade);
+        }
     }
 }

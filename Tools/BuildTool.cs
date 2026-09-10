@@ -169,44 +169,6 @@ public class BuildTool : MonoBehaviour
 
     GameObject LoadBuildingPrefab(string itemName)
     {
-        if (string.IsNullOrEmpty(itemName))
-            return null;
-
-        string nameWithoutSpaces = itemName.Replace(" ", string.Empty);
-
-        // Try the direct name first
-        foreach (string path in new[] { itemName, nameWithoutSpaces })
-        {
-            GameObject prefab = Resources.Load<GameObject>(path);
-            if (prefab != null)
-                return prefab;
-        }
-
-        // Then try each configured folder in order
-        if (searchFolders != null)
-        {
-            foreach (string folder in searchFolders)
-            {
-                if (string.IsNullOrWhiteSpace(folder))
-                    continue;
-
-                string normalizedFolder = folder.Trim().Trim('/');
-                if (normalizedFolder.StartsWith("Resources/", System.StringComparison.OrdinalIgnoreCase))
-                    normalizedFolder = normalizedFolder.Substring("Resources/".Length);
-
-                foreach (string path in new[]
-                         {
-                             normalizedFolder + "/" + itemName,
-                             normalizedFolder + "/" + nameWithoutSpaces
-                         })
-                {
-                    GameObject prefab = Resources.Load<GameObject>(path);
-                    if (prefab != null)
-                        return prefab;
-                }
-            }
-        }
-
-        return null;
+        return ReadFile.LoadPrefab(itemName, searchFolders);
     }
 }

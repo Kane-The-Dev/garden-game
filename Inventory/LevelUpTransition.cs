@@ -52,7 +52,7 @@ public class LevelUpTransition : MonoBehaviour
         rewardsCollected = false;
         gm.cam.movable = false;
 
-        int i = Mathf.Min(myLevel / 15, allBadges.Length);
+        int i = Mathf.Min(myLevel / 12, allBadges.Length - 1);
         badge.sprite = allBadges[i];
         levelDisplay.color = badgeColors[i];
 
