@@ -110,30 +110,51 @@ public class CameraMovement : MonoBehaviour
         rb.velocity = currentVelocity + zoomVelocity;
     }
 
-    public void ScreenShake(float amplitude)
+    private Coroutine shakeCoroutine;
+    private bool isContinuousShake = false;
+
+    public void ScreenShakeOnce(float amplitude)
     {
-        StartCoroutine(Shake(0.2f));
+        if (isContinuousShake) return;
+
+        if (shakeCoroutine != null) StopCoroutine(shakeCoroutine);
+        shakeCoroutine = StartCoroutine(Shake(amplitude, false));
+    }
+
+    public void StartScreenShake(float amplitude)
+    {
+        if (shakeCoroutine != null) StopCoroutine(shakeCoroutine);
+        isContinuousShake = true;
+        shakeCoroutine = StartCoroutine(Shake(amplitude, true));
+    }
+
+    public void StopScreenShake()
+    {
+        if (shakeCoroutine != null) StopCoroutine(shakeCoroutine);
+        isContinuousShake = false;
+        transform.localPosition = Vector3.zero;
+        shakeCoroutine = null;
     }
     
-    IEnumerator Shake(float amplitude)
+    IEnumerator Shake(float amplitude, bool continuous = false)
     {
         float time = 0f;
-
         Vector3 dir = Random.onUnitSphere;
 
-        while (time < duration)
+        while (continuous || time < duration)
         {
             time += Time.deltaTime;
 
-            float decay = Mathf.Exp(-damping * time);
+            float decay = continuous ? 1f : Mathf.Exp(-damping * time);
             float wave = Mathf.Sin(time * frequency);
 
-            Vector3 offset = dir * amplitude * wave * decay;
+            Vector3 offset = continuous ? Random.insideUnitSphere * amplitude : dir * amplitude * wave * decay;
             transform.localPosition = offset;
 
             yield return null;
         }
 
         transform.localPosition = Vector3.zero;
+        shakeCoroutine = null;
     }
 }

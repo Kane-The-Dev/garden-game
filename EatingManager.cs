@@ -23,9 +23,13 @@ public class EatingManager : MonoBehaviour
     List<GameObject> spawnedFood = new List<GameObject>();
     public Queue<FoodDropRequest> q;
     [SerializeField] float delay, timer;
-    public float totalWeight, cooldownTimer;
+
+    [Header("Main Logic")]
+    public float totalWeight;
+    public float cooldownTimer;
     public Stat maxWeight = new Stat(30f), cooldown = new Stat(120f);
-    public int accumulatedStonks, accumulatedExp;
+    public int accumulatedStonks_P, accumulatedStonks_O, accumulatedExp, accumulatedBonus;
+    public Stat generalBonus = new Stat(0), plantBonus = new Stat(0), ovenBonus = new Stat(0);
 
     [Header("Truck")]
     [SerializeField] GameObject truck_kun;
@@ -37,7 +41,7 @@ public class EatingManager : MonoBehaviour
     [Header("Audio")]
     [SerializeField] AudioSource cashier;
     [SerializeField] AudioSource engine;
-    [SerializeField] AudioClip cashIn, error, landing, starting;
+    [SerializeField] AudioClip cashIn, landing, starting;
 
     [Header("Display")]
     [SerializeField] RectTransform weightNeedle;
@@ -90,13 +94,28 @@ public class EatingManager : MonoBehaviour
             SpawnTruck();
         }
 
-        if (stonksDisplay) stonksDisplay.text = accumulatedStonks + "G";
+        if (gm.currentMode != 1) return;
+
+        if (stonksDisplay) {
+            string stonks = (accumulatedStonks_P + accumulatedStonks_O).ToString();
+            if (accumulatedBonus > 0)
+                stonks = stonks + '+' + accumulatedBonus;
+            stonksDisplay.text = stonks + "G";
+        }
 
         if (weightNeedle) {
             float targetRotZ = -140f + 100f * totalWeight / maxWeight.Value;
             Quaternion targetRot = Quaternion.Euler(0f, 0f, targetRotZ);
             weightNeedle.rotation = Quaternion.Lerp(weightNeedle.rotation, targetRot, 5f * Time.deltaTime);
         }
+    }
+
+    public void CalculateBonus()
+    {
+        accumulatedBonus = Mathf.RoundToInt(
+            accumulatedStonks_P * (generalBonus.Value + plantBonus.Value) + 
+            accumulatedStonks_O * (generalBonus.Value + ovenBonus.Value)
+        );
     }
 
     void SpawnTruck()
@@ -158,20 +177,20 @@ public class EatingManager : MonoBehaviour
     public void ConfirmSale()
     {
         if (q.Count > 0) {
-            gm.mouse.myEffect.Burst("Food is loading!");
-            cashier.PlayOneShot(error);
+            gm.mouse.myEffect.Burst("Food is loading!", new Color32(0xDE, 0x55, 0x57, 0xFF));
+            gm.am.PlayUISoundEffect(6);
             return;
         }
 
         if (cooldownTimer > 0) {
-            gm.mouse.myEffect.Burst("Wait for truck!");
-            cashier.PlayOneShot(error);
+            gm.mouse.myEffect.Burst("Truck unavailable!", new Color32(0xDE, 0x55, 0x57, 0xFF));
+            gm.am.PlayUISoundEffect(6);
             return;
         }
 
-        if (accumulatedStonks <= 0) {
-            gm.mouse.myEffect.Burst("Nothing to sell!");
-            cashier.PlayOneShot(error);
+        if (accumulatedStonks_P + accumulatedStonks_O <= 0) {
+            gm.mouse.myEffect.Burst("Nothing to sell!", new Color32(0xDE, 0x55, 0x57, 0xFF));
+            gm.am.PlayUISoundEffect(6);
             return;
         }
 
@@ -187,15 +206,17 @@ public class EatingManager : MonoBehaviour
         for (int i = 0; i < 4; i++)
             myTruck.transform.GetChild(i).GetComponent<Spin>().speed = 180f;
 
-        coinBurst.minCount = Mathf.Min(1 + accumulatedStonks / 20, 30);
-        coinBurst.maxCount = Mathf.Min(1 + accumulatedStonks / 20, 30);
+        coinBurst.minCount = Mathf.Min(1 + (accumulatedStonks_P + accumulatedStonks_O) / 20, 30);
+        coinBurst.maxCount = Mathf.Min(1 + (accumulatedStonks_P + accumulatedStonks_O) / 20, 30);
         coinBurst.Emission(0.05f);
             
         rb.constraints = RigidbodyConstraints.None;
-        gm.inventory.coin += accumulatedStonks;
+        gm.inventory.coin += accumulatedStonks_P + accumulatedStonks_O;
         gm.inventory.exp += accumulatedExp;
         totalWeight = 0;
-        accumulatedStonks = 0;
+        accumulatedStonks_P = 0;
+        accumulatedStonks_O = 0;
+        accumulatedBonus = 0;
 
         Invoke("MoveTruck", 4f);
     }

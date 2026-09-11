@@ -37,8 +37,9 @@ public class UIParticleSystem : MonoBehaviour
         }
     }
 
-    public void Burst(string msg)
+    public void Burst(string msg, Color? color = null)
     {
+        Color targetColor = color ?? new Color32(0xD4, 0xFB, 0xD4, 0xFF);
         int count = Random.Range(minCount, maxCount);
         for (int i = 0; i < count; i++)
         {
@@ -46,7 +47,11 @@ public class UIParticleSystem : MonoBehaviour
             obj.GetComponent<RectTransform>().position = transform.position;
             UIParticle p = obj.GetComponent<UIParticle>();
 
-            p.text.text = msg;
+            if (p.text)
+            {
+                p.text.text = msg;
+                p.text.color = targetColor;
+            }
             ApplySettings(p);
         }
     }

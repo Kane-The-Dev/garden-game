@@ -27,17 +27,13 @@ public class PlantTool : MonoBehaviour
         if (ID < 0) ID = plantID;
 
         string type = inventory.foodList[ID].type;
-        if (type == "Tree")
-            return Random.Range(0, 2);
-        if (type == "Pine")   
-            return 2;
-        if (type == "Bush")   
-            return Random.Range(3, 5);
-        if (type == "Ground") 
-            return 5;
-        if (type == "Oven")   
-            return 6;
-        return -1;
+        if (type == "Tree") return Random.Range(0, 2);
+        else if (type == "Pine") return 2;
+        else if (type == "Bush") return Random.Range(3, 5);
+        else if (type == "Ground") return 5;
+        else if (type == "Oven") return 6;
+        else if (type == "Stump") return 7;
+        else return -1;
     }
 
     bool IsOven(int ID = -1) { if (ID < 0) ID = plantID; return ID >= 0 && inventory.foodList[ID].type == "Oven"; }

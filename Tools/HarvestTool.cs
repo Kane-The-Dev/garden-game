@@ -7,6 +7,14 @@ public class HarvestTool : MonoBehaviour
     [SerializeField] ParticleSystem mainVFX, subVFX;
     [SerializeField] AdvancedAudioSource myAAS;
     [SerializeField] Tornado myWind;
+    [SerializeField] bool screenShake = false;
+
+    GameManager gm;
+
+    void Start()
+    {
+        gm = GameManager.instance;
+    }
         
     public void StartHarvest()
     {
@@ -14,6 +22,7 @@ public class HarvestTool : MonoBehaviour
         if (subVFX) subVFX.Play();
         if (myAAS) myAAS.Play(null, -1f, false, 0.5f);
         if (myWind) myWind.StartWind();
+        if (screenShake) gm.cam.StartScreenShake(0.02f);
     }
 
     public void StopHarvest()
@@ -22,6 +31,7 @@ public class HarvestTool : MonoBehaviour
         if (subVFX) subVFX.Stop();
         if (myAAS) myAAS.Stop(0.5f);
         if (myWind) myWind.StopWind();
+        if (screenShake) gm.cam.StopScreenShake();
     }
 
     public void HarvestTree(GameObject ring, Ray ray, LayerMask gMask, LayerMask pMask)

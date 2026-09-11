@@ -91,7 +91,7 @@ public class Constructible : MonoBehaviour
 
         if (newStage > chopStage)
         {
-            gm.cam.ScreenShake(0.02f);
+            gm.cam.ScreenShakeOnce(0.1f);
             myChopTool.PlayChop();
 
             for (int stage = chopStage + 1; stage <= newStage; stage++)
@@ -141,9 +141,9 @@ public class Constructible : MonoBehaviour
     {
         if (shakeAmplitude >= 0f)
         {
-            shakeAmplitude -= 10f * Time.deltaTime;
-            float rotX = Mathf.Sin(Time.time * 10f) * shakeAmplitude * shakeDirection.x;
-            float rotZ = Mathf.Sin(Time.time * 10f) * shakeAmplitude * shakeDirection.y;
+            shakeAmplitude -= 5f * Time.deltaTime;
+            float rotX = Mathf.Sin(Time.time * 5f) * shakeAmplitude * shakeDirection.x;
+            float rotZ = Mathf.Sin(Time.time * 5f) * shakeAmplitude * shakeDirection.y;
             transform.rotation = Quaternion.Euler(
                 rotX, 
                 transform.eulerAngles.y, 

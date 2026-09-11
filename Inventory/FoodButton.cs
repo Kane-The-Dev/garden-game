@@ -38,22 +38,22 @@ public class FoodButton : MonoBehaviour
 
         if (productCount < quantity) 
         {
-            gm.mouse.myEffect.Burst("Out of stock!");
-            Debug.Log(productName + " out of stock " + productCount);
+            gm.mouse.myEffect.Burst("Out of stock!", new Color32(0xDE, 0x55, 0x57, 0xFF));
+            gm.am.PlayUISoundEffect(6);
             return;
         }
 
         if (eater.cooldownTimer > 0f || !eater.myTruck || eater.myTruck.transform.position.y > 3f)
         {
-            gm.mouse.myEffect.Burst("Waiting for Truck!");
-            Debug.Log("Waiting for truck!");
+            gm.mouse.myEffect.Burst("Truck unavailable!", new Color32(0xDE, 0x55, 0x57, 0xFF));
+            gm.am.PlayUISoundEffect(6);
             return;
         }
 
         if (eater.totalWeight + quantity * inventory.foodList[productID].weight > eater.maxWeight.Value) 
         {
-            gm.mouse.myEffect.Burst("Overloaded!");
-            Debug.Log("Truck is overloaded!");
+            gm.mouse.myEffect.Burst("Overloaded!", new Color32(0xDE, 0x55, 0x57, 0xFF));
+            gm.am.PlayUISoundEffect(6);
             return;
         }
 
@@ -63,7 +63,12 @@ public class FoodButton : MonoBehaviour
             eater.q.Enqueue(new FoodDropRequest(productID, isGolden));
 
         eater.totalWeight += quantity * inventory.foodList[productID].weight;
-        eater.accumulatedStonks += quantity * finalSellPrice;
+        if (inventory.foodList[productID].type != "Oven")
+            eater.accumulatedStonks_P += quantity * finalSellPrice;
+        else
+            eater.accumulatedStonks_O += quantity * finalSellPrice;
+        
+        eater.CalculateBonus();
 
         inventory.AddItemQuantity(productName, -quantity);
         inventory.fs.UpdateStorage();
