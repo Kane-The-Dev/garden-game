@@ -4,6 +4,7 @@ using TMPro;
 
 public class ShopItemUI : MonoBehaviour
 {
+    public GameObject saleTag;
     [SerializeField] GameObject lockedTag, soldOutTag, prevLockedTag;
     [SerializeField] TextMeshProUGUI priceTag, requirementTag, nameTag;
     [SerializeField] Button myButton;

@@ -5,14 +5,16 @@ using UnityEngine;
 public class PlantUnlock : ShopItem
 {
     public ItemType type;
+    public bool isDecor = false;
 
-    public override void OnPurchase(Inventory inventory, int quantity)
+    public override void OnPurchase(Inventory inventory, int quantity, int finalPrice = -1)
     {
         string key = itemName;
 
         inventory.AddItemQuantity(key, quantity, type);
 
-        inventory.coin -= price * quantity;
+        int cost = finalPrice >= 0 ? finalPrice : price * quantity;
+        inventory.coin -= cost;
 
         inventory.selection.RefreshPlants();
         inventory.selection.RefreshBuildings();
@@ -20,12 +22,13 @@ public class PlantUnlock : ShopItem
         Debug.Log("You bought " + quantity + " " + key);
     }
 
-    public override int CanPurchase(Inventory inventory, int quantity)
+    public override int CanPurchase(Inventory inventory, int quantity, int finalPrice = -1)
     {
         if (inventory.level < requirement)
             return 1;
 
-        if (inventory.coin < price * quantity)
+        int cost = finalPrice >= 0 ? finalPrice : price * quantity;
+        if (inventory.coin < cost)
             return 2;
 
         return 0;

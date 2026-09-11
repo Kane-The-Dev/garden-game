@@ -7,7 +7,7 @@ public class ToolUnlock : ShopItem
     [SerializeField] GameObject myTool;
     [SerializeField] string prevUpgrade;
     
-    public override void OnPurchase(Inventory inventory, int quantity)
+    public override void OnPurchase(Inventory inventory, int quantity, int finalPrice = -1)
     {
         // Map toolType int → ItemType enum
         ItemType itemType = toolType switch
@@ -19,7 +19,8 @@ public class ToolUnlock : ShopItem
         };
 
         inventory.AddItemQuantity(itemName, quantity, itemType);
-        inventory.coin -= price * quantity;
+        int cost = finalPrice >= 0 ? finalPrice : price * quantity;
+        inventory.coin -= cost;
 
         SpawnToolObjects(quantity);
 
@@ -53,7 +54,7 @@ public class ToolUnlock : ShopItem
         }
     }
 
-    public override int CanPurchase(Inventory inventory, int quantity)
+    public override int CanPurchase(Inventory inventory, int quantity, int finalPrice = -1)
     {
         if (inventory.level < requirement)
             return 1;
@@ -64,7 +65,8 @@ public class ToolUnlock : ShopItem
                 return 3;
         }
 
-        if (inventory.coin < price * quantity)
+        int cost = finalPrice >= 0 ? finalPrice : price * quantity;
+        if (inventory.coin < cost)
             return 2;
 
         return 0;

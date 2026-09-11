@@ -8,6 +8,9 @@ using TMPro;
 public class ShopManager : MonoBehaviour
 {
     public List<Item> foodList = new();
+    public Stat generalDiscount = new Stat(0f), decorDiscount = new Stat(0f);
+    public Stat discountNumber = new Stat(0); // N random shop items will get a 10% discount
+    List<ShopItemUI> discountItems = new List<ShopItemUI>();
 
     [Header("Display Shelves")]
     [SerializeField] List<ShopItemUI> buttons = new();
@@ -19,9 +22,9 @@ public class ShopManager : MonoBehaviour
 
     [Header("Display Board")]
     public int quantity = 1;
-    [SerializeField] GameObject quantityOption, buyOption;
+    [SerializeField] GameObject quantityOption, buyOption, saleTag;
     [SerializeField] TextMeshProUGUI stats, itemName, itemDescription;
-    [SerializeField] TextMeshProUGUI itemPrice, quantityDisplay;
+    [SerializeField] TextMeshProUGUI itemPrice, quantityDisplay, discountText;
     [SerializeField] UIParticleSystem coinBurst;
     [SerializeField] GameObject plantStats;
     [SerializeField] Slider growSpeed, sellPrice, weight;
@@ -30,10 +33,10 @@ public class ShopManager : MonoBehaviour
 
     [Header("Audio")]
     [SerializeField] AudioSource source;
-    [SerializeField] AudioClip purchase, error;
+    [SerializeField] AudioClip purchase;
 
     Inventory inventory;
-    ShopItemUI selectedUI;
+    public ShopItemUI selectedUI;
     GameManager gm;
 
     void Start()
@@ -184,6 +187,7 @@ public class ShopManager : MonoBehaviour
 
             PlantUnlock newShopItem = CreateShopItem(item);
             newShopItem.type = ItemType.build;
+            newShopItem.isDecor = true;
 
             if (count % 5 == 0)
                 thisRow = CreateNewRow(buildDisplay);
@@ -266,13 +270,57 @@ public class ShopManager : MonoBehaviour
         }   
     }
 
+    public void ShuffleDiscount() 
+    {
+        foreach (ShopItemUI item in discountItems)
+            if(item.saleTag) item.saleTag.SetActive(false);
+
+        discountItems.Clear();
+        int N = Mathf.RoundToInt(discountNumber.Value);
+
+        List<ShopItemUI> validItems = buttons
+            .Where(b => b != null && b.myItem is PlantUnlock)
+            .Distinct()
+            .ToList();
+
+        while (discountItems.Count < N && validItems.Count > 0)
+        {
+            int randomIndex = UnityEngine.Random.Range(0, validItems.Count);
+            ShopItemUI item = validItems[randomIndex];
+
+            discountItems.Add(item);
+            if(item.saleTag) 
+                item.saleTag.SetActive(true);
+            validItems.RemoveAt(randomIndex);
+        }
+    }
+
+    float CalculateDiscount(ShopItemUI myUI = null) 
+    {
+        if (myUI == null) myUI = selectedUI;
+        
+        return generalDiscount.Value + 
+            ((myUI.myItem is PlantUnlock unlock && unlock.isDecor && quantity >= 5) ? decorDiscount.Value : 0f) +
+            (discountItems.Contains(myUI) ? 0.1f : 0f);
+    }
+
     public void SetPurchase(ShopItemUI myUI)
     {
         if (!myUI) return;
         selectedUI = myUI;
         
+        int totalPrice = myUI.myItem.price * quantity;
+        float discountPercent = CalculateDiscount(myUI);
+        int totalDiscount = Mathf.FloorToInt(totalPrice * discountPercent);
+        
         itemName.text = myUI.myItem.itemName;
-        itemPrice.text = (myUI.myItem.price * quantity).ToString();
+        itemPrice.text = (totalPrice - totalDiscount).ToString();
+        if (discountPercent > 0) {
+            saleTag.SetActive(true);
+            discountText.text = Mathf.RoundToInt(100f * discountPercent).ToString() + "% off";
+        }
+        else saleTag.SetActive(false);
+
         itemDescription.text = myUI.myItem.description;
 
         buyOption.SetActive(true);
@@ -298,7 +346,7 @@ public class ShopManager : MonoBehaviour
             if (plantStats) plantStats.SetActive(true);
             
             if (growSpeed) growSpeed.value = matchingItem.growthSpeed / maxGS;
-            if (sellPrice) sellPrice.value = (float)matchingItem.sellPrice / maxP;
+            if (sellPrice) sellPrice.value = matchingItem.sellPrice / maxP;
             if (weight) weight.value = matchingItem.weight / maxW;
 
             if (matchingItem.type == "Oven") growSpeedText.text = "Bake Speed";
@@ -312,24 +360,28 @@ public class ShopManager : MonoBehaviour
         if (selectedUI == null) return;
 
         ShopItem myItem = selectedUI.myItem;
-        int condition = myItem.CanPurchase(inventory, quantity);
-        int totalPrice = myItem.price * quantity;
+
+        int totalPrice = selectedUI.myItem.price * quantity;
+        int totalDiscount = Mathf.FloorToInt(totalPrice * CalculateDiscount(selectedUI));
+        totalPrice -= totalDiscount;
+
+        int condition = myItem.CanPurchase(inventory, quantity, totalPrice);
 
         if (condition != 0)
         {
             Debug.Log("Cannot buy because of code " + condition);
             if (condition == 2)
-                gm.mouse.myEffect.Burst("Out of money!");
+                gm.mouse.myEffect.Burst("Out of money!", new Color32(0xDE, 0x55, 0x57, 0xFF));
 
-            source.PlayOneShot(error);
+            gm.am.PlayUISoundEffect(6);
             return;
         }
 
         if (stock[myItem] < quantity)
         {
             Debug.Log("Out of stock!");
-            gm.mouse.myEffect.Burst("Out of stock!");
-            source.PlayOneShot(error);
+            gm.mouse.myEffect.Burst("Out of stock!", new Color32(0xDE, 0x55, 0x57, 0xFF));
+            gm.am.PlayUISoundEffect(6);
             return;
         }
 
@@ -340,7 +392,7 @@ public class ShopManager : MonoBehaviour
             coinBurst.Burst();
             source.PlayOneShot(purchase);
 
-            myItem.OnPurchase(inventory, quantity);
+            myItem.OnPurchase(inventory, quantity, totalPrice);
 
             RefreshShop();
         }

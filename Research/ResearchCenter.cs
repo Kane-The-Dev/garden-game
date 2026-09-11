@@ -30,7 +30,7 @@ public enum ResearchType
 
 public class ResearchCenter : MonoBehaviour
 {
-    [SerializeField] GameObject panel;
+    [SerializeField] GameObject panel, holder;
     List<Upgrade> myUpgrades = new List<Upgrade>();
     List<ResearchCard> cards;
 
@@ -57,6 +57,12 @@ public class ResearchCenter : MonoBehaviour
     public List<Modifier> truckCooldownMods = new List<Modifier>();
     public List<Modifier> truckCountMods = new List<Modifier>();
 
+    [Header("Zoom Settings")]
+    [SerializeField] float minScale = 0.5f;
+    [SerializeField] float maxScale = 1.5f;
+    [SerializeField] float zoomSpeed = 5f;
+    float currentScaleFactor = 1f;
+
     GameManager gm;
 
     public Upgrade GetUpgrade(string ID)
@@ -72,6 +78,10 @@ public class ResearchCenter : MonoBehaviour
     void Start()
     {
         gm = GameManager.instance;
+        if (holder != null)
+        {
+            currentScaleFactor = holder.transform.localScale.x;
+        }
     }
 
     void Update() 
@@ -79,6 +89,18 @@ public class ResearchCenter : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.R))
         {
             OpenResearch();
+        }
+
+        if (panel != null && panel.activeSelf && holder != null)
+        {
+            float scroll = Input.GetAxis("Mouse ScrollWheel");
+            if (scroll != 0f)
+            {
+                currentScaleFactor += scroll * zoomSpeed;
+                currentScaleFactor = Mathf.Clamp(currentScaleFactor, minScale, maxScale);
+            }
+
+            holder.transform.localScale = Vector3.Lerp(holder.transform.localScale, Vector3.one * currentScaleFactor, Time.deltaTime * 12f);
         }
     }
 
@@ -130,16 +152,34 @@ public class ResearchCenter : MonoBehaviour
     public void ApplyGeneralProfit(Modifier mod)
     {
         generalProfitMods.Add(mod);
+        EatingManager eater = gm.em;
+        if (eater != null) 
+        {
+            eater.generalBonus.AddModifier(mod);
+            eater.CalculateBonus();
+        }
     }
 
     public void ApplyPlantProfit(Modifier mod)
     {
         plantProfitMods.Add(mod);
+        EatingManager eater = gm.em;
+        if (eater != null) 
+        {
+            eater.plantBonus.AddModifier(mod);
+            eater.CalculateBonus();
+        }
     }
 
     public void ApplyOvenProfit(Modifier mod)
     {
         ovenProfitMods.Add(mod);
+        EatingManager eater = gm.em;
+        if (eater != null) 
+        {
+            eater.ovenBonus.AddModifier(mod);
+            eater.CalculateBonus();
+        }
     }
 
     public void ApplyGoldenFruit(Modifier mod)
@@ -185,16 +225,34 @@ public class ResearchCenter : MonoBehaviour
     public void ApplySaleCount(Modifier mod)
     {
         saleCountMods.Add(mod);
+        ShopManager shop = gm.sm;
+        if (shop != null)
+        {
+            shop.discountNumber.AddModifier(mod);
+            shop.ShuffleDiscount();
+        }
     }
 
     public void ApplyDecorSale(Modifier mod)
     {
         decorSaleMods.Add(mod);
+        ShopManager shop = gm.sm;
+        if (shop != null)
+        {
+            shop.decorDiscount.AddModifier(mod);
+            shop.SetPurchase(shop.selectedUI);
+        }
     }
 
     public void ApplyShopDiscount(Modifier mod)
     {
         shopDiscountMods.Add(mod);
+        ShopManager shop = gm.sm;
+        if (shop != null)
+        {
+            shop.generalDiscount.AddModifier(mod);
+            shop.SetPurchase(shop.selectedUI);
+        }
     }
 
     public void ApplyTruckWeight(Modifier mod)
