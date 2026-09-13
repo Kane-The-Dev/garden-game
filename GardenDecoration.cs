@@ -56,7 +56,7 @@ public class GardenDecoration : MonoBehaviour
                 groundMask
             )) 
             {
-                if (Physics.CheckSphere(hit.point, 0.5f, obstacleMask, QueryTriggerInteraction.Collide))
+                if (Physics.CheckSphere(hit.point, 1f, obstacleMask, QueryTriggerInteraction.Collide))
                 {
                     i--;
                     continue;

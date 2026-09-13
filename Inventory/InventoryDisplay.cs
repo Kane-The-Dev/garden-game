@@ -44,7 +44,7 @@ public class InventoryDisplay : MonoBehaviour
 
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.I))
+        if (Input.GetKeyDown(KeyCode.I) && gm.cam.movable == true)
         {
             // Refresh(inventory.myInventory);
 

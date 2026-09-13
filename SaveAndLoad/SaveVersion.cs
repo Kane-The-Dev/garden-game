@@ -29,7 +29,7 @@ public class SaveVersion : MonoBehaviour
     public void Refresh(string garden, GardenSaveData data)
     {
         gardenName.text = garden;
-        version.text = "Version: " + data.version;
+        version.text = "v" + data.version;
         lastSaved.text = "Last saved: " + data.savedAt;
         day.text = data.daysPassed.ToString();
         level.text = data.inventory.level.ToString();
@@ -110,6 +110,8 @@ public class SaveVersion : MonoBehaviour
 
     void TryRename(string currentName, string message)
     {
+        if (!gm) gm = GameManager.instance;
+
         gm.AYSPanel.OpenPanel(
             message,
             (confirmed, newName) =>
