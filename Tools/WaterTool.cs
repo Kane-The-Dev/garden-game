@@ -4,7 +4,7 @@ public class WaterTool : MonoBehaviour
 {
     float maxDistance = 100f;
     [SerializeField] ParticleSystem waterVFX;
-    [SerializeField] float radius, multiplier, timer;
+    [SerializeField] float radius, strength, timer;
     [SerializeField] AdvancedAudioSource myAAS;
 
     public void StartWater()
@@ -19,7 +19,7 @@ public class WaterTool : MonoBehaviour
         if (myAAS) myAAS.Stop(0.5f);
     }
 
-    public void WaterTree(GameObject ring, Ray ray, LayerMask gMask, LayerMask fMask)
+    public void WaterTree(GameObject ring, Ray ray, LayerMask gMask, LayerMask fMask, float multiplier)
     {
         RaycastHit hit;
 
@@ -56,7 +56,8 @@ public class WaterTool : MonoBehaviour
                 Growable tree = p.GetComponent<Growable>();
                 if (tree != null)
                 {
-                    tree.growthSpeed.AddModifier(new Modifier(this, ModType.PercentAdd, multiplier - 1f, 0.5f));
+                    float amount = (strength - 1f) * multiplier;
+                    tree.growthSpeed.AddModifier(new Modifier(this, ModType.PercentAdd, amount, 0.5f));
                 }
             }
             timer = 0f;

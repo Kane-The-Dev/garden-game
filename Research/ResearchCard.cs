@@ -5,7 +5,7 @@ using TMPro;
 
 public class ResearchCard : MonoBehaviour
 {
-    [SerializeField] string ID;
+    public string ID;
     [SerializeField] string myName, description;
     [SerializeField] ResearchType myType;
     [SerializeField] ModType modType;
@@ -18,7 +18,9 @@ public class ResearchCard : MonoBehaviour
     
     [SerializeField] GameObject connector, lockIcon, purchaseIcon, details;
     [SerializeField] TextMeshProUGUI temporaryText, detailsText;
-    ResearchCenter manager;
+
+    GameManager gm;
+    public ResearchCenter manager;
 
     // for editor
     void OnValidate()
@@ -81,9 +83,35 @@ public class ResearchCard : MonoBehaviour
 
     void Start()
     {
-        manager = GameManager.instance.research;
+        gm = GameManager.instance;
+        manager = gm.research;
         Refresh(manager.GetUpgrade(ID));
     }
+
+    // make sure cards are init before Start() is called
+    public void Initialize(ResearchCenter center)
+    {
+        manager = center;
+
+        if (prevCards != null && prevCards.Count > 0)
+        {
+            foreach (ResearchCard prevCard in prevCards)
+            {
+                if (prevCard == null) continue;
+                if (prevCard.nextCards == null)
+                    prevCard.nextCards = new List<ResearchCard>();
+
+                if (!prevCard.nextCards.Contains(this))
+                    prevCard.nextCards.Add(this);
+            }
+        }
+
+        // Load upgrade data (buffAmount, myType, cost, etc.)
+        Upgrade up = manager.GetUpgrade(ID);
+        if (up != null)
+            Refresh(up);
+    }
+
 
     public void Refresh(Upgrade up) 
     {
@@ -121,6 +149,23 @@ public class ResearchCard : MonoBehaviour
     public void OnUnlock()
     {
         if (!isUnlocked || isPurchased) return;
+        
+        if (manager.researchCredit < cost)
+        {
+            gm.mouse.myEffect.Burst("Out of credit!", new Color32(0xDE, 0x55, 0x57, 0xFF));
+            gm.am.PlayUISoundEffect(6);
+            return;
+        }
+
+        manager.researchCredit -= cost;
+        OpenDetails();
+        ApplyUpgrade();
+    }
+
+    public void ApplyUpgrade() // separated this for SaveAndLoad
+    {
+        isPurchased = true;
+        purchaseIcon.SetActive(true);
 
         if (nextCards != null)
         {
@@ -131,10 +176,6 @@ public class ResearchCard : MonoBehaviour
                     card.lockIcon.SetActive(false);
             }
         }
-        
-        isPurchased = true;
-        purchaseIcon.SetActive(true);
-        OpenDetails();
 
         switch (myType)
         {

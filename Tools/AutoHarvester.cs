@@ -8,6 +8,8 @@ public class AutoHarvester : MonoBehaviour
     [Header("Stats")]
     [SerializeField] float scanRadius = 15f;
     [SerializeField] float speed = 5f, scanCooldown = 5f, harvestCooldown = 2f, harvestRange;
+    public Stat overtimeDuration = new Stat(0f);
+    float overtimer, lastTimestamp;
 
     [Header("References")]
     [SerializeField] LayerMask plantMask;
@@ -22,6 +24,7 @@ public class AutoHarvester : MonoBehaviour
     Animator animator;
     Constructible constructible;
     GameManager gm;
+    DayNightController clock;
     
     void Awake()
     {
@@ -32,6 +35,7 @@ public class AutoHarvester : MonoBehaviour
     void Start()
     {
         gm = GameManager.instance;
+        clock = gm.clock;
 
         if (CanStart)
         {
@@ -46,7 +50,9 @@ public class AutoHarvester : MonoBehaviour
     {
         if (!CanStart || !helper) return;
 
-        if (gm.clock.time > 0.25f && gm.clock.time < 0.75f) // go home at night
+        if (clock.time > 0.25f && lastTimestamp < 0.25f) overtimer = overtimeDuration.Value;
+
+        if (clock.time > 0.25f && clock.time < 0.75f && overtimer <= 0f) // go home at night + overtime ended
         {
             if (Vector3.Distance(helper.position, home.position) > 1f) 
                 MoveTo(home.position);
@@ -74,6 +80,8 @@ public class AutoHarvester : MonoBehaviour
         else animator.SetBool("isMoving", false);
 
         if (timer > 0f) timer -= Time.deltaTime;
+        if (overtimer > 0f) overtimer -= Time.deltaTime;
+        lastTimestamp = clock.time;
     }
 
     void MoveTo(Vector3 destination)

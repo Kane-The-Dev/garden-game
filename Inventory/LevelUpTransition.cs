@@ -131,6 +131,10 @@ public class LevelUpTransition : MonoBehaviour
                     coinBurst.maxCount = Mathf.Min(1 + bonus / 20, 30);
                     coinBurst.Emission(0.05f);
                 }
+                else if (reward.name.Equals("research credit", System.StringComparison.OrdinalIgnoreCase))
+                {
+                    gm.research.researchCredit++;
+                }
                 else
                 {
                     int n = reward.quantity;

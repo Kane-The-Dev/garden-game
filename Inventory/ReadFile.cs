@@ -56,8 +56,23 @@ public class Upgrade {
     }
 };
 
+[Serializable]
+public class Icon
+{
+    public string name;
+    public Sprite icon;
+}
+
 public class ReadFile : MonoBehaviour
 {
+    [SerializeField] List<Icon> unconventionalIcons = new List<Icon>(); // static things doesn't show up in editor
+    private static List<Icon> UnconventionalIcons = new List<Icon>();
+
+    void Awake()
+    {
+        UnconventionalIcons = unconventionalIcons;
+    }
+
     public static void LoadItems(List<Item> list)
     {
         TextAsset listFile = Resources.Load<TextAsset>("Items");
@@ -150,7 +165,14 @@ public class ReadFile : MonoBehaviour
         
         Sprite icon = Resources.Load<Sprite>("Icons/" + iconName);
         if (icon == null)
-            Debug.LogWarning($"Resource icon not found: Icons/{iconName}");
+        {
+            Icon other = UnconventionalIcons.Find(x => x.name == iconName);
+
+            if (other != null)
+                icon = other.icon;
+            else
+                icon = UnconventionalIcons.Find(x => x.name == "Not Found").icon;
+        }
 
         return icon;
     }

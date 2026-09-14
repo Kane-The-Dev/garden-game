@@ -32,6 +32,7 @@ public class BuildTool : MonoBehaviour
         }
 
         GameObject newPreview = Instantiate(prefab);
+        newPreview.transform.rotation = Quaternion.Euler(0f, rotY, 0f);
         
         foreach (Renderer r in newPreview.GetComponentsInChildren<Renderer>())
             r.sharedMaterial = previewMaterial;

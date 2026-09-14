@@ -13,7 +13,6 @@ public class InventoryDisplay : MonoBehaviour
     // separate item name displays for board and mouse follow
     [SerializeField] TextMeshProUGUI itemName_Board, itemName_Mouse, itemDescription; 
     [SerializeField] Animator itemNameAnimator;
-    [SerializeField] Sprite tempIcon;
 
     [Header("Setup")]
     [SerializeField] GameObject slotPrefab;
@@ -186,7 +185,6 @@ public class InventoryDisplay : MonoBehaviour
             slots[slotID].SetQuantity(entry.quantity);
 
             Sprite icon = ReadFile.LoadIconSprite(itemName);
-            if (icon == null) icon = tempIcon;
             slots[slotID].SetIcon(icon);
         }
         else

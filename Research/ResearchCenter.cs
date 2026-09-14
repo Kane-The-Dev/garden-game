@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using TMPro;
 
 public enum ResearchType
 {
@@ -30,9 +31,10 @@ public enum ResearchType
 
 public class ResearchCenter : MonoBehaviour
 {
+    public int researchCredit = 0;
     [SerializeField] GameObject panel, holder;
     List<Upgrade> myUpgrades = new List<Upgrade>();
-    List<ResearchCard> cards;
+    [SerializeField] TextMeshProUGUI creditDisplay;
 
     public List<Modifier> generalGrowthMods = new List<Modifier>();
     public List<Modifier> plantGrowthMods = new List<Modifier>();
@@ -78,6 +80,10 @@ public class ResearchCenter : MonoBehaviour
     void Start()
     {
         gm = GameManager.instance;
+        
+        ResearchCard[] cards = FindObjectsOfType<ResearchCard>(true);
+        foreach (ResearchCard card in cards) card.Initialize(this);
+
         if (holder != null)
         {
             currentScaleFactor = holder.transform.localScale.x;
@@ -86,13 +92,15 @@ public class ResearchCenter : MonoBehaviour
 
     void Update() 
     {
-        if (Input.GetKeyDown(KeyCode.R))
+        if (Input.GetKeyDown(KeyCode.R) && gm.cam.movable == true)
         {
             OpenResearch();
         }
 
         if (panel != null && panel.activeSelf && holder != null)
         {
+            creditDisplay.text = researchCredit.ToString();
+
             float scroll = Input.GetAxis("Mouse ScrollWheel");
             if (scroll != 0f)
             {
@@ -100,7 +108,11 @@ public class ResearchCenter : MonoBehaviour
                 currentScaleFactor = Mathf.Clamp(currentScaleFactor, minScale, maxScale);
             }
 
-            holder.transform.localScale = Vector3.Lerp(holder.transform.localScale, Vector3.one * currentScaleFactor, Time.deltaTime * 12f);
+            holder.transform.localScale = Vector3.Lerp(
+                holder.transform.localScale, 
+                Vector3.one * currentScaleFactor, 
+                Time.deltaTime * 12f
+            );
         }
     }
 
@@ -120,33 +132,36 @@ public class ResearchCenter : MonoBehaviour
     {
         generalGrowthMods.Add(mod);
         Growable[] trees = FindObjectsOfType<Growable>();
-        foreach (Growable tree in trees)
-        {
-            if (!tree.isProduct)
-                tree.growthSpeed.AddModifier(mod);
-        }
+        if (trees == null || trees.Length == 0)
+            Debug.LogWarning("ApplyGeneralGrowth failed: No Growable objects found.");
+        else
+            foreach (Growable tree in trees)
+                if (!tree.isProduct)
+                    tree.growthSpeed.AddModifier(mod);
     }
 
     public void ApplyPlantGrowth(Modifier mod)
     {
         plantGrowthMods.Add(mod);
         Growable[] trees = FindObjectsOfType<Growable>();
-        foreach (Growable tree in trees)
-        {
-            if (!tree.isProduct && !tree.isOven)
-                tree.growthSpeed.AddModifier(mod);
-        }
+        if (trees == null || trees.Length == 0)
+            Debug.LogWarning("ApplyPlantGrowth failed: No Growable objects found.");
+        else
+            foreach (Growable tree in trees)
+                if (!tree.isProduct && !tree.isOven)
+                    tree.growthSpeed.AddModifier(mod);
     }
 
     public void ApplyOvenGrowth(Modifier mod)
     {
         ovenGrowthMods.Add(mod);
         Growable[] trees = FindObjectsOfType<Growable>();
-        foreach (Growable tree in trees)
-        {
-            if (!tree.isProduct && tree.isOven)
-                tree.growthSpeed.AddModifier(mod);
-        }
+        if (trees == null || trees.Length == 0)
+            Debug.LogWarning("ApplyOvenGrowth failed: No Growable objects found.");
+        else
+            foreach (Growable tree in trees)
+                if (!tree.isProduct && tree.isOven)
+                    tree.growthSpeed.AddModifier(mod);
     }
 
     public void ApplyGeneralProfit(Modifier mod)
@@ -158,6 +173,8 @@ public class ResearchCenter : MonoBehaviour
             eater.generalBonus.AddModifier(mod);
             eater.CalculateBonus();
         }
+        else
+            Debug.LogWarning("ApplyGeneralProfit failed: EatingManager is null.");
     }
 
     public void ApplyPlantProfit(Modifier mod)
@@ -169,6 +186,8 @@ public class ResearchCenter : MonoBehaviour
             eater.plantBonus.AddModifier(mod);
             eater.CalculateBonus();
         }
+        else
+            Debug.LogWarning("ApplyPlantProfit failed: EatingManager is null.");
     }
 
     public void ApplyOvenProfit(Modifier mod)
@@ -180,28 +199,32 @@ public class ResearchCenter : MonoBehaviour
             eater.ovenBonus.AddModifier(mod);
             eater.CalculateBonus();
         }
+        else
+            Debug.LogWarning("ApplyOvenProfit failed: EatingManager is null.");
     }
 
     public void ApplyGoldenFruit(Modifier mod)
     {
         goldenFruitMods.Add(mod);
         Growable[] trees = FindObjectsOfType<Growable>();
-        foreach (Growable tree in trees)
-        {
-            if (!tree.isProduct && !tree.isOven)
-                tree.goldenChance.AddModifier(mod);
-        }
+        if (trees == null || trees.Length == 0)
+            Debug.LogWarning("ApplyGoldenFruit failed: No Growable objects found.");
+        else
+            foreach (Growable tree in trees)
+                if (!tree.isProduct && !tree.isOven)
+                    tree.goldenChance.AddModifier(mod);
     }
 
     public void ApplyFruitCount(Modifier mod)
     {
         fruitCountMods.Add(mod);
         Growable[] trees = FindObjectsOfType<Growable>();
-        foreach (Growable tree in trees)
-        {
-            if (!tree.isProduct && !tree.isOven)
-                tree.blockedSlotCount.AddModifier(mod);
-        }
+        if (trees == null || trees.Length == 0)
+            Debug.LogWarning("ApplyFruitCount failed: No Growable objects found.");
+        else
+            foreach (Growable tree in trees)
+                if (!tree.isProduct && !tree.isOven)
+                    tree.blockedSlotCount.AddModifier(mod);
     }
 
     public void ApplyWindChance(Modifier mod)
@@ -210,16 +233,29 @@ public class ResearchCenter : MonoBehaviour
         WindGenerator wind = FindObjectOfType<WindGenerator>();
         if (wind != null)
             wind.harvestChance.AddModifier(mod);
+        else
+            Debug.LogWarning("ApplyWindChance failed: WindGenerator not found.");
     }
 
     public void ApplyOvertime(Modifier mod)
     {
         overtimeMods.Add(mod);
+        AutoHarvester[] gnomes = FindObjectsOfType<AutoHarvester>();
+        if (gnomes == null || gnomes.Length == 0)
+            Debug.LogWarning("ApplyOvertime failed: No AutoHarvester objects found.");
+        else
+            foreach (AutoHarvester gnome in gnomes)
+                if (gnome != null) gnome.overtimeDuration.AddModifier(mod);
     }
 
     public void ApplyBetterTool(Modifier mod)
     {
         betterToolMods.Add(mod);
+        PlantManager pm = gm.pm;
+        if (pm != null)
+            pm.toolMultiplier.AddModifier(mod);
+        else
+            Debug.LogWarning("ApplyBetterTool failed: PlantManager is null.");
     }
 
     public void ApplySaleCount(Modifier mod)
@@ -231,6 +267,8 @@ public class ResearchCenter : MonoBehaviour
             shop.discountNumber.AddModifier(mod);
             shop.ShuffleDiscount();
         }
+        else
+            Debug.LogWarning("ApplySaleCount failed: ShopManager is null.");
     }
 
     public void ApplyDecorSale(Modifier mod)
@@ -242,6 +280,8 @@ public class ResearchCenter : MonoBehaviour
             shop.decorDiscount.AddModifier(mod);
             shop.SetPurchase(shop.selectedUI);
         }
+        else
+            Debug.LogWarning("ApplyDecorSale failed: ShopManager is null.");
     }
 
     public void ApplyShopDiscount(Modifier mod)
@@ -253,13 +293,18 @@ public class ResearchCenter : MonoBehaviour
             shop.generalDiscount.AddModifier(mod);
             shop.SetPurchase(shop.selectedUI);
         }
+        else
+            Debug.LogWarning("ApplyShopDiscount failed: ShopManager is null.");
     }
 
     public void ApplyTruckWeight(Modifier mod)
     {
         truckWeightMods.Add(mod);
-        if (gm.em != null)
-            gm.em.maxWeight.AddModifier(mod);
+        EatingManager eater = gm.em;
+        if (eater != null)
+            eater.maxWeight.AddModifier(mod);
+        else
+            Debug.LogWarning("ApplyTruckWeight failed: EatingManager is null.");
     }
 
     public void ApplyTruckCooldown(Modifier mod)
@@ -271,6 +316,8 @@ public class ResearchCenter : MonoBehaviour
             eater.cooldown.AddModifier(mod);
             eater.cooldownTimer += mod.value;
         }
+        else
+            Debug.LogWarning("ApplyTruckCooldown failed: EatingManager is null.");
     }
 
     public void ApplyTruckCount(Modifier mod)
@@ -282,5 +329,7 @@ public class ResearchCenter : MonoBehaviour
             eater.truckCount.AddModifier(mod);
             eater.truckLeft = Mathf.RoundToInt(eater.truckCount.Value);
         }
+        else
+            Debug.LogWarning("ApplyTruckCount failed: EatingManager is null.");
     }
 }

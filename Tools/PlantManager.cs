@@ -39,6 +39,7 @@ public class PlantManager : MonoBehaviour
     // [SerializeField] Animator optionsAnimator;
     [SerializeField] TextMeshProUGUI gameTip;
     public Material gold;
+    public Stat toolMultiplier = new Stat(1f);
     
     void Start()
     {
@@ -132,13 +133,13 @@ public class PlantManager : MonoBehaviour
         {
             switch (mode) {
                 case 2:
-                    waterTool.WaterTree(ring, ray, groundMask, fruitMask);
+                    waterTool.WaterTree(ring, ray, groundMask, fruitMask, toolMultiplier.Value);
                     break;
                 case 3:
-                    harvestTool.HarvestTree(ring, ray, groundMask, plantMask);
+                    harvestTool.HarvestTree(ring, ray, groundMask, plantMask, toolMultiplier.Value);
                     break;
                 case 4:
-                    chopTool.ChopTree(ring, ray, groundMask, plantMask);
+                    chopTool.ChopTree(ring, ray, groundMask, plantMask, toolMultiplier.Value);
                     break;
             }
         }  

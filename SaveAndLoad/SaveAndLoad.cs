@@ -15,6 +15,8 @@ public class GardenSaveData
     public InventorySaveData inventory;
     public List<GrowableSaveData> growables;
     public List<ConstructibleSaveData> constructibles;
+    public List<string> researchCards;
+    public int researchCredit;
 }
 
 [System.Serializable]
@@ -217,7 +219,20 @@ public class SaveAndLoad : MonoBehaviour
             });
         }
 
-        // 4. Serialize and write to file (atomic: write to temp, then swap in)
+        // 4. Save Research Cards info
+        ResearchCenter rc = gm.research != null ? gm.research : FindObjectOfType<ResearchCenter>();
+        if (rc != null)
+            saveData.researchCredit = rc.researchCredit;
+
+        saveData.researchCards = new List<string>();
+        ResearchCard[] allResearchCards = FindObjectsOfType<ResearchCard>(true);
+        foreach (ResearchCard card in allResearchCards)
+        {
+            if (card != null && card.isPurchased && !string.IsNullOrEmpty(card.ID))
+                saveData.researchCards.Add(card.ID);
+        }
+
+        // 5. Serialize and write to file (atomic: write to temp, then swap in)
         try
         {
             string json = JsonUtility.ToJson(saveData, true);
@@ -448,6 +463,24 @@ public class SaveAndLoad : MonoBehaviour
                             }
                         }
                     }
+                }
+            }
+        }
+
+        // 5. Restore Research cards info
+        ResearchCenter rc = gm.research != null ? gm.research : FindObjectOfType<ResearchCenter>();
+        if (rc != null)
+            rc.researchCredit = saveData.researchCredit;
+
+        if (saveData.researchCards != null)
+        {
+            ResearchCard[] allResearchCards = FindObjectsOfType<ResearchCard>(true);
+            foreach (ResearchCard card in allResearchCards)
+            {
+                if (card != null && !string.IsNullOrEmpty(card.ID) && saveData.researchCards.Contains(card.ID))
+                {
+                    card.isUnlocked = true;
+                    card.ApplyUpgrade();
                 }
             }
         }

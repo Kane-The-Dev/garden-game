@@ -20,7 +20,7 @@ public class ChopTool : MonoBehaviour
         if (myAAS) myAAS.PlayOneShot(sounds[Random.Range(0, sounds.Length)], -1f, true);
     }
 
-    public void ChopTree(GameObject ring, Ray ray, LayerMask gMask, LayerMask pMask)
+    public void ChopTree(GameObject ring, Ray ray, LayerMask gMask, LayerMask pMask, float multiplier)
     {
         RaycastHit hit;
 
@@ -55,7 +55,7 @@ public class ChopTool : MonoBehaviour
                         tree.myChopTool = this;
 
                     if (!tree.chopped)
-                        tree.chopIndex += speed * Time.deltaTime;
+                        tree.chopIndex += speed * multiplier * Time.deltaTime;
                 }
 
                 if (building)
@@ -64,7 +64,7 @@ public class ChopTool : MonoBehaviour
                         building.myChopTool = this;
 
                     if (!building.chopped)
-                        building.chopIndex += speed * Time.deltaTime;
+                        building.chopIndex += speed * multiplier * Time.deltaTime;
                 }
             }
         }

@@ -34,7 +34,7 @@ public class HarvestTool : MonoBehaviour
         if (screenShake) gm.cam.StopScreenShake();
     }
 
-    public void HarvestTree(GameObject ring, Ray ray, LayerMask gMask, LayerMask pMask)
+    public void HarvestTree(GameObject ring, Ray ray, LayerMask gMask, LayerMask pMask, float multiplier)
     {
         RaycastHit hit;
 
@@ -66,7 +66,7 @@ public class HarvestTool : MonoBehaviour
             {
                 Growable tree = p.GetComponent<Growable>();
                 if (tree != null) {
-                    tree.harvestIndex += speed * Time.deltaTime;
+                    tree.harvestIndex += speed * multiplier * Time.deltaTime;
                 }
             }
         }
