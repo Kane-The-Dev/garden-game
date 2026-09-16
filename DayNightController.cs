@@ -8,6 +8,14 @@ public class LightData
 {
     public Light light;
     public float maxIntensity = 1f;
+
+    public LightData() { }
+
+    public LightData(Light l)
+    {
+        light = l;
+        maxIntensity = l != null ? l.intensity : 1f;
+    }
 }
 
 public class DayNightController : MonoBehaviour
@@ -20,32 +28,68 @@ public class DayNightController : MonoBehaviour
     [SerializeField] float clockOffset;
 
     [Header("Time Settings")]
+    public float time;
+    public int dayCount;
     public float dayLength = 60f; // seconds for full cycle
     public float startTime = 0f;  // 0-1
+    [SerializeField] float morning, evening;
 
     [Header("Sky Settings")]
     [SerializeField] Gradient lightColor;
     [SerializeField] Gradient skyColor;
     [SerializeField] AnimationCurve lightIntensity, skyIntensity;
-    [SerializeField] float morning, evening;
 
     [Header("Other Light Sources")]
-    [SerializeField] GameObject[] lightBlocks;
-    [SerializeField] LightData[] lights;
+    [SerializeField] Material[] glowMaterials;
+    [SerializeField] List<ParticleSystem> glowParticles = new List<ParticleSystem>();
+    [SerializeField] public List<LightData> lights = new List<LightData>();
     [SerializeField] AnimationCurve intensityCurve;
 
     Material skyboxInstance;
-
-    public float time;
-    public int dayCount;
     bool lightsOut = true;
 
-    void Start()
+    void Awake() 
     {
         dayCount = 0;
         time = startTime;
         skyboxInstance = new Material(RenderSettings.skybox);
         RenderSettings.skybox = skyboxInstance;
+        lightsOut = time > evening && time < morning;
+    }
+
+    void Start()
+    {
+        InitializeLights();
+    }
+
+    public void InitializeLights()
+    {
+        Light[] allLights = FindObjectsOfType<Light>(true);
+        lights.Clear();
+        foreach (Light l in allLights)
+        {
+            if (l == sun || l.CompareTag("Ignore")) continue;
+            lights.Add(new LightData(l));
+        }
+    }
+
+    public void RegisterLight(Light l)
+    {
+        if (l == null || l == sun) return;
+        if (lights.Exists(item => item != null && item.light == l)) return;
+        lights.Add(new LightData(l));
+    }
+
+    public void UnregisterLight(Light l)
+    {
+        if (l == null) return;
+        lights.RemoveAll(item => item == null || item.light == l);
+    }
+
+    public void RegisterParticle(ParticleSystem p) 
+    {
+        if (p && !glowParticles.Exists(item => item != null && item == p)) 
+            glowParticles.Add(p);
     }
 
     void Update()
@@ -60,19 +104,31 @@ public class DayNightController : MonoBehaviour
         clock.rotation = Quaternion.Euler(0f, 0f, clockOffset + 360f * time);
 
         float value = intensityCurve.Evaluate(time);
-        foreach (LightData l in lights)
+        for (int i = lights.Count - 1; i >= 0; i--)
         {
-            l.light.intensity = value * l.maxIntensity;
+            LightData l = lights[i];
+            if (l != null && l.light != null)
+                l.light.intensity = value * l.maxIntensity;
         }
 
         if (lightsOut && time > evening && time < morning)
         {
-            foreach (GameObject l in lightBlocks) l.SetActive(true);
+            foreach (Material glow in glowMaterials) 
+                glow.EnableKeyword("_EMISSION");
+
+            foreach (ParticleSystem p in glowParticles) 
+                if (p) p.Play();
+
             lightsOut = false;
         }
         else if (!lightsOut && (time > morning || time < evening))
         {
-            foreach (GameObject l in lightBlocks) l.SetActive(false);
+            foreach (Material glow in glowMaterials) 
+                glow.DisableKeyword("_EMISSION");
+
+            foreach (ParticleSystem p in glowParticles) 
+                if (p) p.Stop();
+                
             lightsOut = true;
         }
 
