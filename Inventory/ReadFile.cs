@@ -56,6 +56,33 @@ public class Upgrade {
     }
 };
 
+[System.Serializable]
+public class VehicleData {
+
+    public int ID;
+    public string name;
+    public float maxWeight; // load
+    public float cooldown; // delay
+    public int price; 
+    public int levelReq;
+    public int tripFee; 
+    public string description;
+
+    public void Set(int _ID, string _name, float _maxWeight, 
+        float _cooldown, int _price, int _levelReq,
+        int _tripFee, string _description)
+    {
+        this.ID = _ID;
+        this.name = _name;
+        this.maxWeight = _maxWeight;
+        this.cooldown = _cooldown;
+        this.price = _price;
+        this.levelReq = _levelReq;
+        this.tripFee = _tripFee;
+        this.description = _description;
+    }
+}
+
 [Serializable]
 public class Icon
 {
@@ -296,6 +323,47 @@ public class ReadFile : MonoBehaviour
             Upgrade newUpgrade = new Upgrade();
             newUpgrade.Set(id, name, typeR, amount, typeM, cost, description);
             list.Add(newUpgrade);
+        }
+    }
+
+    public static void LoadVehicles(List<VehicleData> list)
+    {
+        TextAsset vehiclesFile = Resources.Load<TextAsset>("Vehicles");
+        if (vehiclesFile == null)
+        {
+            Debug.LogError("Vehicles.txt not found in Resources.");
+            return;
+        }
+
+        string text = vehiclesFile.text;
+        string[] lines = text.Split(
+            new[] { '\r', '\n' },
+            System.StringSplitOptions.RemoveEmptyEntries
+        );
+
+        for (int i = 1; i < lines.Length; i++)
+        {
+            string line = lines[i];
+
+            string[] parts = line.Split(
+                (char[])null,
+                8,
+                System.StringSplitOptions.RemoveEmptyEntries
+            );
+            if (parts.Length < 7) continue;
+
+            int.TryParse(parts[0], out int id);
+            string name = parts[1].Replace('_', ' ');
+            float.TryParse(parts[2], out float maxWeight);
+            float.TryParse(parts[3], out float cooldown);
+            int.TryParse(parts[4], out int price);
+            int.TryParse(parts[5], out int levelReq);
+            int.TryParse(parts[6], out int tripFee);
+            string description = parts.Length >= 8 ? parts[7] : "";
+
+            VehicleData newVehicle = new VehicleData();
+            newVehicle.Set(id, name, maxWeight, cooldown, price, levelReq, tripFee, description);
+            list.Add(newVehicle);
         }
     }
 }

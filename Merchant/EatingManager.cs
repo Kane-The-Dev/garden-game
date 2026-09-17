@@ -23,34 +23,51 @@ public class EatingManager : MonoBehaviour
     List<GameObject> spawnedFood = new List<GameObject>();
     public Queue<FoodDropRequest> q;
     [SerializeField] float delay, timer;
+    public bool dealCompleted = false;
 
     [Header("Main Logic")]
     public float totalWeight;
     public float cooldownTimer;
+    public int transportFee;
     public Stat maxWeight = new Stat(30f), cooldown = new Stat(120f);
     public int accumulatedStonks_P, accumulatedStonks_O, accumulatedExp, accumulatedBonus;
     public Stat generalBonus = new Stat(0), plantBonus = new Stat(0), ovenBonus = new Stat(0);
 
     [Header("Truck")]
-    [SerializeField] GameObject truck_kun;
+    public GameObject truck_kun; // selected vehicle
     public GameObject myTruck;
-    public Transform drop;
+    public Vehicle vehicle;
     public Stat truckCount = new Stat(1);
     public int truckLeft;
+    Vector3 moveDir;
     
     [Header("Audio")]
     [SerializeField] AudioSource cashier;
-    [SerializeField] AudioSource engine;
-    [SerializeField] AudioClip cashIn, landing, starting;
+    [SerializeField] AudioClip cashIn;
 
     [Header("Display")]
     [SerializeField] RectTransform weightNeedle;
-    [SerializeField] TextMeshProUGUI stonksDisplay;
+    [SerializeField] TextMeshProUGUI stonksDisplay, feeDisplay;
     [SerializeField] TextMeshPro infoBoard;
     [SerializeField] UIParticleSystem coinBurst;
 
-    Rigidbody rb;
     GameManager gm;
+
+    public bool IsTruckAvailable()
+    {
+        return myTruck != null
+            && dealCompleted == false
+            && cooldownTimer <= 0f
+            && myTruck.transform.position.y <= 3f;
+    }
+
+    public void CalculateBonus()
+    {
+        accumulatedBonus = Mathf.RoundToInt(
+            accumulatedStonks_P * (generalBonus.Value + plantBonus.Value) + 
+            accumulatedStonks_O * (generalBonus.Value + ovenBonus.Value)
+        );
+    }
 
     void Awake()
     {
@@ -62,7 +79,6 @@ public class EatingManager : MonoBehaviour
 
     void Start()
     {
-        rb = GetComponent<Rigidbody>();
         gm = GameManager.instance;
         SpawnTruck();
     }
@@ -80,20 +96,24 @@ public class EatingManager : MonoBehaviour
             }
         }
 
-        if (cooldownTimer > 0) {
+        // Truck cooldown & respawn
+        if (cooldownTimer > 0f) {
+            cooldownTimer -= Time.deltaTime * GameManager.instance.timeControl;
+            if (cooldownTimer < 0f) cooldownTimer = 0f;
+
             if (infoBoard) 
                 infoBoard.text = "Truck will be back after " + cooldownTimer.ToString("F0");
-
-            cooldownTimer -= Time.deltaTime * GameManager.instance.timeControl;
         }
-
-        if (myTruck == null && cooldownTimer <= 0) {
-            if (infoBoard) 
-                infoBoard.text = "Sell your stock here!";
-            
+        else if (dealCompleted) {
+            // Deal completed -> bring in next truck
+            dealCompleted = false;
             SpawnTruck();
+
+            if (infoBoard)
+                infoBoard.text = "Sell your stock here!";
         }
 
+        // Update UI if in selling panel
         if (gm.currentMode != 1) return;
 
         if (stonksDisplay) {
@@ -103,6 +123,10 @@ public class EatingManager : MonoBehaviour
             stonksDisplay.text = stonks + "G";
         }
 
+        if (feeDisplay) {
+            feeDisplay.text = "-" + transportFee + "G";
+        }
+
         if (weightNeedle) {
             float targetRotZ = -140f + 100f * totalWeight / maxWeight.Value;
             Quaternion targetRot = Quaternion.Euler(0f, 0f, targetRotZ);
@@ -110,24 +134,6 @@ public class EatingManager : MonoBehaviour
         }
     }
 
-    public void CalculateBonus()
-    {
-        accumulatedBonus = Mathf.RoundToInt(
-            accumulatedStonks_P * (generalBonus.Value + plantBonus.Value) + 
-            accumulatedStonks_O * (generalBonus.Value + ovenBonus.Value)
-        );
-    }
-
-    void SpawnTruck()
-    {
-        truckLeft--;
-        GameObject thisTruck = Instantiate(truck_kun, transform.position, transform.rotation);
-        myTruck = thisTruck;
-        drop = myTruck.transform.GetChild(5);
-        rb = myTruck.GetComponent<Rigidbody>();
-        engine = thisTruck.GetComponent<AudioSource>();
-    }
-    
     void SpawnFood(FoodDropRequest request)
     {
         Inventory inventory = gm.inventory;
@@ -142,7 +148,7 @@ public class EatingManager : MonoBehaviour
         if (prefab == null)
             return;
 
-        GameObject obj = Instantiate(prefab, drop.position + Vector3.up * 4f, Quaternion.identity);
+        GameObject obj = Instantiate(prefab, vehicle.drop.position + Vector3.up * 5f, Quaternion.identity);
 
         Rigidbody rb = obj.GetComponent<Rigidbody>();
         if (rb != null)
@@ -174,6 +180,15 @@ public class EatingManager : MonoBehaviour
         accumulatedExp += 2;
     }
 
+    void SpawnTruck()
+    {
+        myTruck = Instantiate(truck_kun, transform.position, transform.rotation);
+        if (myTruck != null)
+        {
+            vehicle = myTruck.GetComponent<Vehicle>();
+        }
+    }
+    
     public void ConfirmSale()
     {
         if (q.Count > 0) {
@@ -195,42 +210,44 @@ public class EatingManager : MonoBehaviour
         }
 
         cashier.PlayOneShot(cashIn);
-        engine.PlayOneShot(starting);
+
+        if (vehicle != null)
+            vehicle.StartEngine();
+    
         foreach(GameObject obj in spawnedFood)
         {
             Growable fruit = obj.GetComponent<Growable>();
             if (fruit != null) 
                 fruit.myAAS.mute = true; // mute fruits to prevent audio jumpscare
-        }   
-
-        for (int i = 0; i < 4; i++)
-            myTruck.transform.GetChild(i).GetComponent<Spin>().speed = 180f;
+        }
 
         coinBurst.minCount = Mathf.Min(1 + (accumulatedStonks_P + accumulatedStonks_O) / 20, 30);
         coinBurst.maxCount = Mathf.Min(1 + (accumulatedStonks_P + accumulatedStonks_O) / 20, 30);
         coinBurst.Emission(0.05f);
             
-        rb.constraints = RigidbodyConstraints.None;
-        gm.inventory.coin += accumulatedStonks_P + accumulatedStonks_O;
+        gm.inventory.coin += (accumulatedStonks_P + accumulatedStonks_O + accumulatedBonus) - transportFee;
         gm.inventory.exp += accumulatedExp;
         totalWeight = 0;
         accumulatedStonks_P = 0;
         accumulatedStonks_O = 0;
         accumulatedBonus = 0;
 
-        Invoke("MoveTruck", 4f);
+        moveDir = (vehicle.rb.mass + totalWeight) * (transform.forward * 40f + Vector3.up * 10f);
+
+        Destroy(myTruck, 15f);
+        myTruck = null;
+        Invoke(nameof(MoveTruck), 4f);
     }
 
     void MoveTruck()
     {
-        Vector3 moveDir = transform.forward * 2000f + Vector3.up * 500f;
-        rb.AddForce(moveDir * (1 + totalWeight * 0.2f), ForceMode.Impulse);
+        vehicle.Move(moveDir);
 
         foreach(GameObject obj in spawnedFood) Destroy(obj, 10f);
         spawnedFood.Clear();
 
-        if (truckLeft > 1) {
-            truckLeft--;
+        truckLeft--;
+        if (truckLeft > 0) {
             cooldownTimer = 15f; // quick cooldown if substitute available
         }
         else {
@@ -238,8 +255,7 @@ public class EatingManager : MonoBehaviour
             cooldownTimer = cooldown.Value;
         }
         
-        Destroy(myTruck, 10f);
-        myTruck = null;
+        dealCompleted = true;
     }
 
     void OnTriggerEnter(Collider col)
@@ -249,8 +265,7 @@ public class EatingManager : MonoBehaviour
 
         if (col.CompareTag("Truck"))
         {
-            engine.clip = landing;
-            engine.Play();
+            vehicle.CollideGround();
         }
     }
 }

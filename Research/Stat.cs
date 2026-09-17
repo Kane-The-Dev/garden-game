@@ -27,7 +27,16 @@ public struct Modifier // buff or nerf
 [System.Serializable]
 public class Stat
 {
-    public float baseValue;
+    [SerializeField] private float _baseValue;
+    public float baseValue // adjusting the public baseValue would trigger flag
+    {
+        get => _baseValue;
+        set
+        {
+            _baseValue = value;
+            flag = true;
+        }
+    }
 
     List<Modifier> modifiers = new List<Modifier>();
     float cachedValue;
@@ -37,7 +46,6 @@ public class Stat
     public Stat(float baseValue)
     {
         this.baseValue = baseValue;
-        cachedValue = baseValue;
     }
 
     public void AddModifier(Modifier mod)

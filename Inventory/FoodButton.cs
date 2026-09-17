@@ -43,7 +43,7 @@ public class FoodButton : MonoBehaviour
             return;
         }
 
-        if (eater.cooldownTimer > 0f || !eater.myTruck || eater.myTruck.transform.position.y > 3f)
+        if (!eater.IsTruckAvailable())
         {
             gm.mouse.myEffect.Burst("Truck unavailable!", new Color32(0xDE, 0x55, 0x57, 0xFF));
             gm.am.PlayUISoundEffect(6);
