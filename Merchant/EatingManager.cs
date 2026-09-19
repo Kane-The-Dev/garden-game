@@ -20,8 +20,9 @@ public struct FoodDropRequest
 public class EatingManager : MonoBehaviour
 {
     [Header("Food Dropping")]
-    List<GameObject> spawnedFood = new List<GameObject>();
+    public List<GameObject> spawnedFood = new List<GameObject>();
     public Queue<FoodDropRequest> q;
+    public List<FoodDropRequest> currentRequests = new List<FoodDropRequest>();
     [SerializeField] float delay, timer;
     public bool dealCompleted = false;
 
@@ -80,7 +81,6 @@ public class EatingManager : MonoBehaviour
     void Start()
     {
         gm = GameManager.instance;
-        SpawnTruck();
     }
 
     void Update()
@@ -104,9 +104,8 @@ public class EatingManager : MonoBehaviour
             if (infoBoard) 
                 infoBoard.text = "Truck will be back after " + cooldownTimer.ToString("F0");
         }
-        else if (dealCompleted) {
-            // Deal completed -> bring in next truck
-            dealCompleted = false;
+        else if (myTruck == null && !dealCompleted) {
+            // No truck -> bring in next truck
             SpawnTruck();
 
             if (infoBoard)
@@ -148,7 +147,11 @@ public class EatingManager : MonoBehaviour
         if (prefab == null)
             return;
 
-        GameObject obj = Instantiate(prefab, vehicle.drop.position + Vector3.up * 5f, Quaternion.identity);
+        GameObject obj = Instantiate(
+            prefab, 
+            vehicle.drop.position + Vector3.up * 5f, 
+            Quaternion.identity
+        );
 
         Rigidbody rb = obj.GetComponent<Rigidbody>();
         if (rb != null)
@@ -180,13 +183,13 @@ public class EatingManager : MonoBehaviour
         accumulatedExp += 2;
     }
 
-    void SpawnTruck()
+    public void SpawnTruck()
     {
+        if (cooldownTimer > 0f) return;
+
         myTruck = Instantiate(truck_kun, transform.position, transform.rotation);
         if (myTruck != null)
-        {
             vehicle = myTruck.GetComponent<Vehicle>();
-        }
     }
     
     public void ConfirmSale()
@@ -231,8 +234,13 @@ public class EatingManager : MonoBehaviour
         accumulatedStonks_P = 0;
         accumulatedStonks_O = 0;
         accumulatedBonus = 0;
+        accumulatedExp = 0;
 
-        moveDir = (vehicle.rb.mass + totalWeight) * (transform.forward * 40f + Vector3.up * 10f);
+        moveDir = (vehicle.rb.mass + totalWeight) * (transform.forward * 32f + Vector3.up * 8f);
+        currentRequests.Clear();
+
+        truckLeft--;
+        dealCompleted = true;
 
         Destroy(myTruck, 15f);
         myTruck = null;
@@ -242,11 +250,11 @@ public class EatingManager : MonoBehaviour
     void MoveTruck()
     {
         vehicle.Move(moveDir);
+        vehicle = null;
 
         foreach(GameObject obj in spawnedFood) Destroy(obj, 10f);
         spawnedFood.Clear();
 
-        truckLeft--;
         if (truckLeft > 0) {
             cooldownTimer = 15f; // quick cooldown if substitute available
         }
@@ -255,7 +263,7 @@ public class EatingManager : MonoBehaviour
             cooldownTimer = cooldown.Value;
         }
         
-        dealCompleted = true;
+        dealCompleted = false;
     }
 
     void OnTriggerEnter(Collider col)

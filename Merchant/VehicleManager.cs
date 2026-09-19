@@ -34,6 +34,7 @@ public class VehicleManager : MonoBehaviour
     void SpawnVehicleDisplays()
     {
         if (vehicleDisplay == null || holder == null) return;
+        if (myDisplays.Count > 0) return;
 
         foreach (VehicleData data in vehicleList)
         {
@@ -57,7 +58,7 @@ public class VehicleManager : MonoBehaviour
             myPreviews[ID].SetActive(true);
     }
 
-    public bool TryUnlockVehicle(int ID) 
+    public bool TryUnlockVehicle(int ID)
     {
         if (ID < 0 || ID >= vehicleList.Count) return false;
 
@@ -65,10 +66,18 @@ public class VehicleManager : MonoBehaviour
         if (inv != null && inv.coin >= data.price && inv.level >= data.levelReq)
         {
             inv.coin -= data.price;
+            UnlockVehicle(ID);
             return true;
         }
+        
         Debug.Log("Cannot unlock");
         return false;
+    }
+
+    public void UnlockVehicle(int ID)
+    {
+        VehicleDisplay vd = myDisplays.Find(d => d.ID == ID);
+        if (vd != null) vd.SetUnlocked(true);
     }
 
     public void EquipVehicle(int ID)
@@ -83,11 +92,16 @@ public class VehicleManager : MonoBehaviour
             vd.SetEquipped(vd.ID == ID);
 
         this.ID = ID;
-        merchant.truck_kun = myPrefabs[ID];
 
-        VehicleData data = vehicleList[ID];
-        merchant.maxWeight.baseValue = data.maxWeight;
-        merchant.cooldown.baseValue = data.cooldown;
-        merchant.transportFee = data.tripFee;
+        if (!merchant) merchant = GameManager.instance.em;
+        if (merchant != null)
+        {
+            merchant.truck_kun = myPrefabs[ID];
+
+            VehicleData data = vehicleList[ID];
+            merchant.maxWeight.baseValue = data.maxWeight;
+            merchant.cooldown.baseValue = data.cooldown;
+            merchant.transportFee = data.tripFee;
+        }
     }
 }

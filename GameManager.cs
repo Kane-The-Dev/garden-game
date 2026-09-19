@@ -25,6 +25,7 @@ public class GameManager : MonoBehaviour
     public DayNightController clock;
     public Settings settings;
     public ResearchCenter research;
+    public VehicleManager vm;
 
     [Header("UI Elements")]
     [SerializeField] GameObject gardenTools;
@@ -56,6 +57,7 @@ public class GameManager : MonoBehaviour
         if (!clock) clock = FindObjectOfType<DayNightController>();
         if (!settings) settings = FindObjectOfType<Settings>();
         if (!research) research = FindObjectOfType<ResearchCenter>();
+        if (!vm) vm = FindObjectOfType<VehicleManager>();
     }
 
     void Start()

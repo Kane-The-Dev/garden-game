@@ -59,8 +59,11 @@ public class FoodButton : MonoBehaviour
 
         int finalSellPrice = isGolden ? inventory.foodList[productID].sellPrice * 2 : inventory.foodList[productID].sellPrice;
 
-        for (int i = 0; i < quantity; i++)
-            eater.q.Enqueue(new FoodDropRequest(productID, isGolden));
+        for (int i = 0; i < quantity; i++) {
+            FoodDropRequest request = new FoodDropRequest(productID, isGolden);
+            eater.q.Enqueue(request);
+            eater.currentRequests.Add(request);
+        }
 
         eater.totalWeight += quantity * inventory.foodList[productID].weight;
         if (inventory.foodList[productID].type != "Oven")

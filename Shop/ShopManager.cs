@@ -317,7 +317,7 @@ public class ShopManager : MonoBehaviour
         itemPrice.text = (totalPrice - totalDiscount).ToString();
         if (discountPercent > 0) {
             saleTag.SetActive(true);
-            discountText.text = Mathf.RoundToInt(100f * discountPercent).ToString() + "% off";
+            discountText.text = Mathf.RoundToInt(100f * discountPercent).ToString() + "% OFF";
         }
         else saleTag.SetActive(false);
 

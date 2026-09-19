@@ -17,6 +17,7 @@ public class GardenSaveData
     public List<ConstructibleSaveData> constructibles;
     public List<string> researchCards;
     public int researchCredit;
+    public VehicleSaveData vehicle;
 }
 
 [System.Serializable]
@@ -57,6 +58,17 @@ public class GrowableSaveData
     public float maxGrowth;
     public float wiggleOffset;
     public float wiggleAmplitude;
+}
+
+[System.Serializable]
+public class VehicleSaveData
+{
+    public float vehicleTimer;
+    public bool dealCompleted;
+    public int truckLeft;
+    public int equippedVehicleID;
+    public List<int> unlockedVehicleIDs;
+    public List<FoodDropRequest> currentRequests;
 }
 
 public class SaveAndLoad : MonoBehaviour
@@ -219,7 +231,33 @@ public class SaveAndLoad : MonoBehaviour
             });
         }
 
-        // 4. Save Research Cards info
+        // 4. Save Vehicles Info
+        VehicleSaveData vehicle = new VehicleSaveData();
+
+        EatingManager em = gm.em != null ? gm.em : FindObjectOfType<EatingManager>();
+        if (em != null)
+        {
+            vehicle.vehicleTimer = em.cooldownTimer;
+            vehicle.dealCompleted = em.dealCompleted;
+            vehicle.truckLeft = em.truckLeft;
+            vehicle.currentRequests = em.currentRequests;
+        }
+
+        VehicleManager vm = FindObjectOfType<VehicleManager>();
+        if (vm != null)
+        {
+            vehicle.equippedVehicleID = vm.ID;
+            vehicle.unlockedVehicleIDs = new List<int>();
+            foreach (VehicleDisplay vd in vm.myDisplays)
+            {
+                if (vd != null && vd.isUnlocked)
+                    vehicle.unlockedVehicleIDs.Add(vd.ID);
+            }
+        }
+
+        saveData.vehicle = vehicle;
+
+        // 5. Save Research Cards info
         ResearchCenter rc = gm.research != null ? gm.research : FindObjectOfType<ResearchCenter>();
         if (rc != null)
             saveData.researchCredit = rc.researchCredit;
@@ -232,7 +270,7 @@ public class SaveAndLoad : MonoBehaviour
                 saveData.researchCards.Add(card.ID);
         }
 
-        // 5. Serialize and write to file (atomic: write to temp, then swap in)
+        // 6. Serialize and write to file (atomic: write to temp, then swap in)
         try
         {
             string json = JsonUtility.ToJson(saveData, true);
@@ -352,6 +390,22 @@ public class SaveAndLoad : MonoBehaviour
                 Debug.LogWarning($"SaveAndLoad: no ToolUnlock asset found for saved tool '{savedItem.name}'");
         }
 
+        // Restore unsold food requests to inventory
+        VehicleSaveData myVehicle = saveData.vehicle;
+        if (myVehicle.currentRequests != null && myVehicle.currentRequests.Count > 0)
+        {
+            foreach (var req in myVehicle.currentRequests)
+            {
+                Item item = inv.foodList.Find(f => f.ID == req.ID);
+                if (item != null)
+                {
+                    string productName = Inventory.GetProductName(item.name);
+                    if (req.isGolden) productName = "Golden " + productName;
+                    inv.AddItemQuantity(productName, 1);
+                }
+            }
+        }
+
         inv.shop.RefreshShop();
         inv.selection.RefreshPlants();
         inv.fs.UpdateStorage();
@@ -467,7 +521,62 @@ public class SaveAndLoad : MonoBehaviour
             }
         }
 
-        // 5. Restore Research cards info
+        // 5. Restore Vehicles Info
+        EatingManager em = gm.em;
+        if (em != null) 
+        {
+            if (em.myTruck != null)
+            {
+                Destroy(em.myTruck.gameObject);
+                em.myTruck = null;
+            }
+
+            if (em.q != null) em.q.Clear();
+            if (em.currentRequests != null) em.currentRequests.Clear();
+            foreach (GameObject obj in em.spawnedFood) Destroy(obj);
+
+            em.totalWeight = 0f;
+            em.accumulatedStonks_P = 0;
+            em.accumulatedStonks_O = 0;
+            em.accumulatedBonus = 0;
+            em.accumulatedExp = 0;
+        }
+
+        VehicleManager vm = gm.vm;
+        if (vm != null)
+        {
+            if (myVehicle.unlockedVehicleIDs != null && myVehicle.unlockedVehicleIDs.Count > 0)
+            {
+                foreach (int vehicleID in myVehicle.unlockedVehicleIDs)
+                    vm.UnlockVehicle(vehicleID);
+            }
+            else
+                vm.UnlockVehicle(0);
+
+            vm.EquipVehicle(myVehicle.equippedVehicleID);
+        }
+
+        // Apply timer after equipping vehicle to prevent wrong vehicle spawned
+        if (em != null)
+        {
+            em.dealCompleted = myVehicle.dealCompleted;
+
+            // in case player saved after timer ran out but deal isn't completed
+            if (myVehicle.dealCompleted && myVehicle.vehicleTimer <= 0f)
+            {
+                em.cooldownTimer = em.cooldown.Value;
+                if (myVehicle.truckLeft > 0)
+                    em.cooldownTimer = 15f;
+
+                em.dealCompleted = false;
+            }
+            else
+                em.cooldownTimer = myVehicle.vehicleTimer;
+
+            // Debug.Log(em.cooldownTimer);
+        }
+
+        // 6. Restore Research cards info
         ResearchCenter rc = gm.research != null ? gm.research : FindObjectOfType<ResearchCenter>();
         if (rc != null)
             rc.researchCredit = saveData.researchCredit;
@@ -484,6 +593,8 @@ public class SaveAndLoad : MonoBehaviour
                 }
             }
         }
+
+        if (em != null) em.truckLeft = myVehicle.truckLeft; // must be applied AFTER restoring upgrades
     }
 
     // READ, RENAME, DELETE
